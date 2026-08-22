@@ -1,0 +1,1051 @@
+{
+  "pay_42_0001": {
+    "matched_bank_ids": [
+      "bank_row_6"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0002": {
+    "matched_bank_ids": [
+      "bank_row_96"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0003": {
+    "matched_bank_ids": [
+      "bank_row_70"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0004": {
+    "matched_bank_ids": [
+      "bank_row_18"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0005": {
+    "matched_bank_ids": [
+      "bank_row_30"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0006": {
+    "matched_bank_ids": [
+      "bank_row_36"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0007": {
+    "matched_bank_ids": [
+      "bank_row_66"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0008": {
+    "matched_bank_ids": [
+      "bank_row_130"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0009": {
+    "matched_bank_ids": [
+      "bank_row_48"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0010": {
+    "matched_bank_ids": [
+      "bank_row_142"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0011": {
+    "matched_bank_ids": [
+      "bank_row_112"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0012": {
+    "matched_bank_ids": [
+      "bank_row_129"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0013": {
+    "matched_bank_ids": [
+      "bank_row_57"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0014": {
+    "matched_bank_ids": [
+      "bank_row_77"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0015": {
+    "matched_bank_ids": [
+      "bank_row_127"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0016": {
+    "matched_bank_ids": [
+      "bank_row_21"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0017": {
+    "matched_bank_ids": [
+      "bank_row_55"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0018": {
+    "matched_bank_ids": [
+      "bank_row_141"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0019": {
+    "matched_bank_ids": [
+      "bank_row_122"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0020": {
+    "matched_bank_ids": [
+      "bank_row_42"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0021": {
+    "matched_bank_ids": [
+      "bank_row_91"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0022": {
+    "matched_bank_ids": [
+      "bank_row_114"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0023": {
+    "matched_bank_ids": [
+      "bank_row_113"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0024": {
+    "matched_bank_ids": [
+      "bank_row_137"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0025": {
+    "matched_bank_ids": [
+      "bank_row_22"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0026": {
+    "matched_bank_ids": [
+      "bank_row_135"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0027": {
+    "matched_bank_ids": [
+      "bank_row_33"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0028": {
+    "matched_bank_ids": [
+      "bank_row_11"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0029": {
+    "matched_bank_ids": [
+      "bank_row_41"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0030": {
+    "matched_bank_ids": [
+      "bank_row_103"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0031": {
+    "matched_bank_ids": [
+      "bank_row_107"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0032": {
+    "matched_bank_ids": [
+      "bank_row_121"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0033": {
+    "matched_bank_ids": [
+      "bank_row_100"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0034": {
+    "matched_bank_ids": [
+      "bank_row_25"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0035": {
+    "matched_bank_ids": [
+      "bank_row_4"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0036": {
+    "matched_bank_ids": [
+      "bank_row_68"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0037": {
+    "matched_bank_ids": [
+      "bank_row_94"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0038": {
+    "matched_bank_ids": [
+      "bank_row_126"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0039": {
+    "matched_bank_ids": [
+      "bank_row_86"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0040": {
+    "matched_bank_ids": [
+      "bank_row_56"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0041": {
+    "matched_bank_ids": [
+      "bank_row_58"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0042": {
+    "matched_bank_ids": [
+      "bank_row_44"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0043": {
+    "matched_bank_ids": [
+      "bank_row_132"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0044": {
+    "matched_bank_ids": [
+      "bank_row_54"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0045": {
+    "matched_bank_ids": [
+      "bank_row_88"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0046": {
+    "matched_bank_ids": [
+      "bank_row_125"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0047": {
+    "matched_bank_ids": [
+      "bank_row_52"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0048": {
+    "matched_bank_ids": [
+      "bank_row_124"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0049": {
+    "matched_bank_ids": [
+      "bank_row_110"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0050": {
+    "matched_bank_ids": [
+      "bank_row_79"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0051": {
+    "matched_bank_ids": [
+      "bank_row_69"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0052": {
+    "matched_bank_ids": [
+      "bank_row_61"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0053": {
+    "matched_bank_ids": [
+      "bank_row_119"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0054": {
+    "matched_bank_ids": [
+      "bank_row_37"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0055": {
+    "matched_bank_ids": [
+      "bank_row_84"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0056": {
+    "matched_bank_ids": [
+      "bank_row_123"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0057": {
+    "matched_bank_ids": [
+      "bank_row_89"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0058": {
+    "matched_bank_ids": [
+      "bank_row_31"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0059": {
+    "matched_bank_ids": [
+      "bank_row_138"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0060": {
+    "matched_bank_ids": [
+      "bank_row_102"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0061": {
+    "matched_bank_ids": [
+      "bank_row_140"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0062": {
+    "matched_bank_ids": [
+      "bank_row_78"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0063": {
+    "matched_bank_ids": [
+      "bank_row_7"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0064": {
+    "matched_bank_ids": [
+      "bank_row_106"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0065": {
+    "matched_bank_ids": [
+      "bank_row_23"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0066": {
+    "matched_bank_ids": [
+      "bank_row_3"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0067": {
+    "matched_bank_ids": [
+      "bank_row_46"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0068": {
+    "matched_bank_ids": [
+      "bank_row_120"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0069": {
+    "matched_bank_ids": [
+      "bank_row_13"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0070": {
+    "matched_bank_ids": [
+      "bank_row_92"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0071": {
+    "matched_bank_ids": [
+      "bank_row_43"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0072": {
+    "matched_bank_ids": [
+      "bank_row_39"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0073": {
+    "matched_bank_ids": [
+      "bank_row_118"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0074": {
+    "matched_bank_ids": [
+      "bank_row_139"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0075": {
+    "matched_bank_ids": [
+      "bank_row_105"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0076": {
+    "matched_bank_ids": [
+      "bank_row_87"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0077": {
+    "matched_bank_ids": [
+      "bank_row_131"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0078": {
+    "matched_bank_ids": [
+      "bank_row_5"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0079": {
+    "matched_bank_ids": [
+      "bank_row_111"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0080": {
+    "matched_bank_ids": [
+      "bank_row_109"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0081": {
+    "matched_bank_ids": [
+      "bank_row_29"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0082": {
+    "matched_bank_ids": [
+      "bank_row_101"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0083": {
+    "matched_bank_ids": [
+      "bank_row_47"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0084": {
+    "matched_bank_ids": [
+      "bank_row_128"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0085": {
+    "matched_bank_ids": [
+      "bank_row_49"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0086": {
+    "matched_bank_ids": [
+      "bank_row_97"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0087": {
+    "matched_bank_ids": [
+      "bank_row_93"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0088": {
+    "matched_bank_ids": [
+      "bank_row_117"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0089": {
+    "matched_bank_ids": [
+      "bank_row_10"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0090": {
+    "matched_bank_ids": [
+      "bank_row_24"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0091": {
+    "matched_bank_ids": [
+      "bank_row_20"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0092": {
+    "matched_bank_ids": [
+      "bank_row_34"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0093": {
+    "matched_bank_ids": [
+      "bank_row_12"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0094": {
+    "matched_bank_ids": [
+      "bank_row_81"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0095": {
+    "matched_bank_ids": [
+      "bank_row_64"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0096": {
+    "matched_bank_ids": [
+      "bank_row_17"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0097": {
+    "matched_bank_ids": [
+      "bank_row_67"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0098": {
+    "matched_bank_ids": [
+      "bank_row_62"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0099": {
+    "matched_bank_ids": [
+      "bank_row_83"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0100": {
+    "matched_bank_ids": [
+      "bank_row_82"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0101": {
+    "matched_bank_ids": [
+      "bank_row_98"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0102": {
+    "matched_bank_ids": [
+      "bank_row_116"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0103": {
+    "matched_bank_ids": [
+      "bank_row_95"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0104": {
+    "matched_bank_ids": [
+      "bank_row_63"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0105": {
+    "matched_bank_ids": [
+      "bank_row_35"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0106": {
+    "matched_bank_ids": [
+      "bank_row_16"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0107": {
+    "matched_bank_ids": [
+      "bank_row_65"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0108": {
+    "matched_bank_ids": [
+      "bank_row_76"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0109": {
+    "matched_bank_ids": [
+      "bank_row_53"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0110": {
+    "matched_bank_ids": [
+      "bank_row_51"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0111": {
+    "matched_bank_ids": [
+      "bank_row_75"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0112": {
+    "matched_bank_ids": [
+      "bank_row_136"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0113": {
+    "matched_bank_ids": [
+      "bank_row_19"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0114": {
+    "matched_bank_ids": [
+      "bank_row_133"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0115": {
+    "matched_bank_ids": [
+      "bank_row_1"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0116": {
+    "matched_bank_ids": [
+      "bank_row_38"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0117": {
+    "matched_bank_ids": [
+      "bank_row_85"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0118": {
+    "matched_bank_ids": [
+      "bank_row_108"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0119": {
+    "matched_bank_ids": [
+      "bank_row_71"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0120": {
+    "matched_bank_ids": [
+      "bank_row_9"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0121": {
+    "matched_bank_ids": [
+      "bank_row_0"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0122": {
+    "matched_bank_ids": [
+      "bank_row_14"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0123": {
+    "matched_bank_ids": [
+      "bank_row_104"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0124": {
+    "matched_bank_ids": [
+      "bank_row_26"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0125": {
+    "matched_bank_ids": [
+      "bank_row_45"
+    ],
+    "true_match_type": "exact",
+    "exception_reason": null
+  },
+  "pay_42_0126": {
+    "matched_bank_ids": [
+      "bank_row_73"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0127": {
+    "matched_bank_ids": [
+      "bank_row_73"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0128": {
+    "matched_bank_ids": [
+      "bank_row_73"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0129": {
+    "matched_bank_ids": [
+      "bank_row_72"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0130": {
+    "matched_bank_ids": [
+      "bank_row_72"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0131": {
+    "matched_bank_ids": [
+      "bank_row_72"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0132": {
+    "matched_bank_ids": [
+      "bank_row_59"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0133": {
+    "matched_bank_ids": [
+      "bank_row_59"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0134": {
+    "matched_bank_ids": [
+      "bank_row_59"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0135": {
+    "matched_bank_ids": [
+      "bank_row_27"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0136": {
+    "matched_bank_ids": [
+      "bank_row_27"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0137": {
+    "matched_bank_ids": [
+      "bank_row_27"
+    ],
+    "true_match_type": "batched",
+    "exception_reason": null
+  },
+  "pay_42_0138": {
+    "matched_bank_ids": [
+      "bank_row_32"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0139": {
+    "matched_bank_ids": [
+      "bank_row_2"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0140": {
+    "matched_bank_ids": [
+      "bank_row_15"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0141": {
+    "matched_bank_ids": [
+      "bank_row_50"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0142": {
+    "matched_bank_ids": [
+      "bank_row_60"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0143": {
+    "matched_bank_ids": [
+      "bank_row_80"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0144": {
+    "matched_bank_ids": [
+      "bank_row_134"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0145": {
+    "matched_bank_ids": [
+      "bank_row_40"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0146": {
+    "matched_bank_ids": [
+      "bank_row_115"
+    ],
+    "true_match_type": "fuzzy",
+    "exception_reason": null
+  },
+  "pay_42_0147": {
+    "matched_bank_ids": [],
+    "true_match_type": "exception",
+    "exception_reason": "no_bank_credit_found"
+  },
+  "pay_42_0148": {
+    "matched_bank_ids": [
+      "bank_row_74",
+      "bank_row_99"
+    ],
+    "true_match_type": "exception",
+    "exception_reason": "possible_duplicate"
+  },
+  "pay_42_0149": {
+    "matched_bank_ids": [
+      "bank_row_8"
+    ],
+    "true_match_type": "exception",
+    "exception_reason": "amount_mismatch_only"
+  },
+  "pay_42_0150": {
+    "matched_bank_ids": [
+      "bank_row_28"
+    ],
+    "true_match_type": "exception",
+    "exception_reason": "amount_mismatch_only"
+  }
+}

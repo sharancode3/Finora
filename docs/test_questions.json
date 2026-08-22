@@ -1,0 +1,122 @@
+[
+  {
+    "id": "q1",
+    "question": "What is my overall match rate for this batch?",
+    "expected_tool": "get_settlement_summary",
+    "intent": "basic_summary"
+  },
+  {
+    "id": "q2",
+    "question": "Why did settlement pay_xyz123 fail to match?",
+    "expected_tool": "get_record_detail",
+    "intent": "exception_drilldown"
+  },
+  {
+    "id": "q3",
+    "question": "Show me all the exceptions caused by an amount mismatch.",
+    "expected_tool": "get_exceptions",
+    "intent": "navigation_and_filter"
+  },
+  {
+    "id": "q4",
+    "question": "Why was I paid less than expected on August 15th?",
+    "expected_tool": "get_variance_breakdown",
+    "intent": "variance_explanation"
+  },
+  {
+    "id": "q5",
+    "question": "What is my projected cash inflow for the next 3 days?",
+    "expected_tool": "get_cash_forecast",
+    "intent": "forecast_narrative"
+  },
+  {
+    "id": "q6",
+    "question": "Are there any orders in my ledger that never received a settlement?",
+    "expected_tool": "get_exceptions",
+    "intent": "ledger_exception_check"
+  },
+  {
+    "id": "q7",
+    "question": "Can you navigate me to the dashboard?",
+    "expected_tool": "navigate_to",
+    "intent": "ui_navigation"
+  },
+  {
+    "id": "q8",
+    "question": "Highlight the record for order_abc987.",
+    "expected_tool": "highlight_record",
+    "intent": "ui_highlight"
+  },
+  {
+    "id": "q9",
+    "question": "How much did I pay in Razorpay fees total this week?",
+    "expected_tool": "get_variance_breakdown",
+    "intent": "fee_aggregation"
+  },
+  {
+    "id": "q10",
+    "question": "Which bank transaction corresponds to settlement pay_def456?",
+    "expected_tool": "get_record_detail",
+    "intent": "traceability_check"
+  },
+  {
+    "id": "q11",
+    "question": "Summarize the exceptions from the last 7 days.",
+    "expected_tool": "get_exceptions",
+    "intent": "exception_summary"
+  },
+  {
+    "id": "q12",
+    "question": "Did I have any duplicate bank credits?",
+    "expected_tool": "get_exceptions",
+    "intent": "specific_exception_type"
+  },
+  {
+    "id": "q13",
+    "question": "What was the total gross amount before fees?",
+    "expected_tool": "get_variance_breakdown",
+    "intent": "gross_aggregation"
+  },
+  {
+    "id": "q14",
+    "question": "Explain the batched match for bank_txn_789.",
+    "expected_tool": "get_record_detail",
+    "intent": "batched_match_explanation"
+  },
+  {
+    "id": "q15",
+    "question": "Take me to the cash position screen.",
+    "expected_tool": "navigate_to",
+    "intent": "ui_navigation"
+  },
+  {
+    "id": "q16",
+    "question": "What is the confidence score for match_101?",
+    "expected_tool": "get_record_detail",
+    "intent": "confidence_check"
+  },
+  {
+    "id": "q17",
+    "question": "How many records were processed in the last batch?",
+    "expected_tool": "get_settlement_summary",
+    "intent": "batch_run_stats"
+  },
+  {
+    "id": "q18",
+    "question": "What is the trust state of exception_202?",
+    "expected_tool": "get_record_detail",
+    "intent": "trust_state_check"
+  },
+  {
+    "id": "q19",
+    "question": "Why is there a gap between my ledger and settlements?",
+    "expected_tool": "get_variance_breakdown",
+    "intent": "variance_explanation"
+  },
+  {
+    "id": "q20",
+    "question": "What happens if a UTR is missing?",
+    "expected_tool": "None",
+    "intent": "adversarial_knowledge_check"
+  }
+]

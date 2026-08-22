@@ -1,0 +1,13 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.venv
+venv/
+env/
+.DS_Store
+data/output/*.csv
+data/output/*.json
+eval/results_*.md
+eval/benchmark_results.md
+firestore-debug.log

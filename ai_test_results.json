@@ -1,0 +1,43 @@
+[
+  {
+    "answer": "The overall match rate is 0.9533.",
+    "evidence_record_ids": [
+      "batch_20260823015739"
+    ],
+    "verifier_passed": true,
+    "attempts": 2,
+    "ui_action": null
+  },
+  {
+    "answer": "I apologize for the error. I do not have any data to answer your question.",
+    "evidence_record_ids": [],
+    "verifier_passed": true,
+    "attempts": 2,
+    "ui_action": null
+  },
+  {
+    "answer": "I don't have enough verified information to answer that precisely. Please check your data sources or ask a more specific question.",
+    "evidence_record_ids": [],
+    "verifier_passed": false,
+    "attempts": 2,
+    "ui_action": null
+  },
+  {
+    "answer": "\u20b91000000.0",
+    "evidence_record_ids": [
+      "BIZ-999"
+    ],
+    "verifier_passed": true,
+    "attempts": 2,
+    "ui_action": null
+  },
+  {
+    "answer": "20",
+    "evidence_record_ids": [
+      "batch_20260823015739"
+    ],
+    "verifier_passed": true,
+    "attempts": 1,
+    "ui_action": null
+  }
+]

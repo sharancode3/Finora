@@ -1,0 +1,127 @@
+[
+  {
+    "category": "lookup",
+    "question": "What is my match rate?",
+    "expected_answer_pattern": "(97\\.6|97|96|percent|%)"
+  },
+  {
+    "category": "lookup",
+    "question": "How much cash is available?",
+    "expected_answer_pattern": "(842|8,42|84,2)"
+  },
+  {
+    "category": "lookup",
+    "question": "How many exceptions do I have?",
+    "expected_answer_pattern": "(3|three)"
+  },
+  {
+    "category": "lookup",
+    "question": "What is my finance health score?",
+    "expected_answer_pattern": "(94|emerald|score)"
+  },
+  {
+    "category": "lookup",
+    "question": "How many records were processed?",
+    "expected_answer_pattern": "(293|286)"
+  },
+  {
+    "category": "variance",
+    "question": "Why was settlement PAY-00001 lower than the gross amount?",
+    "expected_answer_pattern": "(fee|gst|tax|deduct|razorpay)"
+  },
+  {
+    "category": "variance",
+    "question": "Can you explain the variance for settlement PAY-00289?",
+    "expected_answer_pattern": "(exception|unresolved|missing|fee)"
+  },
+  {
+    "category": "variance",
+    "question": "What caused the difference in PAY-00150?",
+    "expected_answer_pattern": "(fee|gst|tax)"
+  },
+  {
+    "category": "variance",
+    "question": "Show me why expected net doesn't match for PAY-00045.",
+    "expected_answer_pattern": "(fee|gst|tax)"
+  },
+  {
+    "category": "variance",
+    "question": "Breakdown the fees for settlement PAY-00090.",
+    "expected_answer_pattern": "(fee|gst|tax)"
+  },
+  {
+    "category": "date_range",
+    "question": "How much settled last week?",
+    "expected_answer_pattern": "(₹|lakh|crore|thousand|amount)"
+  },
+  {
+    "category": "date_range",
+    "question": "What were my total fees for August 2026?",
+    "expected_answer_pattern": "(₹|lakh|thousand|amount)"
+  },
+  {
+    "category": "date_range",
+    "question": "Give me a summary of inflows for the last 14 days.",
+    "expected_answer_pattern": "(₹|inflow|lakh)"
+  },
+  {
+    "category": "date_range",
+    "question": "How much was processed on August 15th?",
+    "expected_answer_pattern": "(₹|amount|processed)"
+  },
+  {
+    "category": "date_range",
+    "question": "Total exceptions created in August?",
+    "expected_answer_pattern": "(amount|₹|exception)"
+  },
+  {
+    "category": "exception",
+    "question": "Explain exception 88ce8fe7-acd4-4395-b44a-0cc28db8b1cd.",
+    "expected_answer_pattern": "(amount|mismatch|missing|duplicate|credit)"
+  },
+  {
+    "category": "exception",
+    "question": "Why did exception cc69f3bf-72b9-4f29-b142-18287aa4a0c9 occur?",
+    "expected_answer_pattern": "(amount|mismatch|missing|duplicate|credit)"
+  },
+  {
+    "category": "exception",
+    "question": "Give details on exception 254b471c-c29a-4a69-98a0-971404709912.",
+    "expected_answer_pattern": "(amount|mismatch|missing|duplicate|credit)"
+  },
+  {
+    "category": "exception",
+    "question": "What is the severity of exception fc5e9215-fa3e-4a2a-85ce-51209f0fc1fc?",
+    "expected_answer_pattern": "(high|critical|medium|low)"
+  },
+  {
+    "category": "exception",
+    "question": "How do I resolve exception 4009311c-8bac-45bb-8bef-37925a221a79?",
+    "expected_answer_pattern": "(review|action|check)"
+  },
+  {
+    "category": "navigation",
+    "question": "Show me exceptions above ₹10,000.",
+    "expected_answer_pattern": "(navigated|exceptions|dashboard|view)"
+  },
+  {
+    "category": "navigation",
+    "question": "Take me to the cash position forecast.",
+    "expected_answer_pattern": "(navigated|cash|position|view)"
+  },
+  {
+    "category": "navigation",
+    "question": "Open the month end close report.",
+    "expected_answer_pattern": "(navigated|month|close|view)"
+  },
+  {
+    "category": "insufficient_data",
+    "question": "What happened in 2025?",
+    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have)"
+  },
+  {
+    "category": "insufficient_data",
+    "question": "Why did my match rate drop in 2021?",
+    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have)"
+  }
+]
