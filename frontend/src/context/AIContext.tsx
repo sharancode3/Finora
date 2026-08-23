@@ -2,20 +2,31 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-interface UIAction {
+export interface UIAction {
   type: string;
   screen?: string;
   filters?: any;
   record_id?: string;
 }
 
-interface ChatResponse {
+export interface ChatResponse {
   answer: string;
   evidence_ids: string[];
   evidence_data: any[];
   verifier_retries: number;
   ui_action?: UIAction;
   verifier_passed?: boolean;
+  confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+  confidence_score?: number;
+  confidence_rationale?: string;
+  escalation_recommendation?: string | null;
+  reasoning_trail?: Array<{
+    step_number: number;
+    action: string;
+    tool: string;
+    input: any;
+    observation: string;
+  }>;
   visual_data?: any;
 }
 
@@ -23,6 +34,16 @@ export interface ChatMessage {
   role: 'user' | 'ai';
   content: string;
   metadata?: any;
+}
+
+export interface PageContext {
+  page_name: string;
+  route: string;
+  active_filters?: Record<string, any>;
+  visible_metrics?: Record<string, any>;
+  selected_record_id?: string;
+  suggested_inquiries?: string[];
+  extra_hints?: string;
 }
 
 interface AIContextType {
@@ -33,12 +54,17 @@ interface AIContextType {
   highlightedRecordId: string | null;
   clearBanner: () => void;
   clearHighlight: () => void;
+  clearMessages: () => void;
   lastResponse: ChatResponse | null;
+  pageContext: PageContext | null;
+  setPageContext: (ctx: PageContext) => void;
+  isCopilotOpen: boolean;
+  setIsCopilotOpen: (open: boolean) => void;
 }
 
 const AIContext = createContext<AIContextType | undefined>(undefined);
 
-const ALLOWED_SCREENS = ["dashboard", "exceptions", "reconciliation", "ask_your_books"];
+const ALLOWED_SCREENS = ["dashboard", "exceptions", "reconciliation", "cash-position", "month-end-close", "linked-accounts", "ask-your-books"];
 
 export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -46,7 +72,14 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
   const [highlightedRecordId, setHighlightedRecordId] = useState<string | null>(null);
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
+  const [pageContext, setPageContext] = useState<PageContext | null>(null);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const navigate = useNavigate();
+
+  const clearMessages = () => {
+    setMessages([]);
+    setLastResponse(null);
+  };
 
   const sendMessage = async (question: string) => {
     setIsLoading(true);
@@ -68,7 +101,8 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       
       const context = {
         screen,
-        date_range: dateRange
+        date_range: dateRange,
+        ...(pageContext || {})
       };
 
       const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question, context });
@@ -94,10 +128,11 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       
       if (data.ui_action) {
         if (data.ui_action.type === 'navigate_to' && data.ui_action.screen) {
-          if (ALLOWED_SCREENS.includes(data.ui_action.screen)) {
+          const screenClean = data.ui_action.screen.toLowerCase().replace('_', '-');
+          if (ALLOWED_SCREENS.includes(screenClean) || ALLOWED_SCREENS.includes(data.ui_action.screen)) {
             setBannerMessage(`Navigated to ${data.ui_action.screen} via AI.`);
-            if (data.ui_action.screen === 'dashboard') navigate('/');
-            else navigate(`/${data.ui_action.screen}`);
+            if (screenClean === 'dashboard') navigate('/');
+            else navigate(`/${screenClean}`);
           } else {
             console.error(`AI tried to navigate to unauthorized screen: ${data.ui_action.screen}`);
           }
@@ -110,7 +145,16 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       console.error(err);
       
       // Add error message
-      setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I encountered an error connecting to the Finora backend.' }]);
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        content: 'Sorry, I encountered an error connecting to the Finora backend.',
+        metadata: {
+          confidence: 'LOW',
+          confidence_score: 0.0,
+          confidence_rationale: 'Backend connection failure.',
+          escalation_recommendation: 'Check backend server status on port 8000.'
+        }
+      }]);
       
       throw err;
     } finally {
@@ -127,7 +171,12 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       highlightedRecordId,
       clearBanner: () => setBannerMessage(null),
       clearHighlight: () => setHighlightedRecordId(null),
-      lastResponse
+      clearMessages,
+      lastResponse,
+      pageContext,
+      setPageContext,
+      isCopilotOpen,
+      setIsCopilotOpen
     }}>
       {children}
     </AIContext.Provider>

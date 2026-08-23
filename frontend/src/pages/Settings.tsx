@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../api/client';
+import { useAI } from '../context/AIContext';
 import { 
   User, 
   Users, 
@@ -22,7 +24,10 @@ import {
   Minus,
   Sparkles,
   Layers,
-  Clock
+  Clock,
+  HelpCircle,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
@@ -45,6 +50,7 @@ interface AuditLogEntry {
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('team');
+  const { setPageContext } = useAI();
   
   // Profile State
   const [profileSaved, setProfileSaved] = useState(false);
@@ -58,6 +64,10 @@ export default function Settings() {
     monthEndReadiness: { inApp: true, email: false },
     ledgerLockEvents: { inApp: true, email: true },
   });
+
+  // Notification Why This Matters State
+  const [notifExplanations, setNotifExplanations] = useState<{ [ruleId: string]: any }>({});
+  const [loadingNotifs, setLoadingNotifs] = useState<{ [ruleId: string]: boolean }>({});
 
   // Security State
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
@@ -75,6 +85,14 @@ export default function Settings() {
     { id: '3', name: 'Statutory Audit Partner (EY)', email: 'audit.partner@ey.demo', role: 'Viewer / Auditor', status: 'Active' }
   ]);
 
+  // SoD Conflict & Scope Modal State
+  const [showScopeModal, setShowScopeModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [memberCapabilities, setMemberCapabilities] = useState<string[]>([]);
+  const [sodResult, setSodResult] = useState<any>(null);
+  const [evaluatingSod, setEvaluatingSod] = useState(false);
+  const [showSodAi, setShowSodAi] = useState(false);
+
   // Invite Modal State
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteName, setInviteName] = useState('');
@@ -89,12 +107,68 @@ export default function Settings() {
     { id: 'log-4', user: 'Statutory Audit Partner (EY)', action: 'Exported Reconciliation Package', target: 'July 2026 Audit Report', timestamp: 'Yesterday, 11:30', ip: '49.207.201.12' },
   ]);
 
+  useEffect(() => {
+    setPageContext({
+      page_name: 'Organization & Governance Settings',
+      route: '/settings',
+      active_filters: {
+        active_tab: activeTab
+      },
+      visible_metrics: {
+        active_tab: activeTab,
+        team_count: teamMembers.length,
+        sod_conflict_detected: sodResult?.has_conflict || false
+      },
+      suggested_inquiries: [
+        `Explain Segregation of Duties conflicts between Exception Resolution and Gateway API Keys`,
+        `Why does Statutory Controller Sign-off notification require email delivery?`,
+        `What internal controls govern role assignments in Finora?`
+      ]
+    });
+  }, [activeTab, teamMembers, sodResult]);
+
   const tabs = [
     { id: 'profile', label: 'My Profile', icon: <User size={16} /> },
     { id: 'team', label: 'Team & Governance', icon: <Users size={16} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
     { id: 'security', label: 'Security & Posture', icon: <Shield size={16} /> },
   ];
+
+  const handleOpenEditScope = (member: TeamMember) => {
+    setSelectedMember(member);
+    let initialCaps: string[] = [];
+    if (member.role === 'Organization Admin') {
+      initialCaps = ['view_dashboards', 'modify_api_keys', 'manage_security'];
+    } else if (member.role === 'Finance Controller') {
+      initialCaps = ['view_dashboards', 'resolve_exceptions', 'execute_month_end_close'];
+    } else {
+      initialCaps = ['view_dashboards'];
+    }
+    setMemberCapabilities(initialCaps);
+    setShowSodAi(false);
+    runSodEvaluation(initialCaps, member.role);
+    setShowScopeModal(true);
+  };
+
+  const runSodEvaluation = async (caps: string[], role?: string) => {
+    setEvaluatingSod(true);
+    try {
+      const res = await api.get(`/analytics/sod-evaluation?capabilities=${caps.join(',')}&role_name=${role || ''}`);
+      setSodResult(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setEvaluatingSod(false);
+    }
+  };
+
+  const toggleCapability = (capKey: string) => {
+    const nextCaps = memberCapabilities.includes(capKey)
+      ? memberCapabilities.filter(c => c !== capKey)
+      : [...memberCapabilities, capKey];
+    setMemberCapabilities(nextCaps);
+    runSodEvaluation(nextCaps, selectedMember?.role);
+  };
 
   const handleRevokeOtherSessions = () => {
     setSessions(sessions.filter(s => s.isCurrent));
@@ -106,6 +180,26 @@ export default function Settings() {
     e.preventDefault();
     setNotifSaved(true);
     setTimeout(() => setNotifSaved(false), 3000);
+  };
+
+  const handleExplainNotif = async (ruleId: string) => {
+    if (notifExplanations[ruleId]) {
+      setNotifExplanations(prev => {
+        const copy = { ...prev };
+        delete copy[ruleId];
+        return copy;
+      });
+      return;
+    }
+    setLoadingNotifs(prev => ({ ...prev, [ruleId]: true }));
+    try {
+      const res = await api.get(`/analytics/notification-rule-explanation?rule_id=${ruleId}`);
+      setNotifExplanations(prev => ({ ...prev, [ruleId]: res.data }));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingNotifs(prev => ({ ...prev, [ruleId]: false }));
+    }
   };
 
   const handleInviteMember = (e: React.FormEvent) => {
@@ -218,8 +312,15 @@ export default function Settings() {
             <div className="p-8 space-y-7">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Internal Controls & Segregation of Duties</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Enforce role separation so auditors and reviewers cannot modify payment credentials.</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">Internal Controls & Segregation of Duties</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      Demo Organization Seed Data
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Illustrative seed profiles demonstrating internal controls and segregation of duties under Ind AS / ICAI guidelines.
+                  </p>
                 </div>
                 <button 
                   onClick={() => setShowInviteModal(true)}
@@ -265,7 +366,12 @@ export default function Settings() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button className="text-xs font-bold text-slate-500 hover:text-indigo-600 cursor-pointer">Edit Scope</button>
+                          <button 
+                            onClick={() => handleOpenEditScope(m)}
+                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                          >
+                            Edit Scope
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -345,143 +451,273 @@ export default function Settings() {
               <form onSubmit={handleSaveNotifs} className="space-y-4 max-w-2xl">
                 
                 {/* 1. High Risk Exceptions */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">High-Risk Exception Trigger (Risk Score &ge; 70)</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Alert immediately when statistically unusual or high-value items exceed triage threshold.</p>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900">High-Risk Exception Trigger (Risk Score &ge; 70)</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Alert immediately when statistically unusual or high-value items exceed triage threshold.</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.highRiskExceptions.inApp}
+                          onChange={e => setNotifPrefs({...notifPrefs, highRiskExceptions: {...notifPrefs.highRiskExceptions, inApp: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        In-App
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.highRiskExceptions.email}
+                          onChange={e => setNotifPrefs({...notifPrefs, highRiskExceptions: {...notifPrefs.highRiskExceptions, email: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        Email
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.highRiskExceptions.inApp}
-                        onChange={e => setNotifPrefs({...notifPrefs, highRiskExceptions: {...notifPrefs.highRiskExceptions, inApp: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      In-App
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.highRiskExceptions.email}
-                        onChange={e => setNotifPrefs({...notifPrefs, highRiskExceptions: {...notifPrefs.highRiskExceptions, email: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      Email
-                    </label>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleExplainNotif('highRiskExceptions')}
+                      className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={11} /> {notifExplanations.highRiskExceptions ? 'Hide Rationale' : 'Why this matters'}
+                    </button>
                   </div>
+
+                  {notifExplanations.highRiskExceptions && (
+                    <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-150 shadow-xs">
+                      <div className="text-indigo-950 font-bold flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-indigo-600" /> Statutory Control Rationale
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {notifExplanations.highRiskExceptions.why_it_matters}
+                      </p>
+                      <p className="text-[11px] text-slate-600 font-mono pt-1.5 border-t border-indigo-200/80">
+                        Delivery Rationale: {notifExplanations.highRiskExceptions.channel_rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. Sync Failures */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">Integration Sync Failure & Stale Feed Alert</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Notify when gateway webhook breaks or bank feed is stale for &gt; 24 hours.</p>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900">Integration Sync Failure & Stale Feed Alert</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Notify when gateway webhook breaks or bank feed is stale for &gt; 24 hours.</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.syncFailures.inApp}
+                          onChange={e => setNotifPrefs({...notifPrefs, syncFailures: {...notifPrefs.syncFailures, inApp: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        In-App
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.syncFailures.email}
+                          onChange={e => setNotifPrefs({...notifPrefs, syncFailures: {...notifPrefs.syncFailures, email: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        Email
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.syncFailures.inApp}
-                        onChange={e => setNotifPrefs({...notifPrefs, syncFailures: {...notifPrefs.syncFailures, inApp: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      In-App
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.syncFailures.email}
-                        onChange={e => setNotifPrefs({...notifPrefs, syncFailures: {...notifPrefs.syncFailures, email: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      Email
-                    </label>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleExplainNotif('syncFailures')}
+                      className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={11} /> {notifExplanations.syncFailures ? 'Hide Rationale' : 'Why this matters'}
+                    </button>
                   </div>
+
+                  {notifExplanations.syncFailures && (
+                    <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-150 shadow-xs">
+                      <div className="text-indigo-950 font-bold flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-indigo-600" /> Statutory Control Rationale
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {notifExplanations.syncFailures.why_it_matters}
+                      </p>
+                      <p className="text-[11px] text-slate-600 font-mono pt-1.5 border-t border-indigo-200/80">
+                        Delivery Rationale: {notifExplanations.syncFailures.channel_rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. Benford / ML Anomaly */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">Forensic Benford's Law & Isolation Forest Anomaly Flag</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Notify when logarithmic digit distribution or multidimensional cluster drifts from normal baseline.</p>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900">Forensic Benford's Law & Isolation Forest Anomaly Flag</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Notify when logarithmic digit distribution or multidimensional cluster drifts from normal baseline.</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.anomalyFlags.inApp}
+                          onChange={e => setNotifPrefs({...notifPrefs, anomalyFlags: {...notifPrefs.anomalyFlags, inApp: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        In-App
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.anomalyFlags.email}
+                          onChange={e => setNotifPrefs({...notifPrefs, anomalyFlags: {...notifPrefs.anomalyFlags, email: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        Email
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.anomalyFlags.inApp}
-                        onChange={e => setNotifPrefs({...notifPrefs, anomalyFlags: {...notifPrefs.anomalyFlags, inApp: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      In-App
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.anomalyFlags.email}
-                        onChange={e => setNotifPrefs({...notifPrefs, anomalyFlags: {...notifPrefs.anomalyFlags, email: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      Email
-                    </label>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleExplainNotif('anomalyFlags')}
+                      className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={11} /> {notifExplanations.anomalyFlags ? 'Hide Rationale' : 'Why this matters'}
+                    </button>
                   </div>
+
+                  {notifExplanations.anomalyFlags && (
+                    <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-150 shadow-xs">
+                      <div className="text-indigo-950 font-bold flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-indigo-600" /> Statutory Control Rationale
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {notifExplanations.anomalyFlags.why_it_matters}
+                      </p>
+                      <p className="text-[11px] text-slate-600 font-mono pt-1.5 border-t border-indigo-200/80">
+                        Delivery Rationale: {notifExplanations.anomalyFlags.channel_rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. Month-End Daily Readiness */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">Month-End Continuous Close SLA Degradation</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Daily digest when active month close readiness falls below 90% SLA.</p>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900">Month-End Continuous Close SLA Degradation</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Daily digest when active month close readiness falls below 90% SLA.</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.monthEndReadiness.inApp}
+                          onChange={e => setNotifPrefs({...notifPrefs, monthEndReadiness: {...notifPrefs.monthEndReadiness, inApp: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        In-App
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.monthEndReadiness.email}
+                          onChange={e => setNotifPrefs({...notifPrefs, monthEndReadiness: {...notifPrefs.monthEndReadiness, email: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        Email
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.monthEndReadiness.inApp}
-                        onChange={e => setNotifPrefs({...notifPrefs, monthEndReadiness: {...notifPrefs.monthEndReadiness, inApp: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      In-App
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.monthEndReadiness.email}
-                        onChange={e => setNotifPrefs({...notifPrefs, monthEndReadiness: {...notifPrefs.monthEndReadiness, email: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      Email
-                    </label>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleExplainNotif('monthEndReadiness')}
+                      className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={11} /> {notifExplanations.monthEndReadiness ? 'Hide Rationale' : 'Why this matters'}
+                    </button>
                   </div>
+
+                  {notifExplanations.monthEndReadiness && (
+                    <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-150 shadow-xs">
+                      <div className="text-indigo-950 font-bold flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-indigo-600" /> Statutory Control Rationale
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {notifExplanations.monthEndReadiness.why_it_matters}
+                      </p>
+                      <p className="text-[11px] text-slate-600 font-mono pt-1.5 border-t border-indigo-200/80">
+                        Delivery Rationale: {notifExplanations.monthEndReadiness.channel_rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 5. Ledger Lock Events */}
-                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-900">Statutory Controller Sign-off & Ledger Lock</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Security notification when general ledger period is frozen or unlocked.</p>
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900">Statutory Controller Sign-off & Ledger Lock</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Security notification when general ledger period is frozen or unlocked.</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.ledgerLockEvents.inApp}
+                          onChange={e => setNotifPrefs({...notifPrefs, ledgerLockEvents: {...notifPrefs.ledgerLockEvents, inApp: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        In-App
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={notifPrefs.ledgerLockEvents.email}
+                          onChange={e => setNotifPrefs({...notifPrefs, ledgerLockEvents: {...notifPrefs.ledgerLockEvents, email: e.target.checked}})}
+                          className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" 
+                        />
+                        Email
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.ledgerLockEvents.inApp}
-                        onChange={e => setNotifPrefs({...notifPrefs, ledgerLockEvents: {...notifPrefs.ledgerLockEvents, inApp: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      In-App
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={notifPrefs.ledgerLockEvents.email}
-                        onChange={e => setNotifPrefs({...notifPrefs, ledgerLockEvents: {...notifPrefs.ledgerLockEvents, email: e.target.checked}})}
-                        className="rounded text-indigo-600 focus:ring-indigo-500" 
-                      />
-                      Email
-                    </label>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                    <button
+                      type="button"
+                      onClick={() => handleExplainNotif('ledgerLockEvents')}
+                      className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles size={11} /> {notifExplanations.ledgerLockEvents ? 'Hide Rationale' : 'Why this matters'}
+                    </button>
                   </div>
+
+                  {notifExplanations.ledgerLockEvents && (
+                    <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl text-xs space-y-1.5 animate-in fade-in duration-150 shadow-xs">
+                      <div className="text-indigo-950 font-bold flex items-center gap-1.5">
+                        <Sparkles size={13} className="text-indigo-600" /> Statutory Control Rationale
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {notifExplanations.ledgerLockEvents.why_it_matters}
+                      </p>
+                      <p className="text-[11px] text-slate-600 font-mono pt-1.5 border-t border-indigo-200/80">
+                        Delivery Rationale: {notifExplanations.ledgerLockEvents.channel_rationale}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 flex items-center gap-4">
@@ -614,8 +850,13 @@ export default function Settings() {
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-bold text-xs text-slate-900">Immutable Audit Trail</h4>
-                    <p className="text-[11px] text-slate-500">Record of all controller actions and ledger modifications.</p>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-xs text-slate-900">Immutable Audit Trail</h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Illustrative Demo Trail
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500">Record of controller actions, exceptions signed off, and ledger freeze events.</p>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Ind AS & SOX Compliant</span>
                 </div>
@@ -736,6 +977,159 @@ export default function Settings() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Role Scope & Segregation of Duties Evaluation Modal */}
+      {showScopeModal && selectedMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Configure Role Scope & Permissions</h3>
+                  <p className="text-xs text-slate-500">Member: {selectedMember.name} • ({selectedMember.email})</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScopeModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-5 text-xs">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Assigned Operational Capabilities
+                </label>
+                <div className="space-y-2.5">
+                  {[
+                    { id: 'view_dashboards', label: 'View Dashboards, Cash Position & Treasury Analytics', desc: 'Read-only financial telemetry and reporting.' },
+                    { id: 'resolve_exceptions', label: 'Resolve Exceptions & Authorize Adjustments', desc: 'Operational ledger write-off and fee tolerance approvals.' },
+                    { id: 'execute_month_end_close', label: 'Execute Month-End Close & Sign Off', desc: 'Pre-lock validation audit and digital period sign-off.' },
+                    { id: 'modify_api_keys', label: 'Modify Linked Bank/Gateway API Keys', desc: 'Payment aggregator webhook secret and credential management.' },
+                    { id: 'manage_security', label: 'Manage 2FA, Sessions & Security Policies', desc: 'Identity governance and multi-tenant authentication controls.' }
+                  ].map(cap => {
+                    const isChecked = memberCapabilities.includes(cap.id);
+                    return (
+                      <label 
+                        key={cap.id}
+                        className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-colors ${
+                          isChecked ? 'bg-indigo-50/40 border-indigo-200' : 'bg-slate-50/50 border-slate-200'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCapability(cap.id)}
+                          className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                        />
+                        <div>
+                          <span className="font-bold text-slate-900 text-xs block">{cap.label}</span>
+                          <span className="text-slate-500 text-[11px]">{cap.desc}</span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Deterministic SoD Rule Evaluation Banner */}
+              {sodResult && (
+                <div className={`p-4 rounded-xl border space-y-2.5 transition-all ${
+                  sodResult.has_conflict
+                    ? 'bg-rose-50 border-rose-200 text-rose-900'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-bold text-xs">
+                      {sodResult.has_conflict ? (
+                        <>
+                          <AlertTriangle size={15} className="text-rose-600" />
+                          <span className="text-rose-700 uppercase tracking-wider">
+                            Segregation of Duties Conflict Detected ({sodResult.conflict_code})
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={15} className="text-emerald-600" />
+                          <span className="text-emerald-700 uppercase tracking-wider">
+                            Dual-Custody Segregation Intact (Rule Pass)
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {sodResult.has_conflict && (
+                      <button
+                        type="button"
+                        onClick={() => setShowSodAi(!showSodAi)}
+                        className="text-xs font-bold text-rose-700 hover:text-rose-900 flex items-center gap-1 cursor-pointer bg-rose-100/70 px-2 py-0.5 rounded border border-rose-300"
+                      >
+                        <Sparkles size={12} /> {showSodAi ? 'Hide AI Risk Explanation' : 'Explain Risk with AI'}
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] leading-relaxed">
+                    {sodResult.rule_description}
+                  </p>
+
+                  {/* Grounded AI Explanation of the Risk */}
+                  {sodResult.has_conflict && showSodAi && (
+                    <div className="mt-2 p-3.5 bg-indigo-50/80 text-slate-900 border border-indigo-200 rounded-xl space-y-1.5 animate-in fade-in duration-150 text-xs shadow-xs">
+                      <div className="flex items-center gap-1.5 text-indigo-950 font-bold">
+                        <Sparkles size={14} className="text-indigo-600" /> Grounded Internal Control Risk Analysis
+                      </div>
+                      <p className="text-slate-800 leading-relaxed font-medium">
+                        {sodResult.ai_explanation}
+                      </p>
+                      <div className="text-[11px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200 font-semibold pt-1">
+                        Recommendation: {sodResult.recommendation}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+              <span className="text-[11px] text-slate-500">
+                Deterministic SoD rule checks are evaluated before saving.
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowScopeModal(false)}
+                  className="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowScopeModal(false)}
+                  disabled={sodResult?.has_conflict}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-xs ${
+                    sodResult?.has_conflict
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer'
+                  }`}
+                >
+                  {sodResult?.has_conflict ? 'Blocked by SoD Rule' : 'Save Scope Permissions'}
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

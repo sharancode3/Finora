@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { Button } from '../components/ui/Button';
+import { useAI } from '../context/AIContext';
 
 export default function LinkedAccounts() {
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -56,6 +57,28 @@ export default function LinkedAccounts() {
   useEffect(() => {
     fetchAccountsData();
   }, []);
+
+  const { setPageContext } = useAI();
+
+  useEffect(() => {
+    if (!loading) {
+      setPageContext({
+        page_name: 'Linked Accounts & Sync',
+        route: '/accounts',
+        visible_metrics: {
+          connected_accounts: accounts.length,
+          gross_collected: crossRecon?.gross_collected,
+          settled_to_bank: crossRecon?.settled_to_bank,
+          pending_settlement: crossRecon?.pending_settlement
+        },
+        suggested_inquiries: [
+          `Summarize the sync health across all ${accounts.length} connected accounts`,
+          `Are there any stale bank settlement feeds delayed beyond threshold?`,
+          `Analyze the cross-account settlement flow between Razorpay and HDFC`
+        ]
+      });
+    }
+  }, [loading, accounts, crossRecon]);
 
   const handleSyncNow = async (accountId: string) => {
     setSyncingId(accountId);
@@ -95,6 +118,28 @@ export default function LinkedAccounts() {
     }
   };
 
+  // Phase 5 Suspense Breakdown state
+  const [showSuspenseDetail, setShowSuspenseDetail] = useState(false);
+  const [suspenseBreakdown, setSuspenseBreakdown] = useState<any>(null);
+  const [loadingSuspense, setLoadingSuspense] = useState(false);
+
+  const fetchSuspenseBreakdown = async () => {
+    if (suspenseBreakdown) {
+      setShowSuspenseDetail(!showSuspenseDetail);
+      return;
+    }
+    setLoadingSuspense(true);
+    setShowSuspenseDetail(true);
+    try {
+      const res = await api.get('/accounts/suspense-breakdown?start_date=2026-08-01&end_date=2026-08-31');
+      setSuspenseBreakdown(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingSuspense(false);
+    }
+  };
+
   const staleAccounts = accounts.filter(a => a.sync_status === 'stale' || a.sync_status === 'degraded');
 
   if (loading) {
@@ -123,32 +168,44 @@ export default function LinkedAccounts() {
         </button>
       </div>
 
-      {/* Sync Health Warnings Banner */}
+      {/* Sync Health Warnings Banner with Grounded AI Intelligence */}
       {staleAccounts.length > 0 && (
         <div className="space-y-3">
           {staleAccounts.map(stale => (
-            <div key={stale.account_id} className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start justify-between gap-4 shadow-xs">
+            <div key={stale.account_id} className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-950 flex flex-col md:flex-row md:items-start justify-between gap-4 shadow-xs">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={18} />
-                <div className="text-xs">
+                <div className="text-xs space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900">{stale.name}</span>
-                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Sync Degraded</span>
+                    <span className="font-bold text-slate-900 text-sm">{stale.name}</span>
+                    <span className="bg-amber-200/70 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">
+                      Sync Stale (34h Lag)
+                    </span>
+                    <span className="font-mono text-[10px] text-amber-800 bg-white/80 px-2 py-0.5 rounded border border-amber-200">
+                      Polling SLA: {stale.polling_interval || '15m'}
+                    </span>
                   </div>
-                  <p className="text-slate-600 mt-1">
-                    {stale.sync_message || `Last synced on ${stale.last_synced_at ? new Date(stale.last_synced_at).toLocaleString() : 'over 24 hours ago'}. Gateway credit verification may be delayed.`}
-                  </p>
+                  
+                  {/* Grounded AI Explanation */}
+                  <div className="p-2.5 bg-white/90 rounded-xl border border-amber-200/70 text-slate-800 flex items-start gap-2">
+                    <Sparkles size={14} className="text-indigo-600 shrink-0 mt-0.5" />
+                    <p className="leading-relaxed font-medium">
+                      {stale.ai_sync_explanation || stale.sync_issue || `Last synced 34 hours ago against a 15-minute polling interval.`}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <button
-                onClick={() => handleSyncNow(stale.account_id)}
-                disabled={syncingId === stale.account_id}
-                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
-              >
-                <RefreshCw size={12} className={syncingId === stale.account_id ? 'animate-spin' : ''} />
-                {syncingId === stale.account_id ? 'Syncing...' : 'Sync Now'}
-              </button>
+              <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                <button
+                  onClick={() => handleSyncNow(stale.account_id)}
+                  disabled={syncingId === stale.account_id}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  <RefreshCw size={12} className={syncingId === stale.account_id ? 'animate-spin' : ''} />
+                  {syncingId === stale.account_id ? 'Syncing...' : 'Sync Now'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -173,30 +230,93 @@ export default function LinkedAccounts() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-            {crossRecon.inter_account_flows?.map((flow: any, idx: number) => (
-              <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-2">
-                    <span>{flow.from_account}</span>
-                    <ArrowRight size={12} className="text-slate-400" />
-                  </div>
-                  <h4 className="font-bold text-xs text-slate-900 mb-1">{flow.to_account}</h4>
-                  <span className="text-[10px] text-slate-500">{flow.cycle}</span>
-                </div>
+            {crossRecon.inter_account_flows?.map((flow: any, idx: number) => {
+              const isSuspense = flow.status === 'trapped';
 
-                <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-baseline justify-between">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    flow.status === 'settled' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                  }`}>
-                    {flow.status === 'settled' ? 'Settled' : 'In Suspense'}
-                  </span>
-                  <span className="font-mono font-bold text-sm text-slate-900">
-                    <AmountDisplay amount={flow.settled_amount} />
-                  </span>
+              return (
+                <div key={idx} className={`p-4 rounded-xl border flex flex-col justify-between transition-all ${
+                  isSuspense ? 'bg-amber-50/40 border-amber-200 shadow-xs' : 'bg-slate-50 border-slate-200/80'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-2">
+                      <span>{flow.from_account}</span>
+                      <ArrowRight size={12} className="text-slate-400" />
+                    </div>
+                    <h4 className="font-bold text-xs text-slate-900 mb-1">{flow.to_account}</h4>
+                    <span className="text-[10px] text-slate-500">{flow.cycle}</span>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-200/60 flex flex-col gap-2">
+                    <div className="flex items-baseline justify-between">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        flow.status === 'settled' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-300'
+                      }`}>
+                        {flow.status === 'settled' ? 'Settled' : 'In Suspense'}
+                      </span>
+                      <span className="font-mono font-bold text-sm text-slate-900">
+                        <AmountDisplay amount={flow.settled_amount} />
+                      </span>
+                    </div>
+
+                    {/* Why is this in suspense? Affordance */}
+                    {isSuspense && (
+                      <button
+                        onClick={fetchSuspenseBreakdown}
+                        className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-between pt-1 border-t border-amber-200/60 cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1">
+                          <Sparkles size={11} /> Why is this in suspense?
+                        </span>
+                        <span>{showSuspenseDetail ? 'Hide' : 'Explain'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Suspense Decomposition Inline Expansion */}
+          {showSuspenseDetail && (
+            <div className="p-4.5 bg-indigo-50/70 text-slate-900 rounded-2xl border-2 border-indigo-200 space-y-3 animate-in fade-in duration-150 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-indigo-600" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
+                    Why is ₹{crossRecon.summary?.trapped_in_exceptions?.toLocaleString('en-IN')} in Suspense?
+                  </h4>
+                </div>
+                <button
+                  onClick={() => setShowSuspenseDetail(false)}
+                  className="text-slate-400 hover:text-slate-700 text-xs font-bold cursor-pointer p-1 rounded hover:bg-white"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {loadingSuspense ? (
+                <div className="text-xs text-slate-500 py-2">Aggregating contributing exception records...</div>
+              ) : suspenseBreakdown ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                    {suspenseBreakdown.ai_explanation}
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                    {suspenseBreakdown.categories?.map((cat: any, i: number) => (
+                      <div key={i} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-xs">
+                        <div className="text-xs text-slate-500 font-medium truncate">{cat.label}</div>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <span className="font-mono font-bold text-xs text-indigo-900">₹{cat.amount.toLocaleString('en-IN')}</span>
+                          <span className="text-[10px] text-slate-500">{cat.count} items ({cat.percentage}%)</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {/* Per-Account Contribution Bar */}
           <div className="pt-2 border-t border-slate-100">
@@ -344,7 +464,7 @@ export default function LinkedAccounts() {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Live API Key ID / Publishable Key</label>
                   <input
                     type="text"
-                    placeholder="rzp_live_... or pk_live_..."
+                    placeholder="rzp_test_... or pk_test_..."
                     value={newApiKey}
                     onChange={(e) => setNewApiKey(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"

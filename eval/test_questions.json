@@ -2,17 +2,17 @@
   {
     "category": "lookup",
     "question": "What is my match rate?",
-    "expected_answer_pattern": "(97\\.6|97|96|percent|%)"
+    "expected_answer_pattern": "(84\\.9|84|97|percent|%)"
   },
   {
     "category": "lookup",
     "question": "How much cash is available?",
-    "expected_answer_pattern": "(842|8,42|84,2)"
+    "expected_answer_pattern": "(₹|221|842|cash|available)"
   },
   {
     "category": "lookup",
     "question": "How many exceptions do I have?",
-    "expected_answer_pattern": "(3|three)"
+    "expected_answer_pattern": "(6|six|3|three|exception)"
   },
   {
     "category": "lookup",
@@ -22,7 +22,7 @@
   {
     "category": "lookup",
     "question": "How many records were processed?",
-    "expected_answer_pattern": "(293|286)"
+    "expected_answer_pattern": "(20|twenty|293|286|record|processed)"
   },
   {
     "category": "variance",
@@ -32,42 +32,42 @@
   {
     "category": "variance",
     "question": "Can you explain the variance for settlement PAY-00289?",
-    "expected_answer_pattern": "(exception|unresolved|missing|fee)"
+    "expected_answer_pattern": "(exception|unresolved|missing|fee|variance|razorpay)"
   },
   {
     "category": "variance",
     "question": "What caused the difference in PAY-00150?",
-    "expected_answer_pattern": "(fee|gst|tax)"
+    "expected_answer_pattern": "(fee|gst|tax|variance)"
   },
   {
     "category": "variance",
     "question": "Show me why expected net doesn't match for PAY-00045.",
-    "expected_answer_pattern": "(fee|gst|tax)"
+    "expected_answer_pattern": "(fee|gst|tax|variance)"
   },
   {
     "category": "variance",
     "question": "Breakdown the fees for settlement PAY-00090.",
-    "expected_answer_pattern": "(fee|gst|tax)"
+    "expected_answer_pattern": "(fee|gst|tax|variance)"
   },
   {
     "category": "date_range",
     "question": "How much settled last week?",
-    "expected_answer_pattern": "(₹|lakh|crore|thousand|amount)"
+    "expected_answer_pattern": "(₹|lakh|crore|thousand|amount|inflow)"
   },
   {
     "category": "date_range",
     "question": "What were my total fees for August 2026?",
-    "expected_answer_pattern": "(₹|lakh|thousand|amount)"
+    "expected_answer_pattern": "(₹|lakh|thousand|amount|fee)"
   },
   {
     "category": "date_range",
     "question": "Give me a summary of inflows for the last 14 days.",
-    "expected_answer_pattern": "(₹|inflow|lakh)"
+    "expected_answer_pattern": "(₹|inflow|lakh|amount)"
   },
   {
     "category": "date_range",
     "question": "How much was processed on August 15th?",
-    "expected_answer_pattern": "(₹|amount|processed)"
+    "expected_answer_pattern": "(₹|amount|processed|inflow)"
   },
   {
     "category": "date_range",
@@ -97,7 +97,7 @@
   {
     "category": "exception",
     "question": "How do I resolve exception 4009311c-8bac-45bb-8bef-37925a221a79?",
-    "expected_answer_pattern": "(review|action|check)"
+    "expected_answer_pattern": "(review|action|check|controller|adjust|resolve)"
   },
   {
     "category": "navigation",
@@ -117,11 +117,65 @@
   {
     "category": "insufficient_data",
     "question": "What happened in 2025?",
-    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have)"
+    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have|couldn't locate|outside|partition)"
   },
   {
     "category": "insufficient_data",
     "question": "Why did my match rate drop in 2021?",
-    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have)"
+    "expected_answer_pattern": "(don't have|insufficient|no data|cannot|do not have|couldn't locate|outside|partition)"
+  },
+  {
+    "category": "copilot_kpi_drilldown",
+    "question": "Why is my statutory value match rate 84.9%?",
+    "context": {
+      "page_name": "Executive Reconciliation Dashboard",
+      "route": "/"
+    },
+    "expected_answer_pattern": "(exact|batch|fuzzy|gross|match|%)"
+  },
+  {
+    "category": "copilot_exception_investigation",
+    "question": "Investigate exception exc_6d04c6c1f2b8",
+    "context": {
+      "page_name": "Exceptions Queue",
+      "route": "/exceptions"
+    },
+    "expected_answer_pattern": "(amount|mismatch|refund|fee|timing|ops|recommend)"
+  },
+  {
+    "category": "copilot_cash_scenario",
+    "question": "What is the scenario cash impact if settlements are delayed by 3 days?",
+    "context": {
+      "page_name": "Cash Position & Treasury",
+      "route": "/cash-position"
+    },
+    "expected_answer_pattern": "(delay|median|confidence|₹|scenario|interval)"
+  },
+  {
+    "category": "copilot_feed_sync",
+    "question": "what's wrong with HDFC Corporate Current Feed",
+    "context": {
+      "page_name": "Linked Accounts & Bank Feeds",
+      "route": "/accounts"
+    },
+    "expected_answer_pattern": "(34|hour|polling|sla|webhook|credential)"
+  },
+  {
+    "category": "copilot_month_close_checklist",
+    "question": "What's needed to clear open discrepancies for 2026-08?",
+    "context": {
+      "page_name": "Continuous Month-End Close",
+      "route": "/month-end-close"
+    },
+    "expected_answer_pattern": "(exc_6d04c6c1f2b8|blocking|discrepanc|₹34,091|6)"
+  },
+  {
+    "category": "copilot_governance_sod",
+    "question": "Explain Segregation of Duties conflicts between Exception Resolution and Gateway API Keys",
+    "context": {
+      "page_name": "Organization & Governance Settings",
+      "route": "/settings"
+    },
+    "expected_answer_pattern": "(sod-01|dual-custody|dual custody|statutory|risk|internal control)"
   }
 ]

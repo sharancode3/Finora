@@ -20,11 +20,17 @@ import {
   ChevronRight,
   Activity,
   Layers,
-  CheckCircle
+  CheckCircle,
+  Copy,
+  Check,
+  X,
+  FileEdit,
+  Download
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { useAI } from '../context/AIContext';
 
 interface Step {
   id: number;
@@ -45,6 +51,16 @@ export default function MonthEndClose() {
   const [signerName, setSignerName] = useState('');
   const [signOff, setSignOff] = useState<{ name: string; timestamp: string } | null>(null);
   const [isLocked, setIsLocked] = useState(false);
+
+  // Phase 6 Per-Checklist-Item Assistance & AI Closing Memo
+  const [checklistDetail, setChecklistDetail] = useState<{ [checkId: string]: any }>({});
+  const [loadingChecklist, setLoadingChecklist] = useState<{ [checkId: string]: boolean }>({});
+  
+  const [showMemoModal, setShowMemoModal] = useState(false);
+  const [memoData, setMemoData] = useState<any>(null);
+  const [memoText, setMemoText] = useState('');
+  const [loadingMemo, setLoadingMemo] = useState(false);
+  const [copiedMemo, setCopiedMemo] = useState(false);
 
   // Accounting checklist
   const [steps, setSteps] = useState<Step[]>([
@@ -127,6 +143,46 @@ export default function MonthEndClose() {
     setSteps(steps.map(s => s.id === 5 ? { ...s, status: 'completed' } : s));
   };
 
+  const handleChecklistAssistance = async (checkId: string) => {
+    if (checklistDetail[checkId]) {
+      setChecklistDetail(prev => {
+        const copy = { ...prev };
+        delete copy[checkId];
+        return copy;
+      });
+      return;
+    }
+    setLoadingChecklist(prev => ({ ...prev, [checkId]: true }));
+    try {
+      const res = await api.get(`/analytics/month-close-checklist-detail?check_id=${checkId}&target_month=${targetMonth}`);
+      setChecklistDetail(prev => ({ ...prev, [checkId]: res.data }));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingChecklist(prev => ({ ...prev, [checkId]: false }));
+    }
+  };
+
+  const handleDraftClosingMemo = async () => {
+    setLoadingMemo(true);
+    setShowMemoModal(true);
+    try {
+      const res = await api.get(`/analytics/draft-closing-memo?target_month=${targetMonth}`);
+      setMemoData(res.data);
+      setMemoText(res.data.memo_text || '');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMemo(false);
+    }
+  };
+
+  const handleCopyMemo = () => {
+    navigator.clipboard.writeText(memoText);
+    setCopiedMemo(true);
+    setTimeout(() => setCopiedMemo(false), 2000);
+  };
+
   const current = metrics?.current || {};
   const prev = metrics?.previous || {};
   const dailyReadiness = metrics?.daily_readiness || [];
@@ -134,6 +190,32 @@ export default function MonthEndClose() {
   const readyDays = metrics?.ready_days_count || 20;
   const totalDays = metrics?.total_days_evaluated || 25;
   const validationChecks = metrics?.validation_checks || [];
+
+  const { setPageContext } = useAI();
+
+  useEffect(() => {
+    if (!loading && metrics) {
+      setPageContext({
+        page_name: 'Continuous Month-End Close',
+        route: '/month-end-close',
+        active_filters: {
+          target_month: targetMonth
+        },
+        visible_metrics: {
+          target_month: targetMonth,
+          match_rate: current.match_rate,
+          exceptions_total: current.exceptions_total,
+          readiness_score: readinessScore,
+          is_locked: isLocked
+        },
+        suggested_inquiries: [
+          `What's needed to clear the open discrepancies for ${targetMonth}?`,
+          `Draft the statutory closing memo for ${targetMonth}`,
+          `Compare statutory match rate (${current.match_rate}%) vs prior month (${prev.match_rate || 96.2}%)`
+        ]
+      });
+    }
+  }, [loading, metrics, targetMonth, isLocked, readinessScore]);
 
   return (
     <div className="space-y-8 pb-20 max-w-6xl mx-auto">
@@ -157,19 +239,28 @@ export default function MonthEndClose() {
           </p>
         </div>
 
-        {/* Month Selector */}
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs">
-          <Calendar size={16} className="text-slate-400 ml-2" />
-          <select 
-            value={targetMonth}
-            onChange={e => setTargetMonth(e.target.value)}
-            disabled={isLocked}
-            className="bg-transparent font-semibold text-slate-800 text-xs py-1 pr-3 focus:outline-none cursor-pointer"
+        {/* Month Selector & Draft Memo CTA */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleDraftClosingMemo}
+            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-colors cursor-pointer"
           >
-            <option value="2026-08">August 2026</option>
-            <option value="2026-07">July 2026</option>
-            <option value="2026-06">June 2026</option>
-          </select>
+            <Sparkles size={14} /> Draft Closing Memo
+          </button>
+
+          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs">
+            <Calendar size={16} className="text-slate-400 ml-2" />
+            <select 
+              value={targetMonth}
+              onChange={e => setTargetMonth(e.target.value)}
+              disabled={isLocked}
+              className="bg-transparent font-semibold text-slate-800 text-xs py-1 pr-3 focus:outline-none cursor-pointer"
+            >
+              <option value="2026-08">August 2026</option>
+              <option value="2026-07">July 2026</option>
+              <option value="2026-06">June 2026</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -350,14 +441,25 @@ export default function MonthEndClose() {
                     </div>
 
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                          Step {step.id} • {step.category}
-                        </span>
-                        {isDone && (
-                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            Verified
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            Step {step.id} • {step.category}
                           </span>
+                          {isDone && (
+                            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+
+                        {step.id === 4 && (
+                          <button
+                            onClick={handleDraftClosingMemo}
+                            className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                          >
+                            <Sparkles size={12} /> Draft Closing Memo
+                          </button>
                         )}
                       </div>
                       
@@ -386,29 +488,82 @@ export default function MonthEndClose() {
               <p className="text-xs text-slate-500">Itemized criteria required before general ledger freezing.</p>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {validationChecks.map((chk: any) => {
                 const isPass = chk.status === 'pass';
                 const isSigned = chk.id === 'signoff_required' && signOff;
+                const isActionReq = chk.status === 'action_required';
+                const detail = checklistDetail[chk.id];
+                const isDetailLoading = loadingChecklist[chk.id];
 
                 return (
-                  <div key={chk.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1">
+                  <div key={chk.id} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-bold text-slate-800 text-[11px]">{chk.title}</span>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
                         isPass || isSigned 
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                          : chk.status === 'action_required'
+                          : isActionReq
                             ? 'bg-amber-50 text-amber-700 border border-amber-200'
                             : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {isPass || isSigned ? 'PASS' : chk.status === 'action_required' ? 'ACTION REQUIRED' : 'PENDING'}
+                        {isPass || isSigned ? 'PASS' : isActionReq ? 'ACTION REQUIRED' : 'PENDING'}
                       </span>
                     </div>
+                    
                     <p className="text-[10px] text-slate-500">{chk.description}</p>
-                    <div className="font-mono text-[10px] text-slate-700 font-semibold pt-1">
-                      {isSigned ? `Signed by ${signOff.name}` : chk.stat}
+                    
+                    <div className="flex items-center justify-between font-mono text-[10px] text-slate-700 font-semibold pt-1 border-t border-slate-200/60">
+                      <span>{isSigned ? `Signed by ${signOff.name}` : chk.stat}</span>
+                      
+                      {/* What's Needed Affordance */}
+                      {!isPass && (
+                        <button
+                          onClick={() => handleChecklistAssistance(chk.id)}
+                          className="text-indigo-600 hover:text-indigo-800 font-sans font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Sparkles size={11} /> {detail ? 'Hide Guidance' : "What's needed?"}
+                        </button>
+                      )}
                     </div>
+
+                    {/* What's Needed AI Inline Expansion */}
+                    {detail && (
+                      <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl space-y-2.5 animate-in fade-in duration-150 shadow-xs">
+                        <div className="flex items-center justify-between text-xs text-indigo-950 font-bold">
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={14} className="text-indigo-600" />
+                            Grounded Checklist Audit Guidance
+                          </span>
+                          <span className="text-[10px] font-mono bg-white text-indigo-900 px-2 py-0.5 rounded border border-indigo-200 font-bold">
+                            {detail.blocking_items?.length || 0} Blocking Items
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                          {detail.ai_explanation}
+                        </p>
+
+                        {detail.blocking_items && detail.blocking_items.length > 0 && (
+                          <div className="space-y-1.5 pt-1.5 border-t border-indigo-200/80">
+                            <div className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">
+                              Specific Exception Records:
+                            </div>
+                            <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                              {detail.blocking_items.map((item: any) => (
+                                <div key={item.exception_id} className="p-2 bg-white rounded border border-slate-200 flex items-center justify-between text-xs shadow-xs">
+                                  <div>
+                                    <span className="font-mono font-bold text-indigo-900">{item.exception_id}</span>
+                                    <span className="text-slate-500 ml-1.5">({item.reason_label})</span>
+                                  </div>
+                                  <span className="font-mono font-bold text-slate-900">₹{item.amount.toLocaleString('en-IN')}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -439,7 +594,7 @@ export default function MonthEndClose() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <UserCheck size={14} /> Authorize & Sign Off
                 </button>
@@ -483,15 +638,23 @@ export default function MonthEndClose() {
             </div>
           </div>
 
-          {/* High-Contrast Audit Report Package */}
+          {/* High-Contrast Audit Report Package & Draft Memo Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold">
-              <FileText size={18} className="text-indigo-600" />
-              <h3 className="text-sm">Close Audit Package</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-900 font-bold">
+                <FileText size={18} className="text-indigo-600" />
+                <h3 className="text-sm">Close Audit Package</h3>
+              </div>
+              <button
+                onClick={handleDraftClosingMemo}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+              >
+                <Sparkles size={13} /> Draft Memo
+              </button>
             </div>
             
             <p className="text-xs text-slate-500 leading-relaxed">
-              Export verified journal vouchers and Ind AS exception audit logs.
+              Export verified journal vouchers, Ind AS exception audit logs, and drafted closing memorandum.
             </p>
 
             <button 
@@ -510,6 +673,111 @@ export default function MonthEndClose() {
 
       </div>
 
+      {/* AI CLOSING MEMO MODAL (DRAFT FOR CONTROLLER REVIEW) */}
+      {showMemoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-600 text-white rounded-xl">
+                  <FileEdit size={18} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900">AI-Drafted Statutory Closing Memorandum</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-900 rounded border border-amber-300 uppercase tracking-wider">
+                      DRAFT — For Controller Review
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">Period: {targetMonth} • Verified against SQLite Ground Truth</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowMemoModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+              
+              {/* Raw Figures Sourced Banner */}
+              {memoData?.raw_figures && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700">
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Gross Volume</span>
+                    <span className="font-mono font-bold text-slate-900">₹{memoData.raw_figures.gross_volume.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">MoM Change</span>
+                    <span className="font-mono font-bold text-emerald-700">+{memoData.raw_figures.mom_change_pct}%</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Settled Bank Cash</span>
+                    <span className="font-mono font-bold text-slate-900">₹{memoData.raw_figures.net_settled.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block">Match Rate</span>
+                    <span className="font-mono font-bold text-indigo-700">{memoData.raw_figures.match_rate}%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Editable Memo Text Area */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Controller Review & Edit Workspace
+                </label>
+                {loadingMemo ? (
+                  <div className="p-10 flex flex-col items-center justify-center text-slate-400 gap-2">
+                    <Sparkles size={20} className="text-indigo-600 animate-spin" />
+                    <span>Synthesizing verified ledger numbers into formal closing memorandum...</span>
+                  </div>
+                ) : (
+                  <textarea
+                    rows={14}
+                    value={memoText}
+                    onChange={(e) => setMemoText(e.target.value)}
+                    className="w-full p-4 bg-slate-50 text-slate-900 font-mono text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed selection:bg-indigo-100"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+              <span className="text-[11px] text-slate-500">
+                100% of figures verified against raw ledger records. Edit freely before finalizing.
+              </span>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={handleCopyMemo}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  {copiedMemo ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                  {copiedMemo ? 'Copied to Clipboard' : 'Copy Memo'}
+                </button>
+
+                <button
+                  onClick={() => setShowMemoModal(false)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                >
+                  Save Draft & Return
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+

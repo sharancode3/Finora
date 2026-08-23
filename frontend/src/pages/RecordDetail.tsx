@@ -17,12 +17,16 @@ import {
   UserCheck,
   Flame,
   Clock,
-  Sparkles
+  Sparkles,
+  RotateCcw,
+  Minus,
+  AlertTriangle
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { SeverityBadge } from '../components/ui/SeverityBadge';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
+import { useAI } from '../context/AIContext';
 
 export default function RecordDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -37,6 +41,38 @@ export default function RecordDetail() {
   const [actionReason, setActionReason] = useState('Gateway Fee Adjustment');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
+  // Phase 3 AI Investigation State
+  const [aiInvestigation, setAiInvestigation] = useState<any>(null);
+  const [investigationHistory, setInvestigationHistory] = useState<any[]>([]);
+  const [investigating, setInvestigating] = useState(false);
+
+  const fetchInvestigations = async () => {
+    if (type === 'exception' && id) {
+      try {
+        const res = await api.get(`/exceptions/${id}/investigations`);
+        setInvestigationHistory(res.data || []);
+        if (res.data && res.data.length > 0) {
+          setAiInvestigation(res.data[0]);
+        }
+      } catch (e) {}
+    }
+  };
+
+  const handleRunAiInvestigation = async () => {
+    if (type === 'exception' && id) {
+      setInvestigating(true);
+      try {
+        const res = await api.post(`/exceptions/${id}/investigate-ai`);
+        setAiInvestigation(res.data);
+        await fetchInvestigations();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setInvestigating(false);
+      }
+    }
+  };
+
   const fetchRecord = async () => {
     setLoading(true);
     try {
@@ -49,6 +85,7 @@ export default function RecordDetail() {
           const txRes = await api.get(`/transactions/${exceptionData.transaction_id}`);
           setTx(txRes.data);
         }
+        await fetchInvestigations();
       }
     } catch (err: any) {
       console.error(err);
@@ -63,6 +100,31 @@ export default function RecordDetail() {
       fetchRecord();
     }
   }, [type, id]);
+
+  const { setPageContext } = useAI();
+
+  useEffect(() => {
+    if (!loading && record) {
+      const reasonLabel = (record.reason || 'Discrepancy').replace(/_/g, ' ');
+      setPageContext({
+        page_name: `Investigation: ${id}`,
+        route: `/records/${type}/${id}`,
+        selected_record_id: id,
+        visible_metrics: {
+          exception_id: id,
+          reason: record.reason,
+          status: record.status,
+          transaction_id: record.transaction_id,
+          amount: record.amount || tx?.gross_amount
+        },
+        suggested_inquiries: [
+          `Explain why exception ${id} occurred and recommend controller adjustment`,
+          `Compare the internal order vs Razorpay fee deduction for this transaction`,
+          `What is the recommended reason code to Mark Explained & Resolve?`
+        ]
+      });
+    }
+  }, [loading, record, tx, id, type]);
 
   const handleResolve = async () => {
     if (!id) return;
@@ -164,6 +226,14 @@ export default function RecordDetail() {
         {!isResolved && (
           <div className="flex items-center gap-2">
             <button
+              onClick={handleRunAiInvestigation}
+              disabled={investigating}
+              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Sparkles size={14} className={investigating ? "animate-spin" : ""} />
+              {investigating ? 'Running AI Checks...' : 'Investigate with AI'}
+            </button>
+            <button
               onClick={() => setActionState(actionState === 'resolve' ? null : 'resolve')}
               className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
@@ -171,7 +241,7 @@ export default function RecordDetail() {
             </button>
             <button
               onClick={() => setActionState(actionState === 'escalate' ? null : 'escalate')}
-              className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <UserCheck size={14} /> Escalate
             </button>
@@ -182,6 +252,130 @@ export default function RecordDetail() {
       {actionSuccess && (
         <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 text-xs font-semibold flex items-center gap-2 shadow-xs">
           <CheckCircle2 size={16} /> {actionSuccess}
+        </div>
+      )}
+
+      {/* Deterministic AI Root-Cause Investigation Card */}
+      {aiInvestigation && (
+        <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white rounded-2xl p-6 shadow-xl border border-indigo-500/30 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-indigo-500/20 text-indigo-300 rounded-xl border border-indigo-400/30">
+                <Sparkles size={18} className="animate-pulse" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                  Deterministic AI Investigation Agent
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Automated 4-check audit trail with grounded variance reconciliation
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRunAiInvestigation}
+                disabled={investigating}
+                className="text-xs font-bold px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RotateCcw size={12} className={investigating ? "animate-spin" : ""} />
+                {investigating ? 'Running...' : 'Re-run Investigation'}
+              </button>
+            </div>
+          </div>
+
+          {/* Variance Breakdown */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Discrepancy</span>
+              <span className="text-sm font-bold font-mono text-white">
+                ₹{aiInvestigation.initial_variance?.toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Explained Variance</span>
+              <span className="text-sm font-bold font-mono text-emerald-400">
+                ₹{aiInvestigation.explained_amount?.toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Unexplained Discrepancy</span>
+              <span className={`text-sm font-bold font-mono ${aiInvestigation.unexplained_amount > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                ₹{aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}
+              </span>
+            </div>
+          </div>
+
+          {/* 4 Sequential Checks */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Sequential Audit Factor Trail:</span>
+            {aiInvestigation.steps_checked?.map((st: any, sIdx: number) => (
+              <div key={sIdx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-3">
+                <div className="mt-0.5">
+                  {st.status === 'APPLIED' ? (
+                    <span className="inline-block p-1 bg-emerald-500/20 text-emerald-400 rounded-md"><CheckCircle2 size={12} /></span>
+                  ) : st.status === 'LATENCY_FACTOR' ? (
+                    <span className="inline-block p-1 bg-amber-500/20 text-amber-400 rounded-md"><Clock size={12} /></span>
+                  ) : (
+                    <span className="inline-block p-1 bg-slate-500/20 text-slate-400 rounded-md"><Minus size={12} /></span>
+                  )}
+                </div>
+                <div className="flex-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-200">Check {st.step}: {st.check}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
+                      st.status === 'APPLIED' ? 'bg-emerald-500/20 text-emerald-300' :
+                      st.status === 'LATENCY_FACTOR' ? 'bg-amber-500/20 text-amber-300' : 'bg-white/10 text-slate-400'
+                    }`}>
+                      {st.status?.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 mt-0.5 leading-relaxed">{st.observation}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Conclusion Box */}
+          <div className={`p-3.5 rounded-xl border ${
+            aiInvestigation.is_fully_explained
+              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-100'
+              : 'bg-rose-950/40 border-rose-500/40 text-rose-100'
+          }`}>
+            <div className="flex items-center gap-2 font-bold text-xs mb-1">
+              <AlertCircle size={14} />
+              <span>Root-Cause Conclusion</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-white border border-white/20">
+                Confidence: {aiInvestigation.confidence_badge} ({Math.round(aiInvestigation.confidence_score * 100)}%)
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed font-medium">
+              {aiInvestigation.conclusion}
+            </p>
+          </div>
+
+          {/* Action CTA Banner */}
+          <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="text-xs text-slate-300">
+              <span className="text-slate-400">Recommended Controller Action:</span>{' '}
+              <strong className="text-emerald-300">{aiInvestigation.recommended_action}</strong>
+            </div>
+            <button
+              onClick={() => {
+                setActionState('resolve');
+                setActionReason(aiInvestigation.recommended_action);
+              }}
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <CheckCircle size={13} /> Apply Recommended Resolution
+            </button>
+          </div>
+
+          {/* Stored Audit Trail Notice */}
+          <div className="text-[10px] text-slate-400 flex items-center gap-1 font-mono pt-1">
+            <ShieldCheck size={11} className="text-indigo-400" />
+            Stored audit record: {aiInvestigation.investigation_id} • Timestamp: {aiInvestigation.created_at} • Verifier: {aiInvestigation.verifier_status}
+          </div>
         </div>
       )}
 
@@ -346,20 +540,22 @@ export default function RecordDetail() {
         </div>
 
         {/* Right Column: Raw JSON Audit File View */}
-        <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 flex flex-col h-[650px] overflow-hidden">
-          <div className="p-4 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
+        <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-[650px] overflow-hidden">
+          <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileCode size={16} className="text-emerald-400" />
-              <h3 className="text-xs font-bold text-slate-300 font-mono">underlying_data.json</h3>
+              <FileCode size={16} className="text-indigo-600" />
+              <h3 className="text-xs font-bold text-slate-800 font-mono">underlying_data.json</h3>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono">Immutable SQLite Record</span>
+            <span className="text-[10px] text-slate-500 font-mono bg-white px-2 py-0.5 rounded border border-slate-200 font-bold">
+              Immutable SQLite Record
+            </span>
           </div>
-          <div className="flex-1 overflow-auto p-4 bg-[#0d1117]">
-            <pre className="text-[12px] leading-relaxed text-slate-300 font-mono">
+          <div className="flex-1 overflow-auto p-4 bg-slate-50/60">
+            <pre className="text-xs leading-relaxed text-slate-800 font-mono">
               {jsonString.split('\n').map((line, i) => (
-                <div key={i} className="flex hover:bg-slate-800/50 px-2 rounded">
-                  <span className="w-8 shrink-0 text-slate-600 select-none text-right pr-4 text-[11px]">{i + 1}</span>
-                  <span className={`${line.includes('":') ? 'text-indigo-300' : ''} ${line.includes('null') ? 'text-slate-500' : ''}`}>{line}</span>
+                <div key={i} className="flex hover:bg-indigo-50/50 px-2 rounded py-0.5">
+                  <span className="w-8 shrink-0 text-slate-400 select-none text-right pr-4 text-[11px] font-medium">{i + 1}</span>
+                  <span className={`${line.includes('":') ? 'text-indigo-900 font-semibold' : 'text-slate-800 font-medium'} ${line.includes('null') ? 'text-slate-400 italic' : ''}`}>{line}</span>
                 </div>
               ))}
             </pre>

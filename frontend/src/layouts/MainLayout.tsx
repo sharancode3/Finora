@@ -8,6 +8,7 @@ import {
 import { Banner } from '../components/ui/Banner';
 import { ToastContainer } from '../components/ui/Toast';
 import { useAI } from '../context/AIContext';
+import { LedgerCopilotPanel } from '../components/LedgerCopilotPanel';
 
 const SIDEBAR_LINKS = [
   { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
@@ -200,6 +201,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             {children}
           </div>
         </main>
+
+        {/* Global Contextual Ledger Copilot */}
+        <LedgerCopilotPanel />
 
       </div>
     </div>

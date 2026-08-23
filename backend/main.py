@@ -83,6 +83,25 @@ def api_escalate_exception(exc_id: str, req: EscalateReq):
     escalate_exception(exc_id, req.note)
     return {"status": "success"}
 
+@exceptions_router.post("/{exc_id}/investigate-ai")
+def api_investigate_exception_ai(exc_id: str):
+    try:
+        from backend.db.sqlite_client import run_ai_exception_investigation
+        res = run_ai_exception_investigation(exc_id)
+        if "error" in res:
+            raise HTTPException(status_code=404, detail=res["error"])
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@exceptions_router.get("/{exc_id}/investigations")
+def api_get_exception_investigations(exc_id: str):
+    try:
+        from backend.db.sqlite_client import get_exception_investigations
+        return get_exception_investigations(exc_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @analytics_router.get("/aggregates")
 def api_get_aggregates(interval: str = Query("monthly")):
     try:
@@ -134,6 +153,104 @@ def get_exception_intelligence_endpoint(start_date: str = "2026-03-01", end_date
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@analytics_router.get("/kpi-breakdown")
+def get_kpi_breakdown_endpoint(metric_key: str = Query(...), start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_kpi_why_breakdown
+        return get_kpi_why_breakdown(metric_key, start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/forensic-narration")
+def get_forensic_narration_endpoint(start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_forensic_narration
+        return get_forensic_narration(start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/daily-briefing")
+def get_daily_briefing_endpoint(reference_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_daily_briefing_data
+        return get_daily_briefing_data(reference_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/predictive-risk-basis")
+def get_predictive_risk_basis_endpoint(start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_predictive_risk_basis
+        return get_predictive_risk_basis(start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/cluster-why")
+def get_cluster_why_endpoint(cluster_key: str = Query(...), start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_cluster_why_summary
+        return get_cluster_why_summary(cluster_key, start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/parse-exception-query")
+def parse_exception_query_endpoint(q: str = Query(...), start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import parse_natural_language_exception_query
+        return parse_natural_language_exception_query(q, start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/cash-scenario-simulation")
+def get_cash_scenario_simulation_endpoint(
+    start_date: str = "2026-08-01",
+    end_date: str = "2026-08-31",
+    settlement_delay_days: int = 0,
+    exception_recovery_rate: float = 1.0,
+    volume_change_pct: float = 0.0,
+    account_id: Optional[str] = None
+):
+    try:
+        from backend.db.sqlite_client import run_cash_scenario_simulation
+        return run_cash_scenario_simulation(
+            start_date, end_date, settlement_delay_days, exception_recovery_rate, volume_change_pct, account_id
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/month-close-checklist-detail")
+def get_month_close_checklist_detail_endpoint(check_id: str = Query(...), target_month: str = "2026-08"):
+    try:
+        from backend.db.sqlite_client import get_checklist_item_assistance
+        return get_checklist_item_assistance(check_id, target_month)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/draft-closing-memo")
+def get_draft_closing_memo_endpoint(target_month: str = "2026-08"):
+    try:
+        from backend.db.sqlite_client import draft_month_end_closing_memo
+        return draft_month_end_closing_memo(target_month)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/sod-evaluation")
+def get_sod_evaluation_endpoint(capabilities: str = Query(..., description="Comma-separated capability strings"), role_name: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import evaluate_sod_conflict
+        cap_list = [c.strip() for c in capabilities.split(",") if c.strip()]
+        return evaluate_sod_conflict(cap_list, role_name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/notification-rule-explanation")
+def get_notification_rule_explanation_endpoint(rule_id: str = Query(...)):
+    try:
+        from backend.db.sqlite_client import get_notification_rule_explanation
+        return get_notification_rule_explanation(rule_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 from backend.db.sqlite_client import get_accounts, connect_new_account, sync_account, get_cross_account_reconciliation
 
 accounts_router = APIRouter(prefix="/api/v1/accounts", tags=["Accounts"])
@@ -174,6 +291,22 @@ def api_sync_now(account_id: str):
 def api_cross_reconciliation(start_date: str = "2026-08-01", end_date: str = "2026-08-31"):
     try:
         return get_cross_account_reconciliation(start_date, end_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@accounts_router.get("/suspense-breakdown")
+def api_suspense_breakdown(start_date: str = "2026-08-01", end_date: str = "2026-08-31"):
+    try:
+        from backend.db.sqlite_client import get_suspense_reconciliation_breakdown
+        return get_suspense_reconciliation_breakdown(start_date, end_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@accounts_router.get("/{account_id}/sync-health")
+def api_get_sync_health(account_id: str):
+    try:
+        from backend.db.sqlite_client import get_feed_sync_health
+        return get_feed_sync_health(account_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

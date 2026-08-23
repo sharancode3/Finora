@@ -14,7 +14,7 @@ from backend.db.sqlite_client import get_connection, init_db
 # Configuration
 END_DATE = datetime(2026, 9, 5)
 START_DATE = END_DATE - timedelta(days=183) # Approx 6 months
-BUSINESS_ID = "BIZ-001"
+BUSINESS_ID = "demo_org_1"
 HOLIDAYS = ['2026-08-15', '2026-05-01'] # Examples
 
 def is_business_day(date_obj: datetime) -> bool:

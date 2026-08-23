@@ -11,3 +11,5 @@ data/output/*.json
 eval/results_*.md
 eval/benchmark_results.md
 firestore-debug.log
+scratch/
+
