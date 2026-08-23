@@ -255,19 +255,19 @@ export default function RecordDetail() {
         </div>
       )}
 
-      {/* Deterministic AI Root-Cause Investigation Card */}
+      {/* Deterministic AI Root-Cause Investigation Card (High-Contrast Light Theme) */}
       {aiInvestigation && (
-        <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white rounded-2xl p-6 shadow-xl border border-indigo-500/30 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+        <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xs border-2 border-indigo-100 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-500/20 text-indigo-300 rounded-xl border border-indigo-400/30">
-                <Sparkles size={18} className="animate-pulse" />
+              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
+                <Sparkles size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-700">
                   Deterministic AI Investigation Agent
                 </h4>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Automated 4-check audit trail with grounded variance reconciliation
                 </p>
               </div>
@@ -276,7 +276,7 @@ export default function RecordDetail() {
               <button
                 onClick={handleRunAiInvestigation}
                 disabled={investigating}
-                className="text-xs font-bold px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="text-xs font-bold px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <RotateCcw size={12} className={investigating ? "animate-spin" : ""} />
                 {investigating ? 'Running...' : 'Re-run Investigation'}
@@ -286,21 +286,21 @@ export default function RecordDetail() {
 
           {/* Variance Breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Discrepancy</span>
-              <span className="text-sm font-bold font-mono text-white">
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Discrepancy</span>
+              <span className="text-sm font-bold font-mono text-slate-900">
                 ₹{aiInvestigation.initial_variance?.toLocaleString('en-IN')}
               </span>
             </div>
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Explained Variance</span>
-              <span className="text-sm font-bold font-mono text-emerald-400">
+            <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
+              <span className="text-[10px] uppercase font-bold text-emerald-800 block">Explained Variance</span>
+              <span className="text-sm font-bold font-mono text-emerald-700">
                 ₹{aiInvestigation.explained_amount?.toLocaleString('en-IN')}
               </span>
             </div>
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Unexplained Discrepancy</span>
-              <span className={`text-sm font-bold font-mono ${aiInvestigation.unexplained_amount > 1 ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Unexplained Discrepancy</span>
+              <span className={`text-sm font-bold font-mono ${aiInvestigation.unexplained_amount > 1 ? 'text-rose-600' : 'text-emerald-600'}`}>
                 ₹{aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}
               </span>
             </div>
@@ -308,29 +308,29 @@ export default function RecordDetail() {
 
           {/* 4 Sequential Checks */}
           <div className="space-y-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Sequential Audit Factor Trail:</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Sequential Audit Factor Trail:</span>
             {aiInvestigation.steps_checked?.map((st: any, sIdx: number) => (
-              <div key={sIdx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-start gap-3">
+              <div key={sIdx} className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-start gap-3">
                 <div className="mt-0.5">
                   {st.status === 'APPLIED' ? (
-                    <span className="inline-block p-1 bg-emerald-500/20 text-emerald-400 rounded-md"><CheckCircle2 size={12} /></span>
+                    <span className="inline-block p-1 bg-emerald-100 text-emerald-700 rounded-md"><CheckCircle2 size={12} /></span>
                   ) : st.status === 'LATENCY_FACTOR' ? (
-                    <span className="inline-block p-1 bg-amber-500/20 text-amber-400 rounded-md"><Clock size={12} /></span>
+                    <span className="inline-block p-1 bg-amber-100 text-amber-800 rounded-md"><Clock size={12} /></span>
                   ) : (
-                    <span className="inline-block p-1 bg-slate-500/20 text-slate-400 rounded-md"><Minus size={12} /></span>
+                    <span className="inline-block p-1 bg-slate-200 text-slate-600 rounded-md"><Minus size={12} /></span>
                   )}
                 </div>
                 <div className="flex-1 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-200">Check {st.step}: {st.check}</span>
+                    <span className="font-bold text-slate-900">Check {st.step}: {st.check}</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
-                      st.status === 'APPLIED' ? 'bg-emerald-500/20 text-emerald-300' :
-                      st.status === 'LATENCY_FACTOR' ? 'bg-amber-500/20 text-amber-300' : 'bg-white/10 text-slate-400'
+                      st.status === 'APPLIED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                      st.status === 'LATENCY_FACTOR' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
                     }`}>
                       {st.status?.replace(/_/g, ' ')}
                     </span>
                   </div>
-                  <p className="text-slate-300 mt-0.5 leading-relaxed">{st.observation}</p>
+                  <p className="text-slate-600 mt-0.5 leading-relaxed">{st.observation}</p>
                 </div>
               </div>
             ))}
@@ -339,26 +339,26 @@ export default function RecordDetail() {
           {/* Conclusion Box */}
           <div className={`p-3.5 rounded-xl border ${
             aiInvestigation.is_fully_explained
-              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-100'
-              : 'bg-rose-950/40 border-rose-500/40 text-rose-100'
+              ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
+              : 'bg-rose-50/80 border-rose-200 text-rose-950'
           }`}>
             <div className="flex items-center gap-2 font-bold text-xs mb-1">
-              <AlertCircle size={14} />
+              <AlertCircle size={14} className={aiInvestigation.is_fully_explained ? "text-emerald-700" : "text-rose-700"} />
               <span>Root-Cause Conclusion</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 text-white border border-white/20">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200 font-bold">
                 Confidence: {aiInvestigation.confidence_badge} ({Math.round(aiInvestigation.confidence_score * 100)}%)
               </span>
             </div>
-            <p className="text-xs leading-relaxed font-medium">
+            <p className="text-xs leading-relaxed font-medium text-slate-800">
               {aiInvestigation.conclusion}
             </p>
           </div>
 
           {/* Action CTA Banner */}
-          <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="text-xs text-slate-300">
-              <span className="text-slate-400">Recommended Controller Action:</span>{' '}
-              <strong className="text-emerald-300">{aiInvestigation.recommended_action}</strong>
+          <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="text-xs text-slate-600">
+              <span className="text-slate-500">Recommended Controller Action:</span>{' '}
+              <strong className="text-emerald-700">{aiInvestigation.recommended_action}</strong>
             </div>
             <button
               onClick={() => {
@@ -373,7 +373,7 @@ export default function RecordDetail() {
 
           {/* Stored Audit Trail Notice */}
           <div className="text-[10px] text-slate-400 flex items-center gap-1 font-mono pt-1">
-            <ShieldCheck size={11} className="text-indigo-400" />
+            <ShieldCheck size={11} className="text-indigo-600" />
             Stored audit record: {aiInvestigation.investigation_id} • Timestamp: {aiInvestigation.created_at} • Verifier: {aiInvestigation.verifier_status}
           </div>
         </div>

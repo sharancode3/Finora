@@ -127,8 +127,8 @@ export default function AskYourBooks() {
 
               return (
                 <div key={idx} className={`flex gap-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-white'}`}>
-                    {msg.role === 'user' ? <User size={15} /> : <Bot size={15} />}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                    {msg.role === 'user' ? <User size={15} /> : <Sparkles size={15} />}
                   </div>
                   
                   <div className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'} w-full`}>
@@ -293,8 +293,8 @@ export default function AskYourBooks() {
 
           {isLoading && (
             <div className="flex gap-3 max-w-[85%]">
-              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0">
-                <Bot size={15} />
+              <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center shrink-0">
+                <Sparkles size={15} />
               </div>
               <div className="bg-white border border-slate-200 p-4 rounded-2xl text-xs text-slate-500 flex items-center gap-2 shadow-xs">
                 <Loader2 size={14} className="animate-spin text-indigo-600" />

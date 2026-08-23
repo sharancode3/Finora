@@ -496,7 +496,7 @@ export default function LinkedAccounts() {
                   {/* Top Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-slate-900 text-white shadow-2xs">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-slate-100 text-slate-800 border border-slate-200">
                         {isGateway ? <CreditCard size={20} /> : isWallet ? <Wallet size={20} /> : <Building2 size={20} />}
                       </div>
                       <div>

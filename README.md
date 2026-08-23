@@ -279,7 +279,10 @@ Finora enforces a strict, standardized semantic color token mapping to eliminate
 | **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`) | **AI Intelligence / Fino Sparkles** | ✨ Fino AI launcher, Forensic AI Narrations, AI Root-Cause Investigation Summaries |
 | **SLATE** | `slate` (`bg-slate-50` to `bg-slate-900`, `text-slate-700`) | **Neutral Chrome / Structural Bounds** | Data table borders, headers, transaction IDs, UTRs, timestamps |
 
-> **Prohibited:** Blue is strictly prohibited from status encoding and reserved solely for hyperlinks and navigation breadcrumbs.
+> [!IMPORTANT]
+> **Strict Styling Guardrails**:
+> - **Prohibited Blue Status**: Blue is strictly prohibited from status encoding and reserved solely for hyperlinks and navigation breadcrumbs.
+> - **Prohibited Dark Navy / Low-Contrast Cards**: Dark navy, dark purple, and black container cards are strictly prohibited across all pages. All surfaces use high-contrast white (`bg-white`) and light-tinted backgrounds with dark slate typography (`text-slate-900`/`text-slate-800`) for complete legibility.
 
 ---
 

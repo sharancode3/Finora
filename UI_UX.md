@@ -44,3 +44,13 @@ The Fino Copilot interface is identical across all 7 views (`/`, `/exceptions`, 
 - **Visual Launcher**: Uniform bottom-right floating trigger with sparkling Fino AI indicator.
 - **Context Injection**: Live, dynamic `PageContext` reading current route, active filters, and visible numbers at moment of submission.
 - **Trust-Badge & Reasoning Trail**: Every answer renders confidence level (`HIGH`, `MEDIUM`, `LOW`), underlying transaction evidence chips, verifier status, and step-by-step tool reasoning chain.
+
+---
+
+## 5. Absolute Prohibition on Dark Cards & Low-Contrast Backgrounds
+
+Dark navy, dark purple, and black container cards (`bg-slate-900`, `bg-indigo-950`, `bg-purple-950`, etc.) are **strictly prohibited** across all pages, modals, and drawers:
+- **Card Backgrounds**: Must always use crisp, clean white (`bg-white`) or light tint backgrounds (`bg-slate-50`, `bg-indigo-50/70`, `bg-emerald-50`, `bg-amber-50`, `bg-rose-50`).
+- **Typography**: Must always maintain high contrast using dark slate typography (`text-slate-900`, `text-slate-800`, `text-slate-700`).
+- **Borders & Dividers**: Must use clean, subtle borders (`border-slate-200`, `border-indigo-100`, `border-emerald-200`, `border-amber-200`, `border-rose-200`).
+- **Zero Low-Contrast Muddy Cards**: Every AI investigation factor, audit step, conclusion banner, and financial KPI card must be completely legible on all display types.

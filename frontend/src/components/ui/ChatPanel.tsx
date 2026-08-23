@@ -33,9 +33,9 @@ export const ChatPanel = ({ messages, onSendMessage, className = '' }: ChatPanel
   return (
     <div className={`flex flex-col bg-surface border-l border-border h-full ${className}`}>
       {/* Header */}
-      <div className="p-4 border-b border-border bg-slate-900 text-white flex items-center gap-2">
-        <Bot size={18} className="text-primary-accent" />
-        <h3 className="font-semibold">Ask Your Books</h3>
+      <div className="p-4 border-b border-slate-200 bg-slate-50 text-slate-900 flex items-center gap-2">
+        <Bot size={18} className="text-indigo-600" />
+        <h3 className="font-bold text-sm">Ask Fino (Conversational Books)</h3>
       </div>
       
       {/* Messages */}
