@@ -20,27 +20,33 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({
   animated = false,
   duration = 600
 }) => {
-  const [displayValue, setDisplayValue] = useState(animated ? 0 : amount);
-  const startValRef = useRef(0);
+  const [displayValue, setDisplayValue] = useState<number>(amount);
+  const prevValRef = useRef<number>(amount);
   const startTimeRef = useRef<number | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!animated) {
       setDisplayValue(amount);
+      prevValRef.current = amount;
       return;
     }
 
-    const startVal = displayValue;
+    const startVal = prevValRef.current;
     const targetVal = amount;
-    startValRef.current = startVal;
+
+    if (startVal === targetVal) {
+      setDisplayValue(targetVal);
+      return;
+    }
+
     startTimeRef.current = null;
 
     const animate = (timestamp: number) => {
       if (!startTimeRef.current) startTimeRef.current = timestamp;
       const progress = Math.min((timestamp - startTimeRef.current) / duration, 1);
       
-      // Ease out cubic: 1 - (1 - progress)^3
+      // Calm, controlled ease-out cubic (fintech standard)
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const current = startVal + (targetVal - startVal) * easeOut;
       
@@ -50,6 +56,7 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({
         animFrameRef.current = requestAnimationFrame(animate);
       } else {
         setDisplayValue(targetVal);
+        prevValRef.current = targetVal;
       }
     };
 
@@ -57,6 +64,7 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({
 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      prevValRef.current = displayValue;
     };
   }, [amount, animated, duration]);
 

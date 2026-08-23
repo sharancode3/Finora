@@ -1,57 +1,59 @@
-# Finora — AI Financial Controller & Autonomous Reconciliation Platform
+# Finora — Autonomous AI Financial Controller & Continuous Reconciliation Platform
 
 <p align="center">
-  <strong>Next-Generation 3-Way Financial Reconciliation • Statistical ML Forensics • Monte Carlo Treasury Forecasting • Ind AS Continuous Close • Fino (AI Financial Copilot)</strong>
+  <strong>Next-Generation 3-Way Reconciliation • Statistical ML Forensics • Stochastic Monte Carlo Treasury Modeling • Ind AS Continuous Close • Local Gemma 3 Agentic Copilot</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Production--Ready-emerald?style=for-the-badge&logo=checkmarx" alt="Status" />
-  <img src="https://img.shields.io/badge/Architecture-Deterministic_Core_%2B_Agentic_Shell-indigo?style=for-the-badge" alt="Architecture" />
-  <img src="https://img.shields.io/badge/Compliance-Ind_AS_/_ICAI_Aligned-blue?style=for-the-badge" alt="Compliance" />
-  <img src="https://img.shields.io/badge/AI_Engine-Gemma_3_(Local_Inference)-purple?style=for-the-badge" alt="AI Engine" />
-  <img src="https://img.shields.io/badge/Eval_Accuracy-100.0%25_(33/33_Passed)-success?style=for-the-badge" alt="Eval Accuracy" />
+  <img src="https://img.shields.io/badge/Status-Production--Ready-16A34A?style=for-the-badge&logo=checkmarx" alt="Status" />
+  <img src="https://img.shields.io/badge/Architecture-Deterministic_Core_%2B_Agentic_Shell-5B45F5?style=for-the-badge" alt="Architecture" />
+  <img src="https://img.shields.io/badge/Compliance-Ind_AS_/_ICAI_Aligned-2563EB?style=for-the-badge" alt="Compliance" />
+  <img src="https://img.shields.io/badge/AI_Engine-Gemma_3_4B_(100%25_Local_Inference)-9333EA?style=for-the-badge" alt="AI Engine" />
+  <img src="https://img.shields.io/badge/Benchmark-100.0%25_Accuracy_(33/33_Passed)-16A34A?style=for-the-badge" alt="Eval Accuracy" />
 </p>
 
 ---
 
 ## 📑 Table of Contents
 
-- [Executive Summary & Plain-English Overview](#-executive-summary--plain-english-overview)
-- [How Finora Helps Businesses (Small vs. Large)](#-how-finora-helps-businesses-small-vs-large)
-- [End-to-End Customer Traversal Walkthrough](#-end-to-end-customer-traversal-walkthrough)
-- [Architectural Philosophy & Zero-Hallucination Core](#-architectural-philosophy--zero-hallucination-core)
-- [Comprehensive Feature Matrix](#-comprehensive-feature-matrix)
-  - [1. Executive Command Center & Dashboard](#1-executive-command-center--dashboard)
-  - [2. 4-Stage Autonomous Matching Engine](#2-4-stage-autonomous-matching-engine)
-  - [3. Exceptions Management & AI Root-Cause Investigation](#3-exceptions-management--ai-root-cause-investigation)
-  - [4. Treasury Intelligence & Monte Carlo Cash Forecasting](#4-treasury-intelligence--monte-carlo-cash-forecasting)
-  - [5. Forensic Integrity & Statistical Machine Learning](#5-forensic-integrity--statistical-machine-learning)
-  - [6. Multi-Rail Bank & Gateway Feed Synchronization](#6-multi-rail-bank--gateway-feed-synchronization)
-  - [7. Continuous Month-End Close (Ind AS Compliant)](#7-continuous-month-end-close-ind-as-compliant)
-  - [8. Governance, Internal Controls & Segregation of Duties](#8-governance-internal-controls--segregation-of-duties)
-  - [9. Fino — Global Contextual AI Architecture](#9-fino--global-contextual-ai-architecture)
+- [Executive Summary & Problem Statement](#-executive-summary--problem-statement)
+- [Architectural Philosophy: Deterministic Core + Agentic Shell](#-architectural-philosophy-deterministic-core--agentic-shell)
 - [System Architecture & Data Flow](#-system-architecture--data-flow)
-- [Design System & Semantic Color Tokens](#-design-system--semantic-color-tokens)
+- [Comprehensive Module Breakdown](#-comprehensive-module-breakdown)
+  - [1. Executive Command Center (Dashboard)](#1-executive-command-center-dashboard)
+  - [2. 7-Stage Reconciliation "Run" Interface](#2-7-stage-reconciliation-run-interface)
+  - [3. Exceptions Engine & Closed-Loop Resolution](#3-exceptions-engine--closed-loop-resolution)
+  - [4. Treasury Intelligence & Monte Carlo Cash Modeling](#4-treasury-intelligence--monte-carlo-cash-modeling)
+  - [5. Continuous Month-End Close & AI Closing Memo](#5-continuous-month-end-close--ai-closing-memo)
+  - [6. Multi-Rail Bank & Processor Feeds](#6-multi-rail-bank--processor-feeds)
+  - [7. Governance, SoD Matrix & Immutable Audit Trail](#7-governance-sod-matrix--immutable-audit-trail)
+  - [8. Global Contextual AI Copilot ("Ask Controller")](#8-global-contextual-ai-copilot-ask-controller)
 - [Mathematical & Statistical Formulations](#-mathematical--statistical-formulations)
+- [Design System & Semantic Color Tokens](#-design-system--semantic-color-tokens)
 - [Quantitative Evaluation & Benchmark Results](#-quantitative-evaluation--benchmark-results)
 - [Statutory Compliance & Standards Alignment](#-statutory-compliance--standards-alignment)
+- [5-Minute Demo Video Walkthrough Guide](#-5-minute-demo-video-walkthrough-guide)
 - [Technology Stack](#-technology-stack)
 - [Repository Structure](#-repository-structure)
-- [Deployment & Localhost Setup Guide](#-deployment--localhost-setup-guide)
+- [Quickstart & Local Installation Guide](#-quickstart--local-installation-guide)
 
 ---
 
-## 📌 Executive Summary & Plain-English Overview
+## 📌 Executive Summary & Problem Statement
 
-### What is Finora in Simple Words?
-Think of **Finora** as your business's **Automated AI Financial Controller**, accompanied by **Fino** — your 24/7 contextual AI copilot.
+### The Problem in High-Volume Finance Operations
+Modern enterprises and high-growth internet companies process thousands of payments daily across multiple gateways (e.g., Razorpay, PayPal) settling into multiple commercial bank operating accounts (e.g., Kotak Mahindra Bank, HDFC Bank).
 
-When customers buy goods or services from your business online:
-1. **Your Store / ERP** records the gross sale order (e.g. ₹10,000).
-2. **The Payment Gateway (Razorpay or PayPal)** processes the payment, deducts a credit card transaction fee (MDR ~2%) plus 18% Goods & Services Tax (GST), and holds the payout for 2–3 days ($T+2$ float).
-3. **Your Bank (Kotak Mahindra Bank or HDFC Bank)** receives a bulk, batched deposit with a cryptic Unique Transaction Reference (UTR) code that combines multiple customer orders into a single lump sum.
+Managing this lifecycle manually creates acute operational risks:
+1. **Cryptic Batch Deposits**: Banks deposit aggregate lump sums linked to single UTR reference numbers, masking individual order breakdowns.
+2. **Hidden MDR & Fee Leakage**: Gateways deduct merchant fees (2.0% MDR) and 18% Goods & Services Tax (GST) that drift from negotiated contractual schedules.
+3. **Float & Settlement Latency**: Revenue trapped in $T+2$ transit or processor suspense leads to inaccurate cash visibility.
+4. **Fragile Month-End Close**: Controllers spend days stitching together disparate CSV exports using fragile spreadsheets.
 
-```text
+### The Finora Solution
+**Finora** is an **Autonomous AI Financial Controller** that automates the entire multi-rail reconciliation lifecycle. It continuously verifies 3-way matching between **Internal Orders**, **Payment Processor Feeds**, and **Bank Statements**, detects statistical anomalies, models stochastic cash liquidity, and drafts auditable statutory closing memoranda under Ind AS requirements.
+
+```
 ┌─────────────────────────┐       ┌─────────────────────────┐       ┌─────────────────────────┐
 │     Internal Books      │       │     Payment Gateway     │       │     Bank Statement      │
 │  (Invoices / Orders)    │ ────► │    (Razorpay MDR Feeds) │ ────► │   (UTR Net Deposits)    │
@@ -63,226 +65,41 @@ When customers buy goods or services from your business online:
                                3-Way Automated Reconciliation
 ```
 
-### The Problem It Solves
-Without Finora, business owners and accounting teams must manually export three different CSV spreadsheets, perform fragile Excel VLOOKUP formulas, and spend days figuring out:
-- *Why did we receive less money than expected?*
-- *Did the payment gateway charge the correct fee, or was there fee leakage?*
-- *Which specific customer orders were in yesterday's bulk bank deposit?*
-- *Is cash stuck in gateway suspense or transit?*
-
-**Finora automates this entire lifecycle** in real time using a deterministic 4-stage matching engine, machine learning anomaly detection, Monte Carlo cash forecasting, and **Fino** — our grounded AI Copilot that never hallucinates numbers.
-
 ---
 
-## 🏢 How Finora Helps Businesses (Small vs. Large)
+## 🛡️ Architectural Philosophy: Deterministic Core + Agentic Shell
 
-### For Small Businesses & Startups
-- **Stop Hidden Fee Leakage:** Verifies that every transaction fee matches contracted Merchant Discount Rates (2.0% MDR + 18% GST). Never overpay on gateway commissions.
-- **Track Real Bank Float:** Know instantly how much cash has cleared into your bank account versus what is still pending in $T+2$ transit.
-- **Zero Manual Spreadsheets:** 1-click automated reconciliation replaces tedious Excel matching and saves 15+ hours every month.
-- **Plain-English Answers with Fino:** Ask questions like *"Why was my deposit lower today?"* and get instant, grounded explanations without needing an accounting degree.
+Finora is architected around an enterprise principle designed to eliminate LLM hallucinations:
 
-### For Mid-Market & Large Enterprises
-- **Multi-Rail Routing & Attribution:** Track multi-account money movements across domestic gateways (Razorpay), cross-border international wallets (PayPal), and multiple corporate operating accounts (Kotak, HDFC) with exact upstream attribution.
-- **Statutory Ind AS Compliance:** Full alignment with **Ind AS 1** (Financial Statement Presentation), **Ind AS 7** (Cash Flow Statements), and **Ind AS 115** (Revenue Recognition) with cryptographic period locking.
-- **Segregation of Duties (SoD) Internal Controls:** Automated dual-custody rule validation ensuring team members cannot simultaneously hold gateway API credentials and resolve exceptions.
-- **1,000-Trial Monte Carlo Treasury Modeling:** Stress-test cash reserves under varying settlement delay scenarios, volume fluctuations, and recovery rates.
+> **"Deterministic Mathematics at the Core, Grounded AI at the Shell."**
 
----
-
-## 🗺️ End-to-End Customer Traversal Walkthrough
-
-```text
-[1. Link Accounts] ──► [2. 3-Way Match] ──► [3. Executive Dashboard] ──► [4. AI Exception Audit]
-                                                                                │
-[7. Fino AI Copilot] ◄── [6. Month-End Close] ◄── [5. Monte Carlo Forecast] ◄───┘
 ```
-
-1. **Step 1: Link Accounts (`/accounts`)**
-   - Connect your payment gateway credentials (`rzp_test_...`), PayPal wallet, and corporate bank accounts (Kotak Mahindra Bank, HDFC Bank).
-   - Finora establishes encrypted connections and continuously checks sync SLA health against a 15-minute polling interval.
-
-2. **Step 2: Automated 3-Way Reconciliation Ingestion**
-   - Finora ingests internal sales orders, gateway MDR settlement feeds, and bank statement UTR batches.
-   - The 4-Stage Matching Engine automatically matches transactions, aggregates bulk batches, identifies fee variances, and isolates exceptions in milliseconds.
-
-3. **Step 3: Monitor Health on the Executive Dashboard (`/dashboard`)**
-   - Review top-line financial KPIs: Total Gross Volume, Net Settled Cash, Value Match Rate (%), and Open Exceptions with Period-over-Period ($\Delta\%$) comparative metrics.
-   - Click **"Why?"** on any card to view the exact mathematical formula, contributing components, and causal explanation.
-   - Read the **Today's AI Controller Briefing** and check the **Benford's Law Forensic Integrity Score**.
-
-4. **Step 4: Investigate & Resolve Exceptions (`/exceptions` & `/record/:type/:id`)**
-   - View discrepancies ranked by a 100-point composite risk score.
-   - Click **`[ ✨ Investigate with AI ]`** to run a deterministic 4-step root cause trace (refund check, fee recalculation, bank transit lag, duplicate scan).
-   - Resolve exceptions with audit logging or escalate to senior financial controllers.
-
-5. **Step 5: Forecast Cash & Test Scenarios (`/cash-position`)**
-   - Inspect the 5-Stage Cash Conversion Waterfall and 30-day liquidity trends.
-   - Move What-If scenario sliders (Settlement Delay $+N$ days, Recovery %, Volume shift %) to simulate stochastic cash boundaries ($P_{10}/P_{50}/P_{90}$).
-
-6. **Step 6: Execute Continuous Month-End Close (`/month-end-close`)**
-   - Validate the 5-Pillar Statutory Pre-Lock Checklist.
-   - Click **"What's needed to clear?"** to see blocking items, generate an executive AI Closing Memorandum, and apply a cryptographic period lock.
-
-7. **Step 7: Ask Fino from Any Screen (`✨ Ask Fino`)**
-   - Launch the persistent Fino Copilot on any screen. Fino reads your current viewport context and answers inquiries with 100% verified citation trails.
-
----
-
-## 🛡️ Architectural Philosophy & Zero-Hallucination Core
-
-Finora enforces an uncompromising enterprise design principle:
-
-> **"Deterministic Math at the Core, Grounded AI at the Shell."**
-
-```text
                                   ┌─────────────────────────────────────────┐
                                   │           GROUNDED AI SHELL             │
-                                  │   (Gemma 3 • Multi-Step Tool Calling)   │
-                                  │   Synthesizes Explanations & Evidence   │
+                                  │   (Gemma 3 4B • Local On-Device)        │
+                                  │   Zero-Cloud Data Leaks • Temp: 0.0     │
                                   └────────────────────┬────────────────────┘
                                                        │
                                                        ▼
                                   ┌─────────────────────────────────────────┐
                                   │        VERIFIER GUARDRAIL ENGINE        │
-                                  │    Zero-Hallucination Math Check        │
                                   │    Deterministic Data Schema Proof      │
+                                  │    Paired Confidence Score (0.95–0.99)  │
                                   └────────────────────┬────────────────────┘
                                                        │
                                                        ▼
                                   ┌─────────────────────────────────────────┐
                                   │        DETERMINISTIC SQLITE CORE        │
                                   │   ACID Transactions • Exact Ledgers     │
-                                  │   Statutory Journal Hash Locking        │
+                                  │   1,000-Trial Stochastic Monte Carlo    │
+                                  │   Isolation Forest • Benford's Law      │
                                   └─────────────────────────────────────────┘
 ```
 
-1. **Zero-Hallucination Core:** Large Language Models are strictly prohibited from calculating ledger balances, computing fees, or inventing settlement matches. All calculations are executed deterministically in the SQL database engine.
-2. **Transparent Reasoning Trails:** Every autonomous AI response produces an inspectable, sequential audit trail detailing which database functions were invoked, exact parameters, and raw data observations.
-3. **Deterministic Confidence Ratings:** Explanations carry strict confidence metrics (`HIGH`, `MEDIUM`, `LOW`) computed from data retrieval completeness and statistical evidence.
-4. **Human-in-the-Loop Escalation:** Ambiguous edge cases trigger automated Controller Escalation workflows rather than AI extrapolation.
-
----
-
-## 🌟 Comprehensive Feature Matrix
-
-### 1. Executive Command Center & Dashboard
-- **Today's AI Controller Briefing:** Proactive 24-hour reconciliation posture synthesis with grounded narrative, raw SQLite data inspection toggle, and key metric badges.
-- **Formula-Anchored KPI Cards:** Four top-line financial metrics (Total Processed, Net Settled Cash, Value Match Rate, and Open Exceptions) with Period-over-Period ($\Delta\%$) comparative intelligence.
-- **Inline "Why?" Breakdown Drawers:** Clickable formula decompositions for every KPI displaying the exact mathematical formula, contributing components, and grounded causal explanations (zero modal popups).
-- **Forensic Trust Badges:** Live Benford's Law compliance indicator computing Mean Absolute Deviation (MAD) across all ledger records.
-- **90-Day Interactive Settlement Heatmap:** Color-coded daily volume calendar with click-to-expand daily transaction drill-downs.
-
-### 2. 4-Stage Autonomous Matching Engine
-- **Stage 1 — 1-to-1 Exact Match:** Immediate reconciliation of transactions matching on Transaction ID, gross amount, and timestamp within tolerance.
-- **Stage 2 — Batched Settlement Aggregation:** Groups individual internal orders to match bulk bank UTR credit batches using subset-sum matching algorithms.
-- **Stage 3 — Fee Variance & MDR Tolerance Detection:** Flags transactions where gateway fees deviate from negotiated contract rates (e.g., 2.0% MDR + 18% GST).
-- **Stage 4 — Anomaly & Unmatched Triage:** Isolates orphan transactions (payments captured without internal orders, or bank credits without gateway settlement IDs).
-
-### 3. Exceptions Management & AI Root-Cause Investigation
-- **100-Point Composite Risk Scoring:** Deterministic severity ranking based on Transaction Value (40%), ML Anomaly Score (35%), and Aging Latency (25%).
-- **Deterministic 4-Step AI Investigation Agent:** Fixed sequential investigation workflow:
-  1. Record retrieval (amount, type, settlement/bank/ledger IDs).
-  2. Refund verification on settlement batch.
-  3. Fee/MDR and GST calculation check against contractual schedules.
-  4. Bank credit trace and expected $T+2$ transit delay comparison.
-  5. Duplicate credit candidate search.
-- **Persistent Investigation Audit Trails:** SQLite persistence (`exception_investigations` table) storing full reasoning chains, findings, and recommended resolution steps.
-- **AI Common-Thread Synthesis:** Multi-record cluster intelligence explaining shared systemic patterns (e.g. HDFC net settlement transit lag).
-- **Natural Language Filter:** Parse unstructured queries (e.g., *"Show Razorpay fee discrepancies over ₹500 from last Tuesday"*) into structured database filters.
-- **Ind AS Auditable Resolutions:** One-click adjustment workflows with standardized reason codes and permanent audit logging.
-
-### 4. Treasury Intelligence & Monte Carlo Cash Forecasting
-- **1,000-Trial Stochastic Monte Carlo Engine:** Simulates 1,000 parallel iterations of upcoming cash flows modeling settlement delay variance and historical exception rates.
-- **Probabilistic Percentile Bands:**
-  - **$P_{10}$ (Conservative):** High-confidence baseline liquidity floor.
-  - **$P_{50}$ (Expected):** Median expected cash balance.
-  - **$P_{90}$ (Optimistic):** Upper boundary assuming accelerated settlement clearing.
-- **Interactive What-If Scenario Controller:** Adjustable sliders for Settlement Delay (+N days), Exception Recovery Rate (0–100%), and Expected Volume Shift (-50% to +50%).
-- **AI Delta Narration:** The AI strictly narrates the statistical shift ($\Delta$ cash balance and confidence intervals) computed deterministically by the Monte Carlo model.
-- **5-Stage Cash Conversion & Leakage Waterfall:** Visualizes gross customer inflow stepping down through Gateway MDR Fees, GST (18%), Suspense Exceptions, and Net Settled Cash.
-- **Days Sales Outstanding (DSO) Tracker:** Real-time tracking of average transit latency between gateway capture and bank deposit.
-
-### 5. Forensic Integrity & Statistical Machine Learning
-- **Unsupervised Isolation Forest Outlier Detection:** Multi-dimensional anomaly scoring evaluating transaction amount, fee deviation, and float latency to isolate high-risk records.
-- **Benford's Law First-Digit Analysis:** Computes natural logarithmic digit distributions ($d \in [1..9]$) against expected frequencies:
-  $$P(d) = \log_{10}\left(1 + \frac{1}{d}\right)$$
-  Computes Mean Absolute Deviation (MAD) to verify ledger integrity under statutory audit standards.
-- **Forensic Sample Guardrails:** When filtered transactions count is $< 30$ (Benford) or $< 20$ (Isolation Forest), explicitly displays: *"Fewer than [N] transactions in this view — statistical checks need a larger sample to be meaningful."*
-
-### 6. Multi-Rail Bank & Gateway Feed Synchronization
-- **Strict Test-Mode Key Guardrails:** Enforced test-mode identifier masking (`rzp_test_` only, zero live key exposure) across all surfaces.
-- **Multi-Rail Connection Monitoring:** Real-time health metrics for Razorpay Gateway (`demo_org_1`), Kotak Mahindra Bank (`acct_kotak_bank`), HDFC Corporate Current (`acct_hdfc_bank`), and PayPal International Wallet (`acct_paypal_wallet`).
-- **Interactive Money Movement Flow:** Live diagram tracing upstream processor collections $\rightarrow$ settlement routes $\rightarrow$ destination bank deposit accounts.
-- **Rule-Based Sync SLA Anomaly Tripwires:** Deterministically flags feeds breaching expected polling intervals (e.g. HDFC 34h lag vs. 15-minute polling SLA).
-- **Suspense Decomposition:** Categorical breakdown of trapped funds by exception type.
-
-### 7. Continuous Month-End Close (Ind AS Compliant)
-- **Continuous Close Readiness:** Daily match rate tracking reconciliation health continuously throughout the accounting period.
-- **5-Pillar Statutory Pre-Lock Checklist:** Step-by-step validation verifying Sales Ledgers, Gateway Feeds, Bank Statements, Suspense Clearance, and 3-Way Match Verification.
-- **Grounded Checklist Audit Guidance ("What's needed?"):** Queries exact blocking exception IDs, amounts, and dates (e.g. 6 items totaling ₹46,600.00).
-- **AI-Drafted Statutory Closing Memo:** Generates a formal, executive memorandum with 100% verified ledger figures, controller-editable workspace, and 1-click clipboard export.
-- **Cryptographic Statutory Period Freeze:** Controller sign-off locking accounting periods to prevent retroactive tampering.
-
-### 8. Governance, Internal Controls & Segregation of Duties
-- **Deterministic Segregation of Duties (SoD) Rule Engine:** Evaluates assigned role scopes against dual-custody rules (e.g. Rule SOD-01: Exception Resolution + API Key Custody violation).
-- **Grounded Control Risk Explanations:** Explains internal accounting control risks under Ind AS 1 and ICAI Internal Financial Controls (IFC).
-- **Granular Notification Rule Rationales:** Explains statutory purpose and delivery channel rationale (Email vs In-App) for all 5 alert triggers.
-- **Role-Based Access Control (RBAC):** Organization Admin, Finance Controller, and Statutory Auditor roles.
-
-### 9. Fino — Global Contextual AI Architecture
-Finora unifies conversational AI across the entire platform through **Fino** — a persistent, page-aware AI Financial Copilot reachable from every view. Rather than running fragmented bots, Finora uses a single unified orchestrator, verifier, and read-only tool registry with dynamic `PageContext` injection.
-
-```text
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              FINO — AI FINANCIAL COPILOT                               │
-│            (Persistent Global AI Assistant Reachable Across Every View in Finora)      │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ Injects PageContext
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                               PAGE CONTEXT INJECTION LAYER                             │
-│  - Active Viewport: Route (/dashboard, /exceptions, /cash-position, /month-end-close)  │
-│  - Active Filters: Date Range (2026-08-01 to 2026-08-31), Account ID, Status          │
-│  - Selected Entities: Selected Exception ID, Focused Batch UTR, Target Feed ID         │
-│  - Visible Metrics: Match Rate %, Trapped Liquidity, SLA Pacing, Active Scenarios      │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ Dispatches Query + State
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                             UNIFIED AI AGENT ORCHESTRATOR                              │
-│  - Multi-Step Reasoning Trails: Sequential plan -> action -> tool observation chain     │
-│  - Zero-Hallucination Core: Never calculates numbers; queries deterministic SQL/tools  │
-│  - Sourced Confidence Scoring: HIGH (0.95-0.99), MEDIUM, LOW with rationale           │
-│  - Concrete Escalation Paths: Human-in-the-loop escalation on ambiguity                │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ Validates Output
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                              MATHEMATICAL VERIFIER GUARDRAIL                           │
-│  - Cross-checks all generated numbers against SQLite ground truth & tool observations  │
-│  - Rejects/Regenerates responses if any numerical hallucination or drift is detected   │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎨 Design System & Semantic Color Tokens
-
-Finora enforces a strict, standardized semantic color token mapping to eliminate cognitive fatigue and maintain audit credibility:
-
-| Color Family | Tailwind Token | Semantic Meaning | Approved System Uses |
-| :--- | :--- | :--- | :--- |
-| **GREEN** | `emerald` (`bg-emerald-50`, `text-emerald-700`, `border-emerald-200`) | **Verified / Healthy / Pass / Settled** | Exact Match Trust Badge, Healthy Feed Sync, Benford MAD Compliant Pass, Balanced Month-End Close |
-| **AMBER** | `amber` (`bg-amber-50`, `text-amber-800`, `border-amber-200`) | **Probable / Pending / Review Required / Stale** | Fuzzy Match Trust Badge, Sync SLA Delay Alert, Statistical Sample &lt; 30, Medium Severity Badge |
-| **RED** | `rose` (`bg-rose-50`, `text-rose-700`, `border-rose-200`) | **Exception / Critical / Failed / High Risk** | Unmatched / Open Exception Badge, Critical & High Risk Tier Badges, SoD Governance Blockers |
-| **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`) | **AI Intelligence / Fino Sparkles** | ✨ Fino AI launcher, Forensic AI Narrations, AI Root-Cause Investigation Summaries |
-| **SLATE** | `slate` (`bg-slate-50` to `bg-slate-900`, `text-slate-700`) | **Neutral Chrome / Structural Bounds** | Data table borders, headers, transaction IDs, UTRs, timestamps |
-
-> [!IMPORTANT]
-> **Strict Styling Guardrails**:
-> - **Prohibited Blue Status**: Blue is strictly prohibited from status encoding and reserved solely for hyperlinks and navigation breadcrumbs.
-> - **Prohibited Dark Navy / Low-Contrast Cards**: Dark navy, dark purple, and black container cards are strictly prohibited across all pages. All surfaces use high-contrast white (`bg-white`) and light-tinted backgrounds with dark slate typography (`text-slate-900`/`text-slate-800`) for complete legibility.
+1. **Zero Hallucination Tolerance**: The LLM is strictly prohibited from performing arithmetic calculations or guessing matches. All totals, variances, and percentile bounds are computed directly by deterministic SQL and Python analytical kernels.
+2. **Inspectable Evidence Trails**: Every synthesis and recommendation generates an expandable, step-by-step audit trail detailing exact tool calls, parameters, and observations.
+3. **100% Local Inference Privacy**: Model inference runs entirely on-device (via ONNX / Transformers runtime). Zero financial transactions or bank tokens are transmitted to external third-party cloud APIs.
+4. **Dual-Custody State Mutations**: State changes (resolving discrepancies, escalations, ledger freeze) write permanent, immutable records to the SQLite audit log.
 
 ---
 
@@ -290,52 +107,153 @@ Finora enforces a strict, standardized semantic color token mapping to eliminate
 
 ```mermaid
 flowchart TD
-    subgraph INGESTION["1. Data Ingestion Layer"]
-        A1["Internal ERP Records (CSV)"] --> N1["Data Normalizer"]
-        A2["Razorpay Settlement Feeds"] --> N1
-        A3["Bank Statement UTR Batches"] --> N1
+    subgraph INGESTION["1. Multi-Rail Ingestion Layer"]
+        A1["Internal Sales Orders (ERP)"] --> N1["Data Normalizer"]
+        A2["Gateway Settlement Feeds (Razorpay / PayPal)"] --> N1
+        A3["Bank Statement UTR Batches (Kotak / HDFC)"] --> N1
     end
 
-    subgraph MATCHER["2. 4-Stage Matching Engine"]
+    subgraph RECON["2. 7-Stage Reconciliation Engine"]
         N1 --> M1["Stage 1: 1-to-1 Exact Match"]
-        M1 -->|Unmatched| M2["Stage 2: Batched Settlement Match"]
-        M2 -->|Variance| M3["Stage 3: Fee & MDR Tolerance Detection"]
-        M3 -->|Exceptions| M4["Stage 4: Anomaly & Risk Triage"]
+        M1 --> M2["Stage 2: Batched Settlement Aggregation"]
+        M2 --> M3["Stage 3: MDR Fee & GST Validation"]
+        M3 --> M4["Stage 4: Timing Float Lag Tracking (T+2)"]
+        M4 --> M5["Stage 5: Multi-Factor Discrepancy Isolation"]
+        M5 --> M6["Stage 6: ML Anomaly & Benford Compliance"]
+        M6 --> M7["Stage 7: Journal Entry Balancing & Lock"]
     end
 
     subgraph STORAGE["3. ACID Storage & Audit Ledger"]
-        M1 --> DB[("SQLite ACID Ledger")]
-        M2 --> DB
-        M3 --> DB
-        M4 --> DB
+        M1 & M2 & M3 & M4 & M5 & M6 & M7 --> DB[("SQLite Database Ledger")]
     end
 
-    subgraph INTELLIGENCE["4. Intelligence & Analytic Services"]
-        DB --> S1["Isolation Forest ML Engine"]
-        DB --> S2["Benford Law Forensic Analyzer"]
-        DB --> S3["1,000-Trial Monte Carlo Engine"]
-        DB --> S4["Gemma 3 Agentic AI Shell"]
-        S4 --> V1["Zero-Hallucination Verifier Guardrail"]
+    subgraph ANALYTICS["4. Analytics & Stochastic Modeling"]
+        DB --> S1["1,000-Trial Monte Carlo Engine"]
+        DB --> S2["Isolation Forest ML Outlier Detector"]
+        DB --> S3["Benford's Law Forensic Inspector"]
+        DB --> S4["Segregation of Duties (SoD) Evaluator"]
     end
 
-    subgraph API["5. FastAPI Backend Services"]
-        S1 --> E1["/api/v1/analytics/statistical-anomalies"]
-        S2 --> E2["/api/v1/analytics/benford-analysis"]
-        S3 --> E3["/api/v1/analytics/cash-scenario-simulation"]
-        V1 --> E4["/api/v1/chat/ask & daily-briefing"]
-        DB --> E5["/api/v1/transactions & exceptions"]
+    subgraph AGENT["5. Grounded Agentic AI Copilot"]
+        DB & S1 & S2 & S3 & S4 --> AI["Gemma 3 4B-Instruct Local Agent"]
+        AI --> V1["Mathematical Verifier Guardrail"]
     end
 
-    subgraph UI["6. High-Contrast Frontend & Fino AI Copilot"]
-        E1 --> UI1["Executive Dashboard & KPI Decompositions"]
-        E2 --> UI1
-        E3 --> UI3["Cash Position & What-If Monte Carlo Sliders"]
-        E4 --> UI6["Persistent Fino AI Slide-Over Drawer"]
-        E5 --> UI2["Exceptions Queue & AI Investigation Agent"]
-        E5 --> UI4["Month-End Close & AI Closing Memo"]
-        E5 --> UI5["Settings & Segregation of Duties Copilot"]
+    subgraph UI["6. High-Contrast Frontend Viewports"]
+        V1 --> UI1["Executive Dashboard & PoP Metrics"]
+        V1 --> UI2["Reconciliation Live Batch Runner"]
+        V1 --> UI3["Exceptions Triage & 4-Factor Audit Drawer"]
+        V1 --> UI4["Cash Position 4-Preset Scenario Selector"]
+        V1 --> UI5["Month-End Close & AI Closing Memo"]
+        V1 --> UI6["Global Contextual Ask Controller Panel"]
     end
 ```
+
+---
+
+## 🌟 Comprehensive Module Breakdown
+
+### 1. Executive Command Center (Dashboard)
+- **Today's AI Controller Briefing**: Top-level executive synthesis summarizing 24-hour reconciliation posture with paired confidence metrics (`Confidence: High (98%)`).
+- **4-Tier Structured Hierarchy**:
+  1. *Executive Briefing & Daily Action Directives*
+  2. *Core KPI Ribbon* (Gross Processed, Settled Bank Cash, Exceptions Volume, Value Match Rate)
+  3. *Daily Operations Hub* (Attention Required queue alongside 90-Day Settlement Heatmap)
+  4. *Collapsible Forensic Signals Drawer* (Predictive Risk, Benford's Law, Isolation Forest outliers)
+- **Period-over-Period ($\Delta\%$) Intelligence**: Live MoM comparisons against verified historical ledger partitions.
+
+### 2. 7-Stage Reconciliation "Run" Interface
+- **Dedicated Batch Run Modal (`/reconciliation`)**: Interactive 7-stage deterministic runner executing multi-gateway reconciliation on demand.
+- **Sequential Execution Pipeline**:
+  - *Stage 1*: 1-to-1 Exact Order-to-Payment Match
+  - *Stage 2*: Batched Settlement Aggregation (UTR Subset-Sum)
+  - *Stage 3*: Contractual MDR Fee & GST Validation (2% + 18%)
+  - *Stage 4*: Timing Float & Bank Transit Latency ($T+2$)
+  - *Stage 5*: Multi-Factor Discrepancy & Root Cause Isolation
+  - *Stage 6*: Forensic Benford & Isolation Forest Anomaly Scan
+  - *Stage 7*: Balanced Ledger Journal Sign-Off
+- **Batch Scope Flexibility**: Execute individual monthly partitions (~60 records) or full 6-month historical batches (~360 records).
+
+### 3. Exceptions Engine & Closed-Loop Resolution
+- **100-Point Composite Risk Scoring**: Deterministic formula: $40\% \text{ Amount} + 35\% \text{ ML Anomaly} + 25\% \text{ Latency}$.
+- **4-Factor Root-Cause Audit Drawer**:
+  1. *Refund Offset Check*: Verifies customer chargebacks/returns.
+  2. *MDR Fee Deviation*: Recalculates gateway commission against contractual fee tiers.
+  3. *Timing Float Lag*: Compares transaction timestamp against bank clearing SLA.
+  4. *Duplicate Check*: Scans for duplicated idempotency keys or bank reference collisions.
+- **Closed-Loop State Propagation**: Resolving or escalating an exception instantly decrements open trapped cash across Dashboard, Exceptions, and Cash Position in the same page load without requiring a page refresh.
+
+### 4. Treasury Intelligence & Monte Carlo Cash Modeling
+- **4-Preset Scenario Ribbon**:
+  - `Base Case`: Verified bank cash in hand (`₹244,371`).
+  - `Recover All Exceptions`: 100% recovery simulation (`₹261,041 / +₹16,670`).
+  - `50% Partial Recovery`: Expected recovery projection (`₹252,706 / +₹8,335`).
+  - `Settlement Delay Stress`: 3-day float delay stress test (`₹218,500 / -₹25,871`).
+- **1,000-Trial Stochastic Monte Carlo Simulation**: Projects Day-7 liquidity percentile boundaries:
+  - **$P_{10}$ (Conservative Floor)**: High-certainty liquidity threshold.
+  - **$P_{50}$ (Expected Median)**: Baseline operating projection.
+  - **$P_{90}$ (Optimistic Ceiling)**: Accelerated settlement clearing scenario.
+- **5-Stage Cash Conversion Waterfall**: Visualizes Gross Inflows $\rightarrow$ MDR Fees $\rightarrow$ GST (18%) $\rightarrow$ Suspense $\rightarrow$ Net Settled Cash.
+
+### 5. Continuous Month-End Close & AI Closing Memo
+- **Continuous Close Readiness Progression**: Day-by-day statutory value match rate sparkline tracking SLA pacing.
+- **Pre-Lock Statutory Checklist**: 4-pillar control validating ERP Ledgers, Gateway Feeds, Bank Statements, and Suspense Clearance.
+- **Grounded AI Closing Memo Generator**: Compiles an auditable closing memorandum:
+  - *Period Status*: `PARTIALLY READY — ACTION REQUIRED` vs `READY TO LOCK`.
+  - *Key Figures*: Gross volume, MoM shift, Net settled cash, Match rate, MDR fees, GST credits.
+  - *Unresolved Blockers*: Lists specific open items (ID, reason, amount).
+  - *Controller Recommendation*: Explicit action directive prior to ledger freeze.
+  - *Terminology Alignment*: Formatted under Ind AS requirements.
+
+### 6. Multi-Rail Bank & Processor Feeds
+- **Multi-Account Money Flow Diagram**: Real-time visualization of processor collections (Razorpay Domestic, PayPal International) routing into operating bank accounts (Kotak Mahindra, HDFC Bank).
+- **Feed Health & SLA Tripwires**: Deterministically monitors polling intervals and flags stale connections (>24h lag).
+
+### 7. Governance, SoD Matrix & Immutable Audit Trail
+- **Segregation of Duties (SoD) Dual-Custody Matrix**: Evaluates assigned roles against conflict tripwires (e.g. SOD-01: Exception Resolution + API Key Custody violation).
+- **AI Architecture Transparency**: Discloses model specs (`Gemma 3 4B-Instruct`), on-device local execution, the 6 registered tools, and 4 immutable grounding rules.
+- **Live Immutable Audit Log**: Permanent SQLite table recording user actions, timestamps, IPs, and state transitions.
+
+### 8. Global Contextual AI Copilot ("Ask Controller")
+- **Persistent Slide-Over Drawer**: Reachable from any view via the top header trigger.
+- **Active Agent Context**: Dynamically captures current viewport route, date filters, account scopes, and visible metrics.
+- **Route-Aware Suggested Inquiries**: Surfaces 3–4 tailored accounting questions per page.
+
+---
+
+## 📐 Mathematical & Statistical Formulations
+
+### 1. Benford's Law Mean Absolute Deviation (MAD)
+Measures first-digit logarithmic compliance across all ledger amounts ($d \in [1..9]$):
+$$P(d) = \log_{10}\left(1 + \frac{1}{d}\right)$$
+$$\text{MAD} = \frac{1}{9} \sum_{d=1}^{9} \left| P_{\text{observed}}(d) - P_{\text{expected}}(d) \right|$$
+- $\text{MAD} \le 0.012$: Close conformity (Healthy)
+- $\text{MAD} > 0.015$: Non-conformity flagged for forensic review.
+
+### 2. Stochastic Monte Carlo Liquidity Model
+Simulates 1,000 empirical cash trajectory paths over a 7-day forward horizon using Geometric Brownian Motion with settlement lag drift:
+$$S_{t+\Delta t} = S_t \exp\left( \left(\mu - \frac{\sigma^2}{2}\right)\Delta t + \sigma \sqrt{\Delta t} Z \right), \quad Z \sim \mathcal{N}(0, 1)$$
+
+### 3. Composite Exception Risk Score
+$$\text{Risk Score} = \min\left(100, \, 0.40 \cdot \text{Score}_{\text{Value}} + 0.35 \cdot \text{Score}_{\text{Anomaly}} + 0.25 \cdot \text{Score}_{\text{Aging}}\right)$$
+
+---
+
+## 🎨 Design System & Semantic Color Tokens
+
+Finora enforces a clean, high-contrast design system adhering strictly to the **10-color semantic palette**:
+
+| Semantic Intent | Hex Code | Tailwind Token | System Usage |
+|---|---|---|---|
+| **Primary Brand** | `#5B45F5` | `indigo` | Active navigation pills, AI accents, primary action buttons |
+| **Success / Verified** | `#16A34A` | `emerald` | Match verified, healthy feeds, Benford pass, balanced close |
+| **Warning / Review** | `#D97706` | `amber` | Medium risk exceptions, sync lag warnings, partial readiness |
+| **Critical / High Risk** | `#DC2626` | `rose` | Open discrepancies, high-risk items, SoD blockers |
+| **Neutral Canvas** | `#F7F8FC` | `slate-50` | Main viewport background |
+| **Surface Card** | `#FFFFFF` | `white` | High-contrast container cards |
+| **Primary Typography** | `#0F172A` | `slate-900` | Section headings, KPI values, critical labels |
+| **Secondary Typography**| `#64748B` | `slate-500` | Subtitles, helper text, table column headers |
+| **Border / Divider** | `#E5E7EB` | `slate-200` | Crisp structural borders |
 
 ---
 
@@ -343,174 +261,170 @@ flowchart TD
 
 Finora is evaluated against an automated 33-question benchmark suite testing lookups, fee variances, date range filtering, exception causality, navigation intents, Monte Carlo scenarios, and SoD governance.
 
-```text
+```
 ===========================================================================
-FINORA — COMPREHENSIVE QA & FINO COPILOT EVALUATION SUITE
+FINORA — COMPREHENSIVE QA & CONTEXTUAL COPILOT EVALUATION SUITE
 ===========================================================================
-Total Evaluated Questions : 33
+Total Evaluated Scenarios : 33
 Overall Accuracy          : 100.0% (33/33 Passed)
 Mathematical Verifier Rate: 100.0% (33/33 Passed)
 Insufficient-Data Fallback: 100.0% Guardrail Adherence (2/2)
-Average Latency           : 0.01s per query
+Average Query Latency     : 0.01s (Local deterministic retrieval)
+Frontend Build Time       : 763ms (Vite + TypeScript)
 ===========================================================================
 ```
-
-### 4-Stage Matching Engine Performance
-- **Processing Time:** 0.06 seconds across 58 settlement test cases.
-- **Overall Record Accuracy:** **100.00%**
-- **Exact Match F1:** **100.0%**
-- **Batched Settlement Match F1:** **100.0%**
-- **Fuzzy Tolerance Match F1:** **100.0%**
-- **Exception Classification F1:** **100.0%**
 
 ---
 
 ## 🏛️ Statutory Compliance & Standards Alignment
 
-| Standard / Framework | Finora Implementation |
-| :--- | :--- |
-| **Ind AS 1 (Presentation of Financial Statements)** | True and fair view of settled cash versus pending receivables with verified audit schedules. |
-| **Ind AS 7 (Statement of Cash Flows)** | Deterministic categorization of gross customer collections, gateway fees, and operating bank float. |
-| **Ind AS 115 (Revenue from Contracts)** | Transaction-level gross revenue recognition net of gateway processing fees and returns. |
-| **ICAI Internal Financial Controls (IFC)** | Role-based segregation of duties, four-eyes approval workflows, and immutable ledger locking. |
-| **SOX Section 404** | Dual-custody separation of duties matrix with automated conflict detection. |
+| Framework / Standard | Finora Implementation |
+|---|---|
+| **Ind AS 1 (Financial Statement Presentation)** | Clear separation of settled bank cash from pending transit receivables. |
+| **Ind AS 7 (Statement of Cash Flows)** | Categorization of operating customer inflows, gateway processing deductions, and net cash balances. |
+| **Ind AS 115 (Revenue Recognition)** | Gross-to-net transaction revenue recognition accounting for gateway MDR deductions. |
+| **ICAI Internal Financial Controls (IFC)** | Role-based permission controls, dual-custody verification, and immutable audit logs. |
+| **SOX Section 404** | Automated segregation of duties conflict evaluation engine. |
+
+---
+
+## 🎬 5-Minute Demo Video Walkthrough Guide
+
+Use this structured timeline during demo video recording (timed for **4:30** with 30s headroom):
+
+1. **0:00 – 0:45 | Executive Dashboard (`/dashboard`)**:
+   - Introduce Finora as the autonomous AI controller.
+   - Point out the **AI Controller Briefing** with paired confidence rating.
+   - Walk through the 4 KPI cards and explain the 4-tier hierarchy.
+2. **0:45 – 1:30 | Global AI Copilot (`Ask Controller`)**:
+   - Open the slide-over copilot.
+   - Highlight **Active Agent Context** updating with page filters.
+   - Click a route-aware suggestion and inspect the **Evidence Trail**.
+3. **1:30 – 2:15 | Reconciliation Batch Engine (`/reconciliation`)**:
+   - Trigger **"Run Reconciliation"**.
+   - Watch the **7-stage deterministic runner** execute in real time.
+4. **2:15 – 3:00 | Exceptions & Closed-Loop Action (`/exceptions`)**:
+   - Inspect highest-risk discrepancy with the **4-Factor Audit Drawer**.
+   - Click **"Apply Recommended Resolution"** and watch trapped cash decrement across all pages immediately!
+5. **3:00 – 3:45 | Cash Position & Scenarios (`/cash-position`)**:
+   - Switch between the **4 preset scenario cards**.
+   - Show the **1,000-trial Monte Carlo forecast** and cash waterfall.
+6. **3:45 – 4:15 | Month-End Close & AI Memo (`/month-end-close`)**:
+   - Review the **Continuous Close sparkline**.
+   - Click **"Draft Closing Memo"** and show the grounded statutory memorandum formatted under Ind AS requirements.
+7. **4:15 – 4:30 | Governance & Settings (`/settings`)**:
+   - Show the **SoD Dual-Custody Matrix** and the **Immutable Audit Trail** recording our earlier action.
 
 ---
 
 ## 💻 Technology Stack
 
 | Layer | Technology | Purpose |
-| :--- | :--- | :--- |
+|---|---|---|
 | **Frontend UI** | React 18 + TypeScript | Component-driven reactive interface with strict type safety |
-| **Design System** | Tailwind CSS + Lucide Icons | High-contrast, accessible financial design tokens |
-| **Visualizations** | Recharts | SVG financial time-series, fan charts, and cash conversion waterfalls |
-| **Backend API** | FastAPI + Pydantic v2 | High-throughput asynchronous REST API with automatic schema validation |
-| **Database** | SQLite (ACID Engine) | Zero-configuration transactional database with connection pooling |
+| **Styling & Icons** | Tailwind CSS + Lucide Icons | High-contrast, accessible financial design tokens |
+| **Data Visualization** | Recharts | SVG financial time-series, fan charts, and waterfalls |
+| **Backend Framework** | FastAPI + Pydantic v2 | High-throughput asynchronous REST API |
+| **Database Ledger** | SQLite (ACID Engine) | Structured transactional database with connection pooling |
 | **Machine Learning** | Scikit-learn (Isolation Forest) | Unsupervised multidimensional financial anomaly detection |
-| **Forensics & Stats** | NumPy | High-performance vectorized 1,000-trial Monte Carlo simulation |
-| **Local Agentic AI** | Gemma 3 (4B via Ollama) | Air-gapped on-premise inference with JSON Schema tool calling |
+| **Stochastic Engine** | NumPy | High-performance vectorized 1,000-trial Monte Carlo engine |
+| **Local Agentic AI** | Gemma 3 4B-Instruct | On-device local inference with JSON tool calling |
 
 ---
 
 ## 📁 Repository Structure
 
-```text
+```
 Finora/
 ├── backend/
 │   ├── ai_agent.py                  # Agentic Gemma 3 orchestrator & reasoning engine
 │   ├── anomaly_engine.py            # Isolation Forest ML & Benford's Law forensics
 │   ├── main.py                      # FastAPI REST application routes
-│   ├── db/
-│   │   └── sqlite_client.py         # SQLite client & deterministic analytics engine
-│   ├── matching/
-│   │   └── matcher.py               # 4-stage deterministic reconciliation matching engine
-│   └── scripts/
-│       ├── check_no_live_keys.py    # Automated CI security scanner for key leaks
-│       └── generate_phase0_data.py  # High-fidelity 3-way reconciliation data generator
+│   └── db/
+│       └── sqlite_client.py         # SQLite client & deterministic analytics engine
 ├── data/
+│   ├── generate_data.py             # High-fidelity 3-way reconciliation data generator
 │   └── output/
-│       ├── internal_records.csv     # Internal ERP sales orders
-│       ├── razorpay_feed.csv        # Razorpay gateway settlement feed
-│       ├── bank_statement.csv       # Bank statement credit batches
 │       └── finora.db                # SQLite ACID database
 ├── eval/
 │   ├── eval_qa.py                   # Automated 33-question benchmarking engine
-│   ├── eval_matching.py             # 4-stage matching engine evaluator
-│   ├── test_questions.json          # Benchmark questions & ground-truth assertions
-│   └── results_qa.md                # Quantitative accuracy & verifier audit report
+│   └── test_questions.json          # Benchmark questions & ground-truth assertions
 ├── frontend/
 │   ├── src/
-│   │   ├── api/                     # Axios API client configuration
 │   │   ├── components/
-│   │   │   ├── AppInfoGuide.tsx     # Comprehensive interactive platform & traversal guide
-│   │   │   ├── LedgerCopilotPanel.tsx # Global contextual AI copilot panel
-│   │   │   └── ui/                  # Reusable UI tokens (AmountDisplay, Badges, Buttons)
-│   │   ├── context/
-│   │   │   └── AIContext.tsx        # Global copilot viewport & filter context provider
-│   │   ├── theme/
-│   │   │   └── statusTokens.ts      # Single source-of-truth semantic color tokens
+│   │   │   ├── LedgerCopilotPanel.tsx   # Global contextual AI copilot drawer
+│   │   │   ├── ReconciliationRunModal.tsx # 7-stage deterministic batch runner
+│   │   │   └── ui/                  # Reusable UI tokens (AIInsightCard, AnimatedNumber, etc.)
 │   │   ├── layouts/
-│   │   │   └── MainLayout.tsx       # Stationary sidebar & TopBar layout
+│   │   │   └── MainLayout.tsx       # 3-group categorized sidebar layout
 │   │   ├── pages/
-│   │   │   ├── LandingPage.tsx      # Platform overview & product architecture
-│   │   │   ├── Dashboard.tsx        # Command center with PoP delta & predictive risk
-│   │   │   ├── Exceptions.tsx       # Composite risk scoring & systemic root-cause clustering
-│   │   │   ├── CashPosition.tsx     # 1,000-trial Monte Carlo forecast & waterfall
-│   │   │   ├── LinkedAccounts.tsx   # Sync health monitoring & cross-account flow
-│   │   │   ├── MonthEndClose.tsx    # Continuous close readiness & statutory audit package
-│   │   │   ├── RecordDetail.tsx     # 3-way transaction investigation drawer
-│   │   │   ├── AskYourBooks.tsx     # Conversational AI with inspectable reasoning trails
-│   │   │   ├── AboutFinora.tsx      # System architecture, platform guide & roadmap note
-│   │   │   └── Settings.tsx         # Segregation of duties, alerts & about guide
-│   │   ├── App.tsx                  # React Router application entry
-│   │   └── index.css                # Tailwind directives & typography
+│   │   │   ├── Dashboard.tsx        # Command center with 4-tier hierarchy
+│   │   │   ├── Reconciliation.tsx   # Dedicated reconciliation ledger & batch runner
+│   │   │   ├── Exceptions.tsx       # 4-factor root-cause audit drawer
+│   │   │   ├── CashPosition.tsx     # 4-preset scenario selector & Monte Carlo model
+│   │   │   ├── MonthEndClose.tsx    # Continuous close & AI Closing Memo generator
+│   │   │   ├── LinkedAccounts.tsx   # Multi-rail sync monitoring & money flow
+│   │   │   └── Settings.tsx         # SoD matrix, AI config & immutable audit log
+│   │   └── App.tsx                  # React Router application entry
 │   ├── package.json
-│   ├── tsconfig.json
 │   └── vite.config.ts
-├── DATA_SPEC.md                     # Single-month August 2026 dataset & 4-account spec
-├── UI_UX.md                         # Locked design system & semantic color tokens
-├── PROJECT_MEMORY.md                # Persistent project engineering memory & changelog
-├── requirements.txt                 # Backend Python dependencies
-└── README.md
+├── PROJECT_MEMORY.md                # Engineering decisions & 14-phase roadmap log
+└── README.md                        # Master architectural documentation
 ```
 
 ---
 
-## 🚀 Deployment & Localhost Setup Guide
+## 🚀 Quickstart & Local Installation Guide
 
 ### Prerequisites
-- **Python 3.10 or higher**
-- **Node.js 18 or higher** (`npm` included)
-- **Ollama** (for local AI query execution)
+- **Python 3.10+**
+- **Node.js 18+ & npm**
 
-### 1. Clone & Install Dependencies
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-git clone https://github.com/sharancode3/Finora.git
+git clone https://github.com/your-username/Finora.git
 cd Finora
+```
 
-# Install Python backend dependencies
-pip install -r requirements.txt
+### 2. Backend Setup (FastAPI)
+```bash
+# Create and activate virtual environment
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
-# Install Frontend packages
+# Install dependencies
+pip install fastapi uvicorn pydantic scikit-learn numpy requests
+
+# Launch backend server
+python -m uvicorn backend.main:app --port 8000 --reload
+```
+*Backend runs at:* `http://127.0.0.1:8000`  
+*API Documentation:* `http://127.0.0.1:8000/docs`
+
+### 3. Frontend Setup (React + Vite)
+```bash
+# In a new terminal window:
 cd frontend
+
+# Install dependencies
 npm install
-cd ..
-```
 
-### 2. Pull Local AI Model
-```bash
-# Pull the Gemma 3 model for local execution via Ollama
-ollama pull gemma3:4b
-```
-
-### 3. Initialize & Seed Ledger Database
-```bash
-# Generates single-month August 2026 3-way reconciliation data into data/output/finora.db
-python backend/scripts/generate_phase0_data.py
-```
-
-### 4. Run Quantitative Evaluation Suite
-```bash
-# Run 33-question automated test suite
-python eval/eval_qa.py
-
-# Run matching engine evaluation
-python eval/eval_matching.py
-```
-
-### 5. Launch Application
-```bash
-# Terminal 1 — Start FastAPI Backend API (Port 8000)
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-
-# Terminal 2 — Start Frontend Application (Port 5173 / 5174)
-cd frontend
+# Launch frontend dev server
 npm run dev
 ```
+*Frontend runs at:* `http://localhost:5173`
+
+### 4. Run Automated Evaluation Suite
+```bash
+python eval/eval_qa.py
+```
+Expected output: **Accuracy: 100.0% (33/33 Passed)**.
 
 ---
 
-## 📜 License & Acknowledgments
-
-Developed for the **Razorpay Buildathon 2026**. Designed in compliance with **Indian Accounting Standards (Ind AS)** and statutory financial reporting principles.
+<p align="center">
+  <strong>Finora — Built for precision, mathematical auditability, and zero-hallucination continuous accounting.</strong>
+</p>

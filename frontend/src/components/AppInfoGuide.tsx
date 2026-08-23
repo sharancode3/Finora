@@ -22,12 +22,17 @@ import {
   DollarSign,
   AlertTriangle,
   FileText,
-  Workflow
+  Workflow,
+  Brain,
+  Cpu,
+  Database,
+  LineChart,
+  GitBranch
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AppInfoGuide() {
-  const [activeSection, setActiveSection] = useState<'walkthrough' | 'benefits' | 'features' | 'roadmap'>('walkthrough');
+  const [activeSection, setActiveSection] = useState<'ai_engines' | 'walkthrough' | 'benefits' | 'features' | 'roadmap'>('ai_engines');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
 
   const steps = [
@@ -151,30 +156,41 @@ export default function AppInfoGuide() {
         {/* Quick Nav Tabs */}
         <div className="flex items-center gap-2 pt-2 border-t border-slate-100 flex-wrap">
           <button
-            onClick={() => setActiveSection('walkthrough')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeSection === 'walkthrough'
-                ? 'bg-indigo-600 text-white shadow-xs'
+            onClick={() => setActiveSection('ai_engines')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeSection === 'ai_engines'
+                ? 'bg-[#5B45F5] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            1. User Walkthrough (Start to Finish)
+            <Sparkles size={13} />
+            Where &amp; How AI Is Used (6 Core Engines)
+          </button>
+          <button
+            onClick={() => setActiveSection('walkthrough')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeSection === 'walkthrough'
+                ? 'bg-[#5B45F5] text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+            }`}
+          >
+            1. User Walkthrough
           </button>
           <button
             onClick={() => setActiveSection('benefits')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'benefits'
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-[#5B45F5] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            2. Small vs. Large Business Benefits
+            2. Business Value &amp; ROI
           </button>
           <button
             onClick={() => setActiveSection('features')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'features'
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-[#5B45F5] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -184,7 +200,7 @@ export default function AppInfoGuide() {
             onClick={() => setActiveSection('roadmap')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'roadmap'
-                ? 'bg-indigo-600 text-white shadow-xs'
+                ? 'bg-[#5B45F5] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -192,6 +208,162 @@ export default function AppInfoGuide() {
           </button>
         </div>
       </div>
+
+      {/* SECTION 0: WHERE & HOW AI IS USED (6 OPERATIONAL ENGINES) */}
+      {activeSection === 'ai_engines' && (
+        <div className="space-y-5 animate-in fade-in duration-200 ease-out">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Sparkles size={18} className="text-[#5B45F5]" />
+                Where &amp; How AI Is Used in Finora
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Every AI capability is live, grounded in verified ledger data, and verifiable through numbered evidence trails.
+              </p>
+            </div>
+            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0] self-start sm:self-auto">
+              6 Active AI/ML Engines
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            {/* Engine 1: Fino Autonomous Copilot */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
+                    <Brain size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-[#5B45F5] border border-indigo-200 font-mono">
+                    LLM Function Calling
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">1. Autonomous Ledger Copilot (Fino)</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Natural language question-answering powered by dynamic function calling over read-only SQLite ledger tables with route-aware page context and automated hallucination verification.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> Floating Copilot button &amp; <code>/ask-your-books</code></div>
+                <div><strong>Evidence:</strong> Inspectable tool execution chain with paired confidence scores.</div>
+              </div>
+            </div>
+
+            {/* Engine 2: 4-Factor Deterministic Root-Cause Investigator */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-[#ECFDF3] text-[#16A34A] rounded-xl border border-[#BBF7D0]">
+                    <ShieldCheck size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#16A34A] border border-emerald-200 font-mono">
+                    Audit Verification
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">2. Deterministic Root-Cause Agent</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Sequentially verifies contract MDR fee schedules (2.0%), T+2 bank transit timing, GST/TDS tax deductions, and bank deposit UTRs to explain exact rupee discrepancies.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> <code>/exceptions</code> &amp; <code>/record/exception/:id</code></div>
+                <div><strong>Output:</strong> 4-check audit trail with 1-click recommended resolution.</div>
+              </div>
+            </div>
+
+            {/* Engine 3: Isolation Forest Machine Learning */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-[#FFF7ED] text-[#D97706] rounded-xl border border-[#FED7AA]">
+                    <Cpu size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-[#D97706] border border-amber-200 font-mono">
+                    IsolationForest (scikit-learn)
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">3. Unsupervised ML Anomaly Detection</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Multi-dimensional feature isolation trees evaluate fee-to-gross ratio, transit delay, and transaction scale to catch non-obvious fraud or settlement drift without rigid rules.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> Executive Dashboard (Unsupervised ML Signal Card)</div>
+                <div><strong>Output:</strong> Anomaly score ranking with isolated feature explanations.</div>
+              </div>
+            </div>
+
+            {/* Engine 4: Benford's Law Forensic Integrity */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-200">
+                    <Scale size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono">
+                    MAD &lt; 0.012 Target
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">4. Forensic Statistical Verifier</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Evaluates leading digit 1–9 distributions against logarithmic authentic frequencies to mathematically prove ledger authenticity or detect synthetic data fabrication.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> Executive Dashboard (Benford's Law Card)</div>
+                <div><strong>Output:</strong> Conformity tier (Close Conformity, Non-Conformity).</div>
+              </div>
+            </div>
+
+            {/* Engine 5: 1,000-Trial Monte Carlo Treasury Forecast */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-purple-50 text-purple-700 rounded-xl border border-purple-200">
+                    <LineChart size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                    1,000 Stochastic Trials
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">5. Stochastic Treasury Simulator</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Dynamic geometric Brownian bridge simulation models P10 (conservative downside), P50 (expected), and P90 (upside) liquidity under settlement delay or recovery shifts.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> <code>/cash-position</code> (Interactive Fan Chart)</div>
+                <div><strong>Output:</strong> 7-day fan forecast with real-time what-if scenario synthesis.</div>
+              </div>
+            </div>
+
+            {/* Engine 6: Continuous Accounting Close Memo Drafter */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
+                    <FileText size={18} />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+                    Ind AS 1, 7, 115
+                  </span>
+                </div>
+                <h4 className="font-bold text-sm text-slate-900">6. Continuous Close &amp; Memo Drafter</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Calculates period-over-period delta variances, tracks 5 statutory checklist pillars, and synthesizes executive CFO closing memos ready for committee signature.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                <div><strong>Where to see it:</strong> <code>/month-end-close</code></div>
+                <div><strong>Output:</strong> Formatted memorandum for record &amp; cryptographic period freeze.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* SECTION 1: USER WALKTHROUGH (START TO FINISH) */}
       {activeSection === 'walkthrough' && (

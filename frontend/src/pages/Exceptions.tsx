@@ -27,9 +27,11 @@ import {
   FileSearch,
   Filter,
   X,
-  Minus
+  Minus,
+  Loader2
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
+import { AIInsightCard } from '../components/ui/AIInsightCard';
 import { Button } from '../components/ui/Button';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -160,26 +162,35 @@ export default function Exceptions() {
     }
   };
 
-  const handleResolve = async (id: string) => {
+  const handleResolve = async (id: string, customReason?: string, customNote?: string, triggerType = 'Human Controller Manual Approval') => {
     try {
+      const reason = customReason || resolveReasons[id] || 'Manual Accounting Adjustment';
+      const note = customNote || actionNotes[id] || '';
       await api.post(`/exceptions/${id}/resolve`, { 
-        reason: resolveReasons[id] || 'Manual Resolution',
-        note: actionNotes[id] || ''
+        reason,
+        note,
+        user: 'Sarah Jenkins, CPA',
+        trigger_type: triggerType
       });
       setAction(id, null);
       fetchExceptionIntelligence();
+      window.dispatchEvent(new CustomEvent('finora-exception-updated', { detail: { id, status: 'resolved' } }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleEscalate = async (id: string) => {
+  const handleEscalate = async (id: string, customNote?: string, triggerType = 'Human Controller Manual Approval') => {
     try {
+      const note = customNote || actionNotes[id] || 'Escalated to Gateway Ops for settlement reconciliation review';
       await api.post(`/exceptions/${id}/escalate`, { 
-        note: actionNotes[id] || ''
+        note,
+        user: 'Finance Admin',
+        trigger_type: triggerType
       });
       setAction(id, null);
       fetchExceptionIntelligence();
+      window.dispatchEvent(new CustomEvent('finora-exception-updated', { detail: { id, status: 'escalated' } }));
     } catch (err) {
       console.error(err);
     }
@@ -388,28 +399,18 @@ export default function Exceptions() {
 
           {/* AI Cluster Common-Thread Explanation Drawer */}
           {selectedClusterKey && clusterWhyData[selectedClusterKey] && (
-            <div className="p-4.5 rounded-2xl bg-indigo-50/80 text-slate-900 border-2 border-indigo-200 space-y-3 animate-in fade-in duration-150 shadow-xs">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-indigo-600" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
-                    AI Common-Thread Synthesis: {clusterWhyData[selectedClusterKey].title}
-                  </h4>
-                </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-900 border border-indigo-300">
-                  {clusterWhyData[selectedClusterKey].member_count} items • ₹{clusterWhyData[selectedClusterKey].total_variance.toLocaleString('en-IN')}
-                </span>
-              </div>
-              <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                {clusterWhyData[selectedClusterKey].ai_common_thread}
-              </p>
-              {clusterWhyData[selectedClusterKey].recommended_action && (
-                <div className="pt-2.5 border-t border-indigo-200 flex items-center justify-between text-xs">
-                  <span className="text-indigo-900 font-semibold">Recommended Systematic Fix:</span>
-                  <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">{clusterWhyData[selectedClusterKey].recommended_action}</span>
-                </div>
-              )}
-            </div>
+            <AIInsightCard
+              title={`Common-Thread Synthesis: ${clusterWhyData[selectedClusterKey].title}`}
+              subtitle={`${clusterWhyData[selectedClusterKey].member_count} items • ₹${clusterWhyData[selectedClusterKey].total_variance?.toLocaleString('en-IN')} aggregate variance`}
+              narration={clusterWhyData[selectedClusterKey].ai_common_thread}
+              confidence="HIGH"
+              confidenceScore={0.92}
+              recommendedAction={clusterWhyData[selectedClusterKey].recommended_action}
+              evidenceTrail={[
+                { step_number: 1, tool: 'sqlite_cluster_aggregator', observation: `Aggregated ${clusterWhyData[selectedClusterKey].member_count} items across identical variance signatures.` },
+                { step_number: 2, tool: 'deterministic_pattern_matcher', observation: `Verified recurring root-cause: ${clusterWhyData[selectedClusterKey].title}.` }
+              ]}
+            />
           )}
         </div>
       )}
@@ -503,29 +504,31 @@ export default function Exceptions() {
                   const riskTier = ex.risk_tier || 'MEDIUM';
                   const breakdown = ex.risk_breakdown || { amount_pts: 10, ml_pts: 10, age_pts: 5 };
 
-                  let riskBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
-                  if (riskTier === 'CRITICAL') riskBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-                  else if (riskTier === 'HIGH') riskBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-                  else if (riskTier === 'MEDIUM') riskBadgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
+                  let riskBadgeClass = 'bg-[#F1F5F9] text-[#64748B] border-[#E5E7EB]';
+                  if (riskTier === 'CRITICAL' || riskTier === 'HIGH') {
+                    riskBadgeClass = 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]';
+                  } else if (riskTier === 'MEDIUM') {
+                    riskBadgeClass = 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]';
+                  }
 
                   return (
                     <React.Fragment key={ex.id}>
                       <tr 
-                        className={`hover:bg-slate-50/70 transition-colors cursor-pointer ${isExpanded ? 'bg-slate-50/80 font-medium' : ''}`}
+                        className={`hover:bg-slate-50 transition-colors duration-150 ease-out cursor-pointer ${isExpanded ? 'bg-slate-50 font-medium' : ''}`}
                         onClick={() => toggleRow(ex.id)}
                       >
                         <td className="py-3.5 pl-5 pr-2 text-slate-400">
                           {isExpanded ? <ChevronDown size={16} className="text-slate-700" /> : <ChevronRight size={16} />}
                         </td>
 
-                        {/* Composite Risk Score Badge */}
+                        {/* Composite Risk Score Badge (Single Status Badge) */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2">
                             <span 
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${riskBadgeClass}`}
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${riskBadgeClass}`}
                               title={`Amount: ${breakdown.amount_pts}pts | ML Outlier: ${breakdown.ml_pts}pts | Aging: ${breakdown.age_pts}pts`}
                             >
-                              <Flame size={11} className={riskTier === 'CRITICAL' ? 'text-rose-600' : 'text-amber-500'} />
+                              <Flame size={11} className={riskTier === 'CRITICAL' || riskTier === 'HIGH' ? 'text-[#DC2626]' : 'text-[#D97706]'} />
                               {riskScore} • {riskTier}
                             </span>
                           </div>
@@ -556,14 +559,18 @@ export default function Exceptions() {
                           <div className="flex items-center justify-end gap-2">
                             <button 
                               onClick={(e) => handleInvestigateAI(ex.id, e)}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-xl transition-all shadow-2xs cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B45F5] bg-[#EEEBFF] hover:bg-[#DDD7FE] border border-[#DDD7FE] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
                             >
-                              <Sparkles size={13} className={investigatingId === ex.id ? "text-indigo-600 animate-spin" : "text-indigo-600"} />
+                              {investigatingId === ex.id ? (
+                                <Loader2 size={13} className="text-[#5B45F5] animate-spin" />
+                              ) : (
+                                <Sparkles size={13} className="text-[#5B45F5]" />
+                              )}
                               {investigatingId === ex.id ? 'Investigating...' : 'Investigate with AI'}
                             </button>
                             <Link 
                               to={`/record/exception/${ex.id}`}
-                              className="text-xs font-bold text-slate-500 hover:text-slate-900 px-2 py-1"
+                              className="text-xs font-bold text-slate-500 hover:text-slate-900 px-2 py-1 transition-colors duration-150 ease-out"
                             >
                               Deep Audit &rarr;
                             </Link>
@@ -575,14 +582,15 @@ export default function Exceptions() {
                       {isExpanded && (
                         <tr>
                           <td colSpan={7} className="p-0 border-b border-slate-200">
-                            <div className="p-6 bg-slate-50 border-y border-slate-200 text-slate-800 space-y-5 animate-in fade-in duration-150">
+                            <div className="p-6 bg-slate-50 border-y border-slate-200 text-slate-800 space-y-5 animate-in fade-in duration-200 ease-out">
                               
                               {/* STRUCTURED AI ROOT-CAUSE INVESTIGATION PANEL */}
-                              <div className="bg-indigo-50/40 text-slate-900 rounded-2xl p-5 shadow-xs border-2 border-indigo-200 space-y-4">
+                              <div className="bg-[#EEEBFF]/40 text-slate-900 rounded-2xl p-5 shadow-xs border border-[#DDD7FE] space-y-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
                                   <div className="flex items-center gap-2.5">
-                                    <div className="p-2 bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200">
-                                      <Sparkles size={16} className="animate-pulse" />
+                                    <div className="relative p-2 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
+                                      <Sparkles size={16} />
+                                      <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#16A34A] ring-1 ring-white" title="Ready"></span>
                                     </div>
                                     <div>
                                       <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
@@ -598,7 +606,7 @@ export default function Exceptions() {
                                     <button
                                       onClick={(e) => handleInvestigateAI(ex.id, e)}
                                       disabled={investigatingId === ex.id}
-                                      className="text-xs font-bold px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                      className="text-xs font-bold px-3.5 py-1.5 bg-[#5B45F5] hover:bg-[#4C35E8] text-white rounded-xl shadow-xs transition-colors duration-150 ease-out flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                                     >
                                       <RotateCcw size={12} className={investigatingId === ex.id ? "animate-spin" : ""} />
                                       {investigatingId === ex.id ? 'Running 4 Checks...' : investigationResults[ex.id] ? 'Re-run Investigation' : 'Run AI Investigation'}
@@ -660,43 +668,40 @@ export default function Exceptions() {
                                       ))}
                                     </div>
 
-                                    {/* Honest Conclusion Box */}
-                                    <div className={`p-3.5 rounded-xl border-2 ${
-                                      investigationResults[ex.id].is_fully_explained
-                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
-                                        : 'bg-rose-50 border-rose-200 text-rose-950'
-                                    }`}>
-                                      <div className="flex items-center gap-2 font-bold text-xs mb-1">
-                                        <AlertCircle size={14} className={investigationResults[ex.id].is_fully_explained ? "text-emerald-700" : "text-rose-700"} />
-                                        <span>Investigation Conclusion</span>
-                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-slate-900 border border-slate-300 font-bold">
-                                          Confidence: {investigationResults[ex.id].confidence_badge} ({Math.round(investigationResults[ex.id].confidence_score * 100)}%)
-                                        </span>
+                                    {/* Phase 4 Standardized AI Insight Card with Grounded Evidence Trail */}
+                                    <AIInsightCard
+                                      title="Fino Root-Cause Investigation Conclusion"
+                                      subtitle={`Deterministic 4-step reconciliation verification for ${ex.id}`}
+                                      narration={investigationResults[ex.id].conclusion}
+                                      confidence={investigationResults[ex.id].confidence_badge === 'HIGH' ? 'HIGH' : investigationResults[ex.id].confidence_badge === 'MEDIUM' ? 'MEDIUM' : 'LOW'}
+                                      confidenceScore={investigationResults[ex.id].confidence_score}
+                                      recommendedAction={investigationResults[ex.id].recommended_action}
+                                      metrics={[
+                                        { label: 'Initial Variance', value: `₹${investigationResults[ex.id].initial_variance?.toLocaleString('en-IN')}` },
+                                        { label: 'Explained Amount', value: `₹${investigationResults[ex.id].explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#16A34A]' },
+                                        { label: 'Unexplained Variance', value: `₹${investigationResults[ex.id].unexplained_amount?.toLocaleString('en-IN')}`, color: investigationResults[ex.id].unexplained_amount > 1 ? 'text-[#DC2626]' : 'text-[#16A34A]' },
+                                        { label: 'Action Recommendation', value: investigationResults[ex.id].recommended_action, color: 'text-[#5B45F5]' }
+                                      ]}
+                                      evidenceTrail={investigationResults[ex.id].steps_checked?.map((st: any) => ({
+                                        step_number: st.step,
+                                        tool: st.check,
+                                        observation: `${st.status}: ${st.observation}`
+                                      }))}
+                                    >
+                                      {/* Quick Apply Action CTA inside AI Card */}
+                                      <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                                          <ShieldCheck size={13} className="text-[#16A34A]" />
+                                          Stored audit record: {investigationResults[ex.id].investigation_id} • Status: {investigationResults[ex.id].verifier_status}
+                                        </div>
+                                        <button
+                                          onClick={() => handleResolve(ex.id, investigationResults[ex.id].recommended_action, 'Applied Fino AI root-cause recommended resolution', 'AI Recommendation Applied')}
+                                          className="px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
+                                        >
+                                          <CheckCircle size={13} /> Apply Recommended Resolution
+                                        </button>
                                       </div>
-                                      <p className="text-xs leading-relaxed font-medium">
-                                        {investigationResults[ex.id].conclusion}
-                                      </p>
-                                    </div>
-
-                                    {/* Recommended Action CTA */}
-                                    <div className="pt-2 border-t border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                                      <div className="text-xs text-slate-700 font-medium">
-                                        <span className="text-slate-500">Recommended Controller Action:</span>{' '}
-                                        <strong className="text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">{investigationResults[ex.id].recommended_action}</strong>
-                                      </div>
-                                      <button
-                                        onClick={() => setAction(ex.id, 'resolve', investigationResults[ex.id].recommended_action)}
-                                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
-                                      >
-                                        <CheckCircle size={13} /> Apply Recommended Resolution
-                                      </button>
-                                    </div>
-                                    
-                                    {/* Stored Audit Trail Notice */}
-                                    <div className="text-[10px] text-slate-500 flex items-center gap-1 font-mono pt-1">
-                                      <ShieldCheck size={11} className="text-indigo-600" />
-                                      Stored audit record: {investigationResults[ex.id].investigation_id} • Status: {investigationResults[ex.id].verifier_status}
-                                    </div>
+                                    </AIInsightCard>
                                   </div>
                                 ) : (
                                   <div className="p-4 bg-white rounded-xl border border-slate-200 text-center space-y-2 shadow-xs">

@@ -14,6 +14,7 @@ import RecordDetail from './pages/RecordDetail';
 import LinkedAccounts from './pages/LinkedAccounts';
 import Settings from './pages/Settings';
 import MonthEndClose from './pages/MonthEndClose';
+import Reconciliation from './pages/Reconciliation';
 import DesignSystemGallery from './pages/DesignSystemGallery';
 import AboutFinora from './pages/AboutFinora';
 
@@ -30,6 +31,7 @@ function App() {
           
           {/* Authenticated Routes wrapped in MainLayout */}
           <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+          <Route path="/reconciliation" element={<MainLayout><Reconciliation /></MainLayout>} />
           <Route path="/exceptions" element={<MainLayout><Exceptions /></MainLayout>} />
           <Route path="/ask_your_books" element={<MainLayout><AskYourBooks /></MainLayout>} />
           <Route path="/cash-position" element={<MainLayout><CashPosition /></MainLayout>} />

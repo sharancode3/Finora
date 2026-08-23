@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { 
   Sparkles, X, Send, RotateCcw, ChevronDown, ChevronUp, 
   ShieldCheck, AlertTriangle, CheckCircle, Database, HelpCircle,
-  Activity, ArrowRight
+  Activity, ArrowRight, Loader2, Calendar, Lock, CheckCircle2
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
@@ -38,6 +38,17 @@ export const LedgerCopilotPanel: React.FC = () => {
     }
   }, [isCopilotOpen]);
 
+  // Handle escape key to close panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isCopilotOpen) {
+        setIsCopilotOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCopilotOpen, setIsCopilotOpen]);
+
   if (isExcludedRoute) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,114 +79,201 @@ export const LedgerCopilotPanel: React.FC = () => {
     }));
   };
 
+  // Resolve active scope from localStorage
+  const getActiveScope = () => {
+    try {
+      const stored = localStorage.getItem('finora_dashboard_range');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return `${parsed.start} to ${parsed.end}`;
+      }
+    } catch (e) {}
+    return 'Aug 01, 2026 to Aug 31, 2026';
+  };
+
+  // Dynamic context-aware suggested questions based on active route
+  const getPageSuggestedQuestions = () => {
+    if (pageContext?.suggested_inquiries && pageContext.suggested_inquiries.length > 0) {
+      return pageContext.suggested_inquiries.slice(0, 4);
+    }
+
+    const path = location.pathname;
+    if (path.includes('/exceptions')) {
+      return [
+        "Which exception has the highest composite risk score?",
+        "Explain the largest fee discrepancy in the queue",
+        "Why did exception exc_c4c2b81321b9 occur?",
+        "Show open exceptions with aging over 3 days"
+      ];
+    } else if (path.includes('/cash-position')) {
+      return [
+        "Why did the 7-day forecast change?",
+        "What is the cash impact if settlements are delayed by 3 days?",
+        "How much cash is trapped in open exceptions?",
+        "Explain our settlement transit latency (DSO)"
+      ];
+    } else if (path.includes('/month-end-close')) {
+      return [
+        "What's needed to clear open suspense items?",
+        "Draft the August 2026 month-end closing memo",
+        "Are all 5 statutory checklist pillars passing?",
+        "Explain the period-over-period delta variance"
+      ];
+    } else if (path.includes('/accounts') || path.includes('/linked-accounts')) {
+      return [
+        "Why did Kotak receive more volume than HDFC?",
+        "Which account did PayPal settle to and how much?",
+        "Are all gateway and bank feeds syncing on schedule?",
+        "What is the reconciliation status across active rails?"
+      ];
+    } else if (path.includes('/record/')) {
+      return [
+        "Run full 4-factor root-cause investigation",
+        "Verify contract MDR rate (2.0%) against actual charge",
+        "Explain the T+2 bank transit timing",
+        "What is the recommended resolution action?"
+      ];
+    } else if (path.includes('/settings')) {
+      return [
+        "Explain Segregation of Duties conflicts between Exception Resolution and API Keys",
+        "Where and how is AI used in Finora?",
+        "What notification triggers are recommended for controllers?"
+      ];
+    }
+
+    // Default for Dashboard and others
+    return [
+      "What is my statutory value match rate and settled amount?",
+      "Summarize today's controller briefing",
+      "Check our Benford forensic status and anomaly outliers",
+      "Where and how is AI used in Finora?"
+    ];
+  };
+
+  const suggestedQuestions = getPageSuggestedQuestions();
+
   return (
     <>
-      {/* 1. FLOATING CONTEXTUAL LAUNCHER (FAB) */}
+      {/* 1. PERSISTENT, CALM "ASK CONTROLLER" TRIGGER BUTTON */}
       {!isCopilotOpen && (
         <button
           onClick={() => setIsCopilotOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-indigo-600 hover:bg-indigo-700 text-white w-13 h-13 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border-2 border-white group"
-          title="Open Fino (AI Copilot)"
+          className="fixed bottom-6 right-6 z-40 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-150 ease-out border border-slate-200 hover:border-[#5B45F5]/40 group"
+          title="Open Ask Controller Panel"
         >
-          <Sparkles size={22} className="group-hover:rotate-12 transition-transform" />
-          <span className="sr-only">Open Fino (AI Copilot)</span>
-          
-          {/* Subtle contextual hint badge */}
-          {pageContext && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white"></span>
-            </span>
-          )}
+          <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" />
+          <Sparkles size={14} className="text-[#5B45F5]" />
+          <span className="text-xs font-semibold text-slate-800">Ask Controller</span>
         </button>
       )}
 
-      {/* 2. SLIDE-OVER CONTEXTUAL COPILOT PANEL */}
+      {/* 2. GLOBAL SLIDE-OVER AI SIDE PANEL */}
       {isCopilotOpen && (
-        <div className="fixed top-0 right-0 h-full w-[420px] max-w-[95vw] bg-white border-l border-slate-200 z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+        <div className="fixed top-0 right-0 h-full w-[440px] max-w-[95vw] bg-white border-l border-slate-200 z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200 ease-out">
           
           {/* Top Bar Header */}
-          <div className="p-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-200 bg-slate-50/90 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-[#EEEBFF] border border-[#DDD7FE] flex items-center justify-center text-[#5B45F5] shrink-0 relative shadow-2xs">
                 <Sparkles size={16} />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#16A34A] border border-white" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino</h3>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-mono">
-                    AI Copilot
+                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino • AI Controller</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE] font-mono">
+                    Grounded
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">Page-aware deterministic finance controller</p>
+                <p className="text-[11px] text-slate-500">Live ledger context &amp; deterministic verification</p>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={clearMessages}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
                 title="Reset Conversation"
               >
                 <RotateCcw size={14} />
               </button>
               <button
                 onClick={() => setIsCopilotOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
-                title="Close Panel"
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+                title="Close Panel (Esc)"
               >
                 <X size={18} />
               </button>
             </div>
           </div>
 
-          {/* Active Page Context Strip */}
-          {pageContext && (
-            <div className="px-4 py-2 bg-indigo-50/60 border-b border-indigo-100/80 flex items-center justify-between text-[11px]">
-              <div className="flex items-center gap-1.5 text-indigo-900 font-medium truncate">
-                <Activity size={12} className="text-indigo-600 shrink-0" />
-                <span className="truncate">
-                  Viewing: <strong className="font-bold">{pageContext.page_name}</strong>
-                </span>
-              </div>
-              <span className="text-[10px] bg-white text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-mono shrink-0">
-                Live State
+          {/* ACTIVE AGENT CONTEXT CARD (Reusing Ask Your Books Pattern) */}
+          <div className="p-3.5 bg-slate-50 border-b border-slate-200/80 space-y-2 text-xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span className="flex items-center gap-1.5 text-slate-700">
+                <Calendar size={12} className="text-[#5B45F5]" /> Active Agent Context
+              </span>
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0] flex items-center gap-1">
+                <CheckCircle2 size={10} /> Ind AS Grounded
               </span>
             </div>
-          )}
 
-          {/* Dynamic Contextual Suggested Inquiries */}
-          {pageContext?.suggested_inquiries && pageContext.suggested_inquiries.length > 0 && messages.length <= 1 && (
-            <div className="p-3.5 bg-slate-50 border-b border-slate-200/80 space-y-1.5">
+            <div className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-1.5 text-[11px]">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Current View:</span>
+                <span className="font-bold text-slate-900 truncate max-w-[210px]">
+                  {pageContext?.page_name || 'Executive Command Center'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Active Scope:</span>
+                <span className="font-semibold text-slate-800 font-mono text-[10px]">
+                  {getActiveScope()}
+                </span>
+              </div>
+              {pageContext?.visible_metrics && Object.keys(pageContext.visible_metrics).length > 0 && (
+                <div className="flex justify-between items-center pt-1 border-t border-slate-100">
+                  <span className="text-slate-500">Live State:</span>
+                  <span className="font-semibold text-[#5B45F5] font-mono text-[10px] truncate max-w-[210px]">
+                    {Object.entries(pageContext.visible_metrics).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(' • ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* CONTEXT-AWARE SUGGESTED INQUIRIES */}
+          {suggestedQuestions.length > 0 && messages.length <= 1 && (
+            <div className="p-3.5 bg-white border-b border-slate-100 space-y-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                Suggested for this view:
+                Suggested for {pageContext?.page_name || 'this page'}:
               </span>
               <div className="flex flex-col gap-1.5">
-                {pageContext.suggested_inquiries.map((inq, idx) => (
+                {suggestedQuestions.map((inq, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestedClick(inq)}
                     disabled={isLoading}
-                    className="text-left text-xs bg-white hover:bg-indigo-50/60 text-slate-700 hover:text-indigo-700 p-2 rounded-xl border border-slate-200 hover:border-indigo-200 transition-colors shadow-2xs flex items-center justify-between group cursor-pointer"
+                    className="text-left text-xs bg-slate-50 hover:bg-[#EEEBFF]/60 text-slate-700 hover:text-[#5B45F5] p-2.5 rounded-xl border border-slate-200 hover:border-[#DDD7FE] transition-colors duration-150 ease-out shadow-2xs flex items-center justify-between group cursor-pointer"
                   >
                     <span className="truncate font-medium">{inq}</span>
-                    <ArrowRight size={12} className="text-slate-400 group-hover:text-indigo-600 transition-colors shrink-0 ml-1.5" />
+                    <ArrowRight size={12} className="text-slate-400 group-hover:text-[#5B45F5] transition-colors shrink-0 ml-1.5" />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Message Stream */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* MESSAGE STREAM */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-slate-400">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <Sparkles size={24} />
+                <div className="w-12 h-12 rounded-2xl bg-[#EEEBFF] text-[#5B45F5] flex items-center justify-center border border-[#DDD7FE]">
+                  <Sparkles size={22} />
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-slate-700">How can Fino assist your review?</h4>
-                  <p className="text-xs text-slate-500 max-w-xs">
+                  <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
                     I have live read-only context of this <strong className="text-slate-800">{pageContext?.page_name || 'ledger'}</strong> view. Ask about variances, anomalies, or cash metrics.
                   </p>
                 </div>
@@ -187,31 +285,29 @@ export const LedgerCopilotPanel: React.FC = () => {
                 
                 {/* User Message */}
                 {msg.role === 'user' ? (
-                  <div className="bg-indigo-600 text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-medium shadow-xs">
+                  <div className="bg-[#5B45F5] text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-medium shadow-xs">
                     {msg.content}
                   </div>
                 ) : (
                   /* AI Grounded Response Card */
                   <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-4 max-w-full text-xs shadow-xs space-y-3">
                     
-                    {/* Confidence Pill & Verifier Badge */}
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+                    {/* Single Confidence Status Badge in Header */}
+                    {msg.metadata?.confidence && !msg.metadata?.is_greeting && (
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
                           msg.metadata?.confidence === 'HIGH' 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' 
                             : msg.metadata?.confidence === 'MEDIUM'
-                            ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
+                            ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]'
+                            : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
                         }`}>
-                          {msg.metadata?.confidence === 'HIGH' ? <CheckCircle size={10} /> : <AlertTriangle size={10} />}
-                          {msg.metadata?.confidence || 'HIGH'} ({Math.round((msg.metadata?.confidence_score ?? 0.95) * 100)}%)
+                          {msg.metadata?.confidence === 'HIGH' ? <CheckCircle size={11} /> : <AlertTriangle size={11} />}
+                          Confidence: {msg.metadata?.confidence === 'HIGH' ? 'High' : msg.metadata?.confidence === 'MEDIUM' ? 'Medium' : 'Low'} ({Math.round((msg.metadata?.confidence_score ?? 0.98) * 100)}%)
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">100% Grounded</span>
+                        <span className="text-[10px] text-slate-400 font-medium">Grounded Execution</span>
                       </div>
-                      
-                      <span className="text-[10px] text-slate-400">Read-Only</span>
-                    </div>
+                    )}
 
                     {/* Grounded Content */}
                     <div className="text-slate-800 leading-relaxed space-y-2 whitespace-pre-wrap font-normal">
@@ -226,11 +322,11 @@ export const LedgerCopilotPanel: React.FC = () => {
 
                     {/* Recommended Controller Action Callout */}
                     {msg.metadata?.escalation_recommendation && (
-                      <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-start gap-2 text-[11px] text-amber-900">
-                        <AlertTriangle size={13} className="text-amber-600 shrink-0 mt-0.5" />
+                      <div className="p-2.5 bg-[#FFF7ED] border border-[#FED7AA] rounded-xl flex items-start gap-2 text-[11px] text-[#D97706]">
+                        <AlertTriangle size={13} className="text-[#D97706] shrink-0 mt-0.5" />
                         <div>
-                          <strong className="font-bold block">Recommended Controller Action:</strong>
-                          <span>{msg.metadata.escalation_recommendation}</span>
+                          <strong className="font-bold block text-slate-900">Recommended Controller Action:</strong>
+                          <span className="text-slate-700">{msg.metadata.escalation_recommendation}</span>
                         </div>
                       </div>
                     )}
@@ -256,7 +352,7 @@ export const LedgerCopilotPanel: React.FC = () => {
                                   paddingAngle={4}
                                 >
                                   {msg.metadata.visual_data.data.map((entry: any, i: number) => (
-                                    <Cell key={`cell-${i}`} fill={entry.color || '#6366f1'} />
+                                    <Cell key={`cell-${i}`} fill={entry.color || '#5B45F5'} />
                                   ))}
                                 </Pie>
                                 <Tooltip formatter={(val: any) => [`${val}%`, '']} />
@@ -268,7 +364,7 @@ export const LedgerCopilotPanel: React.FC = () => {
                                 <Tooltip formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Value']} />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                   {msg.metadata.visual_data.data.map((entry: any, i: number) => (
-                                    <Cell key={`bar-${i}`} fill={entry.color || '#6366f1'} />
+                                    <Cell key={`bar-${i}`} fill={entry.color || '#5B45F5'} />
                                   ))}
                                 </Bar>
                               </BarChart>
@@ -278,31 +374,36 @@ export const LedgerCopilotPanel: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Inspectable Reasoning Trail Accordion */}
-                    {msg.metadata?.reasoning_trail && msg.metadata.reasoning_trail.length > 0 && (
+                    {/* Inspectable Evidence Trail Accordion */}
+                    {((msg.metadata?.evidence_trail || msg.metadata?.reasoning_trail) && (msg.metadata?.evidence_trail || msg.metadata?.reasoning_trail).length > 0) && (
                       <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/60">
                         <button
                           onClick={() => toggleReasoning(idx)}
                           className="w-full px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-100 flex items-center justify-between transition-colors cursor-pointer"
                         >
                           <span className="flex items-center gap-1.5">
-                            <Database size={12} className="text-indigo-600" />
-                            Inspectable Reasoning Trail ({msg.metadata.reasoning_trail.length} steps)
+                            <Database size={12} className="text-[#5B45F5]" />
+                            Show Evidence Trail ({(msg.metadata.evidence_trail || msg.metadata.reasoning_trail).length} tool steps)
                           </span>
                           {expandedReasoningMap[idx] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
                         
                         {expandedReasoningMap[idx] && (
-                          <div className="p-3 border-t border-slate-200 bg-white space-y-2 text-[11px] font-mono">
-                            {msg.metadata.reasoning_trail.map((step: any, sIdx: number) => (
-                              <div key={sIdx} className="p-2 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
-                                <div className="flex items-center justify-between text-indigo-700 font-bold">
-                                  <span>Step {step.step_number}: {step.tool}</span>
+                          <div className="p-3 border-t border-slate-200 bg-white space-y-2 text-[11px]">
+                            {(msg.metadata.evidence_trail || msg.metadata.reasoning_trail).map((step: any, sIdx: number) => (
+                              <div key={sIdx} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span className="w-4 h-4 rounded-full bg-[#EEEBFF] text-[#5B45F5] text-[9px] flex items-center justify-center font-bold">
+                                      {step.step_number || (sIdx + 1)}
+                                    </span>
+                                    Tool: <span className="text-[#5B45F5] font-mono">{step.tool || 'query'}</span>
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 font-medium">{step.action}</span>
                                 </div>
-                                <div className="text-slate-600 text-[10px]">{step.action}</div>
-                                <div className="text-slate-800 text-[10px] bg-white p-1.5 rounded border border-slate-200">
-                                  <strong>Observation:</strong> {step.observation}
-                                </div>
+                                <p className="text-slate-600 text-[11px] pl-5 leading-tight">
+                                  {step.observation}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -322,24 +423,6 @@ export const LedgerCopilotPanel: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Dev Mode Context Inspector */}
-                    {msg.metadata?.debug_page_context && (
-                      <details className="mt-1 text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2.5 border border-slate-200 cursor-pointer">
-                        <summary className="font-bold flex items-center justify-between text-slate-700 select-none">
-                          <span className="flex items-center gap-1.5">
-                            <Sparkles size={11} className="text-indigo-600" />
-                            Dev Context Inspector
-                          </span>
-                          <span className="font-mono text-[9px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
-                            {msg.metadata.debug_page_context.route}
-                          </span>
-                        </summary>
-                        <pre className="mt-2 p-2 bg-white rounded-lg border border-slate-200 text-slate-800 font-mono text-[10px] overflow-x-auto leading-relaxed">
-                          {JSON.stringify(msg.metadata.debug_page_context, null, 2)}
-                        </pre>
-                      </details>
-                    )}
-
                   </div>
                 )}
 
@@ -347,35 +430,44 @@ export const LedgerCopilotPanel: React.FC = () => {
             ))}
 
             {isLoading && (
-              <div className="flex items-center gap-2 p-3 bg-indigo-50 text-indigo-700 rounded-2xl rounded-tl-xs text-xs font-medium border border-indigo-100 max-w-[80%]">
-                <Sparkles size={14} className="animate-spin" />
-                <span>Executing read-only ledger tools & verifier check...</span>
+              <div className="flex items-center gap-2 p-3 bg-[#EEEBFF] text-[#5B45F5] rounded-2xl rounded-tl-xs text-xs font-medium border border-[#DDD7FE] max-w-[85%]">
+                <Loader2 size={14} className="animate-spin text-[#5B45F5]" />
+                <span>Executing read-only ledger tools &amp; verifier check...</span>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Bottom Input Area */}
-          <form onSubmit={handleSubmit} className="p-3 border-t border-slate-200 bg-slate-50 flex items-center gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputQuestion}
-              onChange={(e) => setInputQuestion(e.target.value)}
-              placeholder={`Ask Fino about ${pageContext?.page_name || 'this ledger'}...`}
-              disabled={isLoading}
-              className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium"
-            />
-            <button
-              type="submit"
-              disabled={!inputQuestion.trim() || isLoading}
-              className="p-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 text-white rounded-xl shadow-xs transition-colors cursor-pointer shrink-0"
-              title="Send Query"
-            >
-              <Send size={15} />
-            </button>
-          </form>
+          {/* BOTTOM INPUT & GROUNDING AREA */}
+          <div className="p-3.5 border-t border-slate-200 bg-white space-y-2">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputQuestion}
+                onChange={(e) => setInputQuestion(e.target.value)}
+                placeholder={`Ask Fino about ${pageContext?.page_name || 'this ledger'}...`}
+                disabled={isLoading}
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5B45F5] focus:bg-white font-medium transition-all"
+              />
+              <button
+                type="submit"
+                disabled={!inputQuestion.trim() || isLoading}
+                className="p-2.5 bg-[#5B45F5] hover:bg-[#4C35E8] disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl shadow-xs transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
+                title="Send Query"
+              >
+                <Send size={14} />
+              </button>
+            </form>
+
+            <div className="px-1 text-[10px] text-slate-500 flex items-center justify-between">
+              <span>AI Grounding: verified ledger records with evidence trail</span>
+              <Link to="/ask-your-books" onClick={() => setIsCopilotOpen(false)} className="text-[#5B45F5] hover:underline font-medium">
+                Full Canvas →
+              </Link>
+            </div>
+          </div>
 
         </div>
       )}

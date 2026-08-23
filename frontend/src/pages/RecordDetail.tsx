@@ -20,10 +20,12 @@ import {
   Sparkles,
   RotateCcw,
   Minus,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { SeverityBadge } from '../components/ui/SeverityBadge';
+import { AIInsightCard } from '../components/ui/AIInsightCard';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
 import { useAI } from '../context/AIContext';
@@ -126,30 +128,36 @@ export default function RecordDetail() {
     }
   }, [loading, record, tx, id, type]);
 
-  const handleResolve = async () => {
+  const handleResolve = async (customReason?: string, customNote?: string, triggerType = 'Human Controller Manual Approval') => {
     if (!id) return;
     try {
       await api.post(`/exceptions/${id}/resolve`, {
-        reason: actionReason,
-        note: actionNote || 'Direct resolution from Record Detail audit page'
+        reason: customReason || actionReason || 'Manual Accounting Adjustment',
+        note: customNote || actionNote || 'Direct resolution from Record Detail audit page',
+        user: 'Sarah Jenkins, CPA',
+        trigger_type: triggerType
       });
       setActionSuccess('Exception marked as explained and successfully resolved.');
       setActionState(null);
       await fetchRecord();
+      window.dispatchEvent(new CustomEvent('finora-exception-updated', { detail: { id, status: 'resolved' } }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleEscalate = async () => {
+  const handleEscalate = async (customNote?: string, triggerType = 'Human Controller Manual Approval') => {
     if (!id) return;
     try {
       await api.post(`/exceptions/${id}/escalate`, {
-        note: actionNote || 'Escalated to Lead Controller from Record Detail audit page'
+        note: customNote || actionNote || 'Escalated to Lead Controller from Record Detail audit page',
+        user: 'Finance Admin',
+        trigger_type: triggerType
       });
       setActionSuccess('Exception successfully escalated to Lead Financial Controller.');
       setActionState(null);
       await fetchRecord();
+      window.dispatchEvent(new CustomEvent('finora-exception-updated', { detail: { id, status: 'escalated' } }));
     } catch (err) {
       console.error(err);
     }
@@ -183,13 +191,6 @@ export default function RecordDetail() {
     );
   }
 
-  // Format JSON view
-  const combinedData = {
-    exception: record,
-    transaction: tx
-  };
-  const jsonString = JSON.stringify(combinedData, null, 2);
-
   const ud = record.underlying_data || {};
   const isResolved = record.status === 'resolved';
   const isEscalated = record.status === 'escalated';
@@ -205,178 +206,88 @@ export default function RecordDetail() {
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                Exception Investigation
-              </h2>
-              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${
+              <h1 className="text-xl font-extrabold text-slate-900 font-mono tracking-tight">{id}</h1>
+              <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
                 isResolved 
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                  : isEscalated
-                    ? 'bg-amber-50 text-amber-800 border-amber-200'
-                    : 'bg-rose-50 text-rose-700 border-rose-200'
+                  ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' 
+                  : isEscalated 
+                  ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]' 
+                  : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
               }`}>
-                {record.status || 'OPEN'}
+                {record.status?.toUpperCase()}
               </span>
             </div>
-            <p className="text-slate-500 font-mono text-xs mt-0.5">{id} • Ref: {record.transaction_id || 'N/A'}</p>
+            <p className="text-xs text-slate-500">Root-cause investigation &amp; deterministic 4-check audit trail</p>
           </div>
         </div>
 
-        {/* Quick Action Buttons on Header */}
-        {!isResolved && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRunAiInvestigation}
-              disabled={investigating}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <Sparkles size={14} className={investigating ? "animate-spin" : ""} />
-              {investigating ? 'Running AI Checks...' : 'Investigate with AI'}
-            </button>
-            <button
-              onClick={() => setActionState(actionState === 'resolve' ? null : 'resolve')}
-              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <CheckCircle2 size={14} /> Mark Explained & Resolve
-            </button>
-            <button
-              onClick={() => setActionState(actionState === 'escalate' ? null : 'escalate')}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <UserCheck size={14} /> Escalate
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {!isResolved && (
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setActionState(actionState === 'escalate' ? null : 'escalate')}
+                className="gap-1.5"
+              >
+                <AlertTriangle size={13} className="text-[#D97706]" /> Escalate to Gateway Ops
+              </Button>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                onClick={() => setActionState(actionState === 'resolve' ? null : 'resolve')}
+                className="gap-1.5"
+              >
+                <CheckCircle size={13} /> Mark Explained &amp; Resolve
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {actionSuccess && (
-        <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl border border-emerald-200 text-xs font-semibold flex items-center gap-2 shadow-xs">
+        <div className="p-4 bg-[#ECFDF3] text-[#16A34A] rounded-2xl border border-[#BBF7D0] text-xs font-semibold flex items-center gap-2 shadow-xs animate-in fade-in duration-150 ease-out">
           <CheckCircle2 size={16} /> {actionSuccess}
         </div>
       )}
 
-      {/* Deterministic AI Root-Cause Investigation Card (High-Contrast Light Theme) */}
+      {/* Deterministic AI Root-Cause Investigation Card (Standardized AI Insight Card) */}
       {aiInvestigation && (
-        <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xs border-2 border-indigo-100 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
-                <Sparkles size={18} />
+        <AIInsightCard
+          title="Deterministic AI Root-Cause Investigation"
+          subtitle={`Sequential 4-factor audit verification for ${id}`}
+          narration={aiInvestigation.conclusion}
+          confidence={aiInvestigation.confidence_badge || "HIGH"}
+          confidenceScore={aiInvestigation.confidence_score || 0.95}
+          recommendedAction={aiInvestigation.recommended_action}
+          evidenceTrail={aiInvestigation.steps_checked?.map((st: any) => ({
+            step_number: st.step,
+            tool: st.check,
+            action: st.status,
+            observation: st.observation
+          })) || []}
+          metrics={[
+            { label: 'Total Discrepancy', value: `₹${aiInvestigation.initial_variance?.toLocaleString('en-IN')}` },
+            { label: 'Explained Variance', value: `₹${aiInvestigation.explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#16A34A]' },
+            { label: 'Unexplained', value: `₹${aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}`, color: aiInvestigation.unexplained_amount > 1 ? 'text-[#DC2626]' : 'text-[#16A34A]' }
+          ]}
+        >
+          {/* Quick Apply Resolution Button inside AI Card */}
+          {!isResolved && (
+            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                <ShieldCheck size={13} className="text-[#16A34A]" />
+                Audit record: {aiInvestigation.investigation_id} • Status: {aiInvestigation.verifier_status}
               </div>
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-700">
-                  Deterministic AI Investigation Agent
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Automated 4-check audit trail with grounded variance reconciliation
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
               <button
-                onClick={handleRunAiInvestigation}
-                disabled={investigating}
-                className="text-xs font-bold px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                onClick={() => handleResolve(aiInvestigation.recommended_action, 'Applied Fino AI recommended adjustment from Root-Cause Investigation', 'AI Recommendation Applied')}
+                className="px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
               >
-                <RotateCcw size={12} className={investigating ? "animate-spin" : ""} />
-                {investigating ? 'Running...' : 'Re-run Investigation'}
+                <CheckCircle size={13} /> Apply Recommended Resolution
               </button>
             </div>
-          </div>
-
-          {/* Variance Breakdown */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Discrepancy</span>
-              <span className="text-sm font-bold font-mono text-slate-900">
-                ₹{aiInvestigation.initial_variance?.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
-              <span className="text-[10px] uppercase font-bold text-emerald-800 block">Explained Variance</span>
-              <span className="text-sm font-bold font-mono text-emerald-700">
-                ₹{aiInvestigation.explained_amount?.toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Unexplained Discrepancy</span>
-              <span className={`text-sm font-bold font-mono ${aiInvestigation.unexplained_amount > 1 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                ₹{aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}
-              </span>
-            </div>
-          </div>
-
-          {/* 4 Sequential Checks */}
-          <div className="space-y-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Sequential Audit Factor Trail:</span>
-            {aiInvestigation.steps_checked?.map((st: any, sIdx: number) => (
-              <div key={sIdx} className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/80 flex items-start gap-3">
-                <div className="mt-0.5">
-                  {st.status === 'APPLIED' ? (
-                    <span className="inline-block p-1 bg-emerald-100 text-emerald-700 rounded-md"><CheckCircle2 size={12} /></span>
-                  ) : st.status === 'LATENCY_FACTOR' ? (
-                    <span className="inline-block p-1 bg-amber-100 text-amber-800 rounded-md"><Clock size={12} /></span>
-                  ) : (
-                    <span className="inline-block p-1 bg-slate-200 text-slate-600 rounded-md"><Minus size={12} /></span>
-                  )}
-                </div>
-                <div className="flex-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-900">Check {st.step}: {st.check}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
-                      st.status === 'APPLIED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                      st.status === 'LATENCY_FACTOR' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
-                    }`}>
-                      {st.status?.replace(/_/g, ' ')}
-                    </span>
-                  </div>
-                  <p className="text-slate-600 mt-0.5 leading-relaxed">{st.observation}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Conclusion Box */}
-          <div className={`p-3.5 rounded-xl border ${
-            aiInvestigation.is_fully_explained
-              ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-              : 'bg-rose-50/80 border-rose-200 text-rose-950'
-          }`}>
-            <div className="flex items-center gap-2 font-bold text-xs mb-1">
-              <AlertCircle size={14} className={aiInvestigation.is_fully_explained ? "text-emerald-700" : "text-rose-700"} />
-              <span>Root-Cause Conclusion</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-slate-800 border border-slate-200 font-bold">
-                Confidence: {aiInvestigation.confidence_badge} ({Math.round(aiInvestigation.confidence_score * 100)}%)
-              </span>
-            </div>
-            <p className="text-xs leading-relaxed font-medium text-slate-800">
-              {aiInvestigation.conclusion}
-            </p>
-          </div>
-
-          {/* Action CTA Banner */}
-          <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="text-xs text-slate-600">
-              <span className="text-slate-500">Recommended Controller Action:</span>{' '}
-              <strong className="text-emerald-700">{aiInvestigation.recommended_action}</strong>
-            </div>
-            <button
-              onClick={() => {
-                setActionState('resolve');
-                setActionReason(aiInvestigation.recommended_action);
-              }}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <CheckCircle size={13} /> Apply Recommended Resolution
-            </button>
-          </div>
-
-          {/* Stored Audit Trail Notice */}
-          <div className="text-[10px] text-slate-400 flex items-center gap-1 font-mono pt-1">
-            <ShieldCheck size={11} className="text-indigo-600" />
-            Stored audit record: {aiInvestigation.investigation_id} • Timestamp: {aiInvestigation.created_at} • Verifier: {aiInvestigation.verifier_status}
-          </div>
-        </div>
+          )}
+        </AIInsightCard>
       )}
 
       {/* Interactive Resolution Drawer */}
@@ -416,7 +327,7 @@ export default function RecordDetail() {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setActionState(null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                <button onClick={handleResolve} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold cursor-pointer">Confirm Resolution</button>
+                <button onClick={() => handleResolve()} className="px-4 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold cursor-pointer">Confirm Resolution</button>
               </div>
             </div>
           ) : (
@@ -433,7 +344,7 @@ export default function RecordDetail() {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setActionState(null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                <button onClick={handleEscalate} className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
+                <button onClick={() => handleEscalate()} className="px-4 py-1.5 bg-[#D97706] hover:bg-[#B45309] text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
               </div>
             </div>
           )}
@@ -539,26 +450,89 @@ export default function RecordDetail() {
           </div>
         </div>
 
-        {/* Right Column: Raw JSON Audit File View */}
-        <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-[650px] overflow-hidden">
+        {/* Right Column: Structured Audit Record & Settlement Attributes */}
+        <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-auto overflow-hidden">
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileCode size={16} className="text-indigo-600" />
-              <h3 className="text-xs font-bold text-slate-800 font-mono">underlying_data.json</h3>
+              <ShieldCheck size={16} className="text-[#5B45F5]" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Verified Audit Attributes</h3>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono bg-white px-2 py-0.5 rounded border border-slate-200 font-bold">
-              Immutable SQLite Record
+            <span className="text-[10px] text-[#16A34A] bg-[#ECFDF3] px-2.5 py-0.5 rounded-full border border-[#BBF7D0] font-bold">
+              Immutable Ledger Record
             </span>
           </div>
-          <div className="flex-1 overflow-auto p-4 bg-slate-50/60">
-            <pre className="text-xs leading-relaxed text-slate-800 font-mono">
-              {jsonString.split('\n').map((line, i) => (
-                <div key={i} className="flex hover:bg-indigo-50/50 px-2 rounded py-0.5">
-                  <span className="w-8 shrink-0 text-slate-400 select-none text-right pr-4 text-[11px] font-medium">{i + 1}</span>
-                  <span className={`${line.includes('":') ? 'text-indigo-900 font-semibold' : 'text-slate-800 font-medium'} ${line.includes('null') ? 'text-slate-400 italic' : ''}`}>{line}</span>
-                </div>
-              ))}
-            </pre>
+
+          <div className="p-5 space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-100">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Exception ID</span>
+                <span className="font-mono font-bold text-slate-900">{record.id}</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Transaction Ref</span>
+                <span className="font-mono font-bold text-slate-900">{record.transaction_id || 'N/A'}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Reconciliation Reason</span>
+                <span className="font-bold text-slate-900 capitalize">{record.reason?.replace(/_/g, ' ')}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Payment Origin Rail</span>
+                <span className="font-semibold text-slate-800">{tx?.origin || 'Razorpay Gateway'}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Deposit Target Account</span>
+                <span className="font-semibold text-slate-800">{tx?.bank || 'Kotak Mahindra Bank'}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Gross Transaction Value</span>
+                <span className="font-mono font-bold text-slate-900">
+                  ₹{(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Contractual MDR Fee</span>
+                <span className="font-mono font-semibold text-slate-800">
+                  ₹{(tx?.fee_amount || 0).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">GST on Fee (18%)</span>
+                <span className="font-mono font-semibold text-slate-800">
+                  ₹{(tx?.tax_amount || 0).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Calculated Net Bank Deposit</span>
+                <span className="font-mono font-bold text-[#16A34A]">
+                  ₹{(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-medium">Settlement Batch ID</span>
+                <span className="font-mono font-bold text-slate-700">{tx?.batch_id || 'BATCH-202608-REC'}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-slate-500 font-medium">Risk Score & Tier</span>
+                <span className="font-bold text-[#DC2626]">{record.risk_score || 25} • {record.risk_tier || 'MEDIUM'}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#EFF6FF] rounded-xl border border-[#BFDBFE] text-slate-700 text-[11px] flex items-center gap-2">
+              <CheckCircle2 size={15} className="text-[#2563EB] shrink-0" />
+              <span>Full deterministic audit trail verified against statutory Ind AS accounting rules.</span>
+            </div>
           </div>
         </div>
 

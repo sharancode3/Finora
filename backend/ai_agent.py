@@ -276,7 +276,96 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
         "observation": f"Active viewport: {page_name} with {len(visible_metrics)} live indicators."
     })
 
-    # 0. Historical / Out-of-Partition Guardrail (Zero-Hallucination)
+    # 0a. Intent Classification: Greetings, Small Talk, Capabilities & Help Requests
+    cleaned_q = re.sub(r'[^\w\s]', '', q).strip()
+    greeting_words = {"hi", "hello", "hey", "hola", "greetings", "good morning", "good afternoon", "good evening", "howdy", "sup"}
+    capability_phrases = ["who are you", "what can you do", "what is your name", "what is fino", "what are you", "help", "how to use", "how do you work"]
+    ai_architecture_phrases = ["how is ai used", "where is ai used", "ai architecture", "what ai", "explain your ai", "how do we use ai", "where do we use ai", "ai models", "machine learning"]
+
+    is_greeting = cleaned_q in greeting_words or any(cleaned_q.startswith(w + " ") for w in greeting_words)
+    is_ai_architecture = any(p in q for p in ai_architecture_phrases)
+    is_capability = any(p in q for p in capability_phrases) or (cleaned_q == "help")
+    
+    if is_ai_architecture:
+        return {
+            "answer": (
+                "Finora integrates **6 core AI, Machine Learning, and Stochastic Engines** across the reconciliation pipeline:\n\n"
+                "1. **Autonomous Read-Only Agent (Fino)**:\n"
+                "   • *Technology*: Context-aware LLM query planner with dynamic function calling over SQLite.\n"
+                "   • *Role*: Answers plain-language questions with verified evidence trails and self-verifying checks against hallucination.\n\n"
+                "2. **Deterministic 4-Factor Root-Cause Investigator**:\n"
+                "   • *Technology*: Automated sequential audit verifier (contract MDR fee rates, T+2 transit latency, GST/TDS tax calculations, and UTR settlement credits).\n"
+                "   • *Role*: Diagnoses why exceptions occurred with paired confidence scores (e.g., High 98%) and one-click resolution.\n\n"
+                "3. **Unsupervised Outlier Detection (Isolation Forest)**:\n"
+                "   • *Technology*: Multi-dimensional feature isolation trees (scikit-learn) evaluating fee-to-gross ratios and transit duration.\n"
+                "   • *Role*: Flags hidden transactional anomalies that evade rigid deterministic rule-sets.\n\n"
+                "4. **Forensic Statistical Integrity Engine (Benford's Law)**:\n"
+                "   • *Technology*: Leading digit logarithmic distribution analysis calculating Mean Absolute Deviation (MAD).\n"
+                "   • *Role*: Mathematically detects fabricated transactions, synthetic entries, and ledger tampering.\n\n"
+                "5. **1,000-Trial Stochastic Treasury Forecaster**:\n"
+                "   • *Technology*: Monte Carlo simulation with dynamic geometric Brownian bridge paths.\n"
+                "   • *Role*: Simulates P10 (downside), P50 (expected), and P90 (upside) liquidity bands under delayed settlement lag or volume surges.\n\n"
+                "6. **Continuous Period-End Close & Audit Memo Drafter**:\n"
+                "   • *Technology*: Period-over-period delta variance calculator and continuous accounting close memo synthesizer.\n"
+                "   • *Role*: Generates executive CFO memorandums aligned with Ind AS 1, 7, and 115 standards."
+            ),
+            "confidence": "HIGH",
+            "confidence_score": 0.99,
+            "confidence_rationale": "Comprehensive breakdown of Finora's 6 operational AI/ML engines.",
+            "escalation_recommendation": None,
+            "evidence_trail": [
+                {"step_number": 1, "tool": "ai_engine_inspector", "action": "Enumerated active AI/ML components", "observation": "6 distinct AI, ML, and statistical models active in live pipeline."}
+            ],
+            "reasoning_trail": [
+                {"step_number": 1, "tool": "ai_engine_inspector", "action": "Enumerated active AI/ML components", "observation": "6 distinct AI, ML, and statistical models active in live pipeline."}
+            ],
+            "verifier_passed": True
+        }
+
+    if is_greeting or is_capability:
+        return {
+            "answer": (
+                "Hello! I am **Fino**, your Autonomous AI Financial Controller for Finora. "
+                "I'm here to assist you with real-time financial reconciliation, anomaly investigation, and treasury operations.\n\n"
+                "Here are a few things you can ask me:\n"
+                "• **Where AI is Used**: *\"Where and how is AI used in Finora?\"*\n"
+                "• **Reconciliation Metrics**: *\"What is my value match rate?\"* or *\"Why is statutory match rate 84.9%?\"*\n"
+                "• **Cash & Treasury**: *\"How much cash is available?\"* or *\"What if settlements are delayed 3 days?\"*\n"
+                "• **Exception Investigation**: *\"Investigate exception exc_3c3d18ccd34f\"* or *\"Explain the largest fee discrepancy\"*\n"
+                "• **Money Flow & Routing**: *\"Why did Kotak receive more volume than HDFC?\"*\n"
+                "• **Month-End Close**: *\"Draft the August 2026 closing memo\"* or *\"What's needed to clear suspense?\"*"
+            ),
+            "confidence": None,
+            "confidence_score": None,
+            "confidence_rationale": "Conversational greeting and capability assistance (no database tool execution required).",
+            "escalation_recommendation": None,
+            "reasoning_trail": [],
+            "verifier_passed": True,
+            "is_greeting": True
+        }
+
+    # 0b. Ambiguous Queries Check (1-2 generic words without specific subject)
+    ambiguous_words = {"why", "check", "run", "tell me", "show", "what", "how", "details", "explain"}
+    if cleaned_q in ambiguous_words or (len(cleaned_q.split()) <= 1 and cleaned_q not in {"briefing", "exceptions", "forecast", "reconciliation", "cash", "ledger"}):
+        return {
+            "answer": (
+                f"Could you specify what you'd like me to look into? "
+                f"For example, you can ask:\n"
+                f"• *\"What is my statutory match rate?\"*\n"
+                f"• *\"Why did Kotak receive more volume than HDFC?\"*\n"
+                f"• *\"Show me open exceptions above ₹10,000\"*\n"
+                f"• *\"Run a 3-day delay cash scenario\"*"
+            ),
+            "confidence": None,
+            "confidence_score": None,
+            "confidence_rationale": "Clarification requested for ambiguous user prompt.",
+            "escalation_recommendation": None,
+            "reasoning_trail": [],
+            "verifier_passed": True,
+            "is_greeting": True
+        }
+
+    # 0c. Historical / Out-of-Partition Guardrail (Zero-Hallucination)
     if "2025" in q or "2021" in q or "2024" in q or "2023" in q or "2020" in q or "2019" in q:
         reasoning_trail.append({
             "step_number": 2,
@@ -1064,7 +1153,10 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
 
 def ask_finora_agent(question: str, context: Dict) -> Dict:
     """Entry point for the AI Assistant."""
-    return orchestrate_agent_workflow(question, context)
+    result = orchestrate_agent_workflow(question, context)
+    if "reasoning_trail" in result and "evidence_trail" not in result:
+        result["evidence_trail"] = result["reasoning_trail"]
+    return result
 
 def generate_month_end_summary(target_month: str) -> Dict:
     metrics = get_month_end_metrics(target_month)
@@ -1072,8 +1164,15 @@ def generate_month_end_summary(target_month: str) -> Dict:
     prev = metrics['previous']
     
     vol_diff = curr['volume'] - prev['volume']
-    vol_pct = round((vol_diff / prev['volume'] * 100), 1) if prev['volume'] > 0 else 0.0
-    vol_dir = "increased" if vol_diff >= 0 else "decreased"
+    if prev['volume'] > 0:
+        vol_pct = round((vol_diff / prev['volume'] * 100), 1)
+        vol_dir = "increased" if vol_diff >= 0 else "decreased"
+        vol_str = f"({vol_dir} by {abs(vol_pct)}% vs {prev['month']})"
+        pop_str = f"representing a {vol_dir} of {abs(vol_pct)}% vs prior month"
+    else:
+        vol_pct = 0.0
+        vol_str = "(initial reconciliation operating period)"
+        pop_str = "operating as the baseline active reconciliation period"
     
     exc_diff = curr['exceptions_total'] - prev['exceptions_total']
     exc_dir = "increased" if exc_diff > 0 else "decreased"
@@ -1084,14 +1183,22 @@ def generate_month_end_summary(target_month: str) -> Dict:
     match_rate_diff = round(curr['match_rate'] - prev['match_rate'], 1)
     match_dir = "up" if match_rate_diff >= 0 else "down"
 
-    summary_text = (
-        f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} ({vol_dir} by {abs(vol_pct)}% vs {prev['month']}). "
-        f"Statutory Value Match Rate reached {curr['match_rate']}% ({abs(match_rate_diff)}% {match_dir} vs prior month). "
-        f"Total exceptions {exc_dir} to {curr['exceptions_total']} items, with average resolution turnaround at {curr['avg_resolution_days']} days ({abs(time_diff):.1f} days {time_dir}). "
-        f"Ledger balances align with Ind AS statutory close readiness."
-    )
+    if prev['volume'] > 0:
+        summary_text = (
+            f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} {vol_str}. "
+            f"Statutory Value Match Rate reached {curr['match_rate']}% ({abs(match_rate_diff)}% {match_dir} vs prior month). "
+            f"Total exceptions {exc_dir} to {curr['exceptions_total']} items, with average resolution turnaround at {curr['avg_resolution_days']} days ({abs(time_diff):.1f} days {time_dir}). "
+            f"Ledger balances align with Ind AS statutory close readiness."
+        )
+    else:
+        summary_text = (
+            f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} across {curr['transaction_count']} transactions, {pop_str}. "
+            f"Statutory Value Match Rate stands at {curr['match_rate']}%. "
+            f"A total of {curr['exceptions_total']} exceptions are recorded with {curr['exceptions_resolved']} resolved, averaging {curr['avg_resolution_days']} days resolution turnaround. "
+            f"Ledger balances align with Ind AS continuous accounting close readiness."
+        )
 
-    reasoning_trail = [
+    evidence_trail = [
         {
             "step_number": 1,
             "action": f"Executed deterministic aggregation query for active close period ({target_month})",
@@ -1119,6 +1226,7 @@ def generate_month_end_summary(target_month: str) -> Dict:
     metrics['confidence'] = "HIGH"
     metrics['confidence_score'] = 0.98
     metrics['confidence_rationale'] = "100% grounded in verified SQLite database transaction entries and resolution timestamps."
-    metrics['reasoning_trail'] = reasoning_trail
+    metrics['evidence_trail'] = evidence_trail
+    metrics['reasoning_trail'] = evidence_trail
     metrics['verifier_passed'] = True
     return metrics

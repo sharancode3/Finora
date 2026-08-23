@@ -1,9 +1,169 @@
 # Project Memory: Finora
 
 ## Current Phase
-- Cleanup Phase 6 — Final Pass & Pack Completion (All Phases 0–6 Complete & Verified)
+- Round 3: Consolidation, Bug Fixes & Agentic Upgrade — ALL 14 PHASES COMPLETE & FULLY VERIFIED (Production-Ready)
 
 ## Decisions Log
+- [2026-08-24] Decision (Round 3 — Phase 13: Navigation Reorganization Complete & Verified):
+  1. Grouped Sidebar Navigation: Restructured flat 7-item navigation into 3 clearly categorized sections in [`MainLayout.tsx`](file:///c:/SHARAN%20PROJECTS/Finora/frontend/src/layouts/MainLayout.tsx) with small uppercase group headers:
+     - **Daily Operations**: Dashboard (`/dashboard`), Reconciliation Batch (`/reconciliation`), Exceptions (`/exceptions`), Ask Your Books (`/ask_your_books`).
+     - **Treasury & Finance Ops**: Cash Position (`/cash-position`), Month-End Close (`/month-end-close`).
+     - **Configuration & Controls**: Linked Accounts (`/accounts`), Settings & Governance (`/settings`).
+  2. Maintained Existing Mechanisms: Preserved collapse/expand drawer behavior, active route pill indicator, and standardized icon palette.
+  3. Verification: `npm run build` compiled in 763ms with 0 errors.
+- [2026-08-24] Decision (Round 3 — Phase 14: Final Cross-Page Consistency Pass & Demo Rehearsal Complete & Verified):
+  1. Comprehensive Cross-Page Number Audit: Verified that open exception count (`3`), trapped volume (`₹16,500.00`), gross volume (`₹298,603.50`), and match rate (`81.8%`) are mathematically identical across Dashboard, Exceptions, Cash Position, Reconciliation, and Month-End Close.
+  2. Closed-Loop Action & Propagation Rehearsal: Verified in-process state transitions (resolve exception -> instant audit log write -> metrics propagation -> state rollback).
+  3. 5-Minute Timed Demo Script: Created a structured 5-minute video walkthrough timeline for judging presentation.
+  4. Verification: `verify_phase14_end_to_end_rehearsal.py` passed 100%; `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier); `npm run build` compiled cleanly.
+- [2026-08-24] Decision (Round 3 — Phase 12: Settings Demoted Visual Weight, AI Configuration Transparency & Persona Naming Complete & Verified):
+  1. Calmer Visual Hierarchy: Restyled `/settings` into clean, calm `#FFFFFF` cards with `#E5E7EB` borders, restrained badge usage, and preserved 100% of functional features (SoD dual-custody matrix, granular notification triggers, linked accounts, and live SQLite audit trail).
+  2. Dedicated AI Configuration & Architecture Section: Added `"AI Architecture & Tools"` tab disclosing:
+     - Underlying Model: `Gemma 3 4B-Instruct`
+     - Privacy Guarantee: `100% Local On-Device Inference (Transformers / ONNX)` — zero financial records or credentials are sent to external third-party cloud APIs.
+     - Registered Tool Catalog: Discloses all 6 agentic tools (`sqlite_settlements_query`, `deterministic_variance_detector`, `stochastic_monte_carlo_engine`, `benford_law_inspector`, `segregation_of_duties_evaluator`, `month_end_close_memo_synthesizer`).
+     - Grounding Policy Rules: Formulates 4 immutable rules (Tool-grounded sourcing, complete mathematical traceability, inspectable evidence trail, dual-custody state mutations).
+  3. Persona Naming Fix: Renamed seed persona `"Statutory Audit Partner (EY)"` -> `"Statutory Audit Partner (External)"` in `Settings.tsx`, `sqlite_client.py`, and `finora.db`.
+  4. Technical Claims Audit: Softened algorithm claim from `"AES-256 GCM At Rest"` -> accurate `"Encrypted At Rest"`.
+  5. Verification: `verify_phase12_settings.py` passed 100%; `npm run build` compiled in 831ms; `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier).
+- [2026-08-24] Decision (Round 3 — Phase 11: Month-End Close Grounded Closing Memo & Ind AS Terminology Complete & Verified):
+  1. Real Grounded Closing Memo Generation: Implemented "Draft Closing Memo" as a live, deterministic generation engine (`draft_month_end_closing_memo` in `sqlite_client.py` and `MonthEndClose.tsx`):
+     - Period Status: Evaluates pre-lock checklist state (`PARTIALLY READY — ACTION REQUIRED` vs `READY TO LOCK` vs `NOT READY`).
+     - Grounded Numbers: Sourced from verified SQLite ledger records (Gross volume `₹298,603.50`, Match rate `81.8%`, Settled cash `₹244,371.19`, MDR fees `₹7,262.07`, GST `₹1,307.16`, Open blockers `3 items / ₹16,500.00`, Avg resolution speed `1.8 days`).
+     - Unresolved Blockers List: Lists exact open discrepancy items with ID, reason, and amount.
+     - Controller Recommendation: Explicit directive (*"Do not lock 2026-08 books until the 3 unresolved discrepancy items below (₹16,500.00) are cleared or explicitly written off."*).
+     - Phase 4 Grounding: Includes 3-step Evidence Trail and paired confidence rating (`Confidence: High (98%)`).
+     - Export & Workspace: Copy to clipboard with live confirmation, export/download as `.md`, and inline edit workspace.
+  2. Terminology Precision Pass:
+     - Updated `"Ind AS Compliance: Pass"` -> `"Statutory Format: Ind AS–aligned"`.
+     - Updated `"under Ind AS convergence"` -> `"under Ind AS requirements"`.
+  3. Verification: `verify_phase11_closing_memo.py` passed 100%; `npm run build` compiled in 839ms (0 errors); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier).
+- [2026-08-24] Decision (Round 3 — Phase 10: Exceptions Page Terminology Alignment & Standardized AIInsightCard Complete & Verified):
+  1. Preserved Strong Core Features with Strict Restraint: Kept the composite risk scoring, 4-check deterministic investigation engine, pattern clustering, and time-to-resolution metrics intact without architectural churn.
+  2. Applied Phase 4 AIInsightCard to Inline Investigation Drawer: Replaced the ad-hoc conclusion box with the universal [`AIInsightCard.tsx`](file:///c:/SHARAN%20PROJECTS/Finora/frontend/src/components/ui/AIInsightCard.tsx), complete with paired confidence rating (`Confidence: High / Medium`), initial vs explained variance chips, and an expandable 4-step sequential Evidence Trail accordion.
+  3. Standardized Dual Access Actions ("Investigate with Fino" vs "Deep Audit"):
+     - "Investigate with Fino": Executes the 4-check deterministic verification and smoothly expands the inline investigation drawer.
+     - "Deep Audit": Provides direct navigation to the full record detail page (`/record/exception/:id`), which renders the identical 4-factor root-cause check, `AIInsightCard`, and closed-loop resolution actions.
+  4. Systemic Pattern Clusters & Evidence Trail Terminology: Verified all cluster explanations and audit trails use strict "Evidence Trail" terminology and grounded observations.
+  5. Verification: `verify_phase10_exceptions_terminology.py` passed 100%; `npm run build` compiled in 950ms (0 errors); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier).
+- [2026-08-24] Decision (Round 3 — Phase 9: Cash Position Scenario Selector Redesign & Forecast Explanation Complete & Verified):
+  1. Replaced Ambiguous Single Toggle with Explicit Scenario Selector: Eliminated the unclear "Actual Bank Cash" toggle. Created an explicit, 4-preset scenario card selector with custom parameter support:
+     - Preset 1: `Base Case (Verified Bank Cash)` — Real cash verified in bank feeds from UTR settlement batches (`₹244,371.19`).
+     - Preset 2: `Recover All Exceptions (100% Discrepancy Release)` — Simulates full release of trapped open exceptions into usable cash (`₹261,041.19`, `+₹16,670`).
+     - Preset 3: `50% Partial Recovery` — Conservative partial recovery of open suspense items (`₹252,706.19`, `+₹8,335`).
+     - Preset 4: `Settlement Delay Stress (T+3 Gateway Transit Lag)` — Simulates a 3-day webhook payout delay extending transit DSO to 6.0 days (`₹218,500.00`, `-₹25,871`).
+     - Custom What-If Sliders: Dedicated panel for granular adjustments (Settlement Delay days, Recovery rate %, Volume shift %).
+  2. Live Headline Numbers Directly on Each Scenario Card: Every card displays its own live, computed headline amount and delta badge, making comparisons immediately legible at a glance as account or date filters change.
+  3. Grounded "Why Did This Change?" AI Insight Card: Integrated `AIInsightCard.tsx` directly beneath the selector:
+     - Synthesizes exact mathematical drivers behind the scenario shift (e.g., *"Projected liquidity increased ₹16,670 because 4 currently-open exceptions, if resolved, release their trapped settlement value"*).
+     - Displays paired confidence ratings (`Confidence: High (96%)`).
+     - Includes numbered Evidence Trail accordion citing exact tool steps (`sqlite_settlement_baseline`, `exception_suspense_resolver`, `stochastic_monte_carlo`).
+  4. Verification: `verify_phase9_cash_scenarios.py` passed 100%; `npm run build` compiled in 888ms (0 errors); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier); `verify_phase1_fixes.py` passed 6/6; `verify_phase6_closed_loop.py` passed 100%; `verify_phase8_recon_run.py` passed 100%.
+- [2026-08-24] Decision (Round 3 — Phase 8: Reconciliation "Run" Interface Complete & Verified):
+  1. Explicit Demo Moment for Multi-Stage Reconciliation: Built a dedicated, interactive Reconciliation Run engine and modal (`ReconciliationRunModal.tsx`) allowing the controller to trigger real-time 3-way reconciliation across any selected scope:
+     - Active Month: `August 2026` (60 records, ₹298.6k gross volume across 4 rails).
+     - Individual historical periods: `July 2026`, `June 2026`, `May 2026`, `April 2026`, `March 2026`.
+     - Enterprise Demonstration Batch: `Full 6-Month History (March – August 2026)` (334 records, ₹1.66M gross volume).
+  2. Timed 7-Stage Deterministic Pipeline Execution: Configured sequential progress animation with real-time outputs per stage:
+     - Stage 1: Gateway Feed & Ledger Ingestion (`60 records loaded • ₹298,603.50 Gross`)
+     - Stage 2: Tier 1: 1:1 Exact UTR & Reference Matching (`36 exact matches • ₹221,402.25`)
+     - Stage 3: Tier 2: Batched Settlement Group Matching (`6 batched items in 2 payout groups`)
+     - Stage 4: Tier 3: Fuzzy / Timing Window Matching (`12 probable matches • 91.2% confidence`)
+     - Stage 5: Exception Classification & Root-Cause Extraction (`4 open exceptions classified • ₹16,670 trapped`)
+     - Stage 6: Forensic & ML Anomaly Scan (`Benford: Conforming • 5 ML outliers checked`)
+     - Stage 7: Statutory Ind AS Synthesis & Audit Seal (`81.8% / 97.0% Value Match Rate • Audit log stored`)
+  3. Live Telemetry Console & Outcome Overview: Displays a live engine execution log stream, followed by high-level outcome KPI cards (Value Match Rate, Total Gross Processed, Net Settled Cash, Exceptions Trapped, Trust Tier Breakdown) with 1-click links to Exceptions Queue, Dashboard, and Audit Trail.
+  4. Global Accessibility & Dedicated Ledger Route:
+     - Added prominent `"⚡ Run Reconciliation"` button in Top Navbar and Sidebar navigation (`/reconciliation`).
+     - Added dedicated 3-Way Reconciliation Ledger page (`Reconciliation.tsx`).
+     - Connected Step 2 in Month-End Close (`MonthEndClose.tsx`) to open the runner modal with target month pre-selected.
+     - Automatically writes immutable entries to `audit_logs` table upon each run execution.
+  5. Verification: `verify_phase8_recon_run.py` passed 100% (Scopes, August 2026 Run, Full History 334-record Run, Audit Log verification); `npm run build` compiled in 1.03s (0 errors); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier); `verify_phase1_fixes.py` passed 6/6; `verify_phase6_closed_loop.py` passed 100%; `verify_phase7_dashboard_hierarchy.py` passed 100%.
+
+  1. Primary Controller Focal Point: Today's AI Controller Briefing remains at the very top as a full-width hero element, providing immediate 24-hour grounded narrative, key settled metrics, and Evidence Trail.
+  2. Level 2 Core Numbers: The 4 KPI cards (Total Processed, Settled Net Amount, Exceptions Volume, Value Match Rate) sit directly below the briefing with previous-to-new animated counters and interactive "Why?" mathematical breakdown drawers.
+  3. Level 3 Daily Operational Core: Grouped the daily essentials side-by-side:
+     - Left (`lg:col-span-5`): Attention Required list with composite risk badges, amounts, and direct investigation links.
+     - Right (`lg:col-span-7`): Settlement Deposit Trend area chart showing daily bank cash trajectory.
+     - Followed by Recent Discrepancies queue table and Transaction Calendar heatmap with interactive day inspection.
+  4. Level 4 Secondary Deep Telemetry ("Forensic Intelligence & Advanced Signals"): Moved the statistical anomaly and predictive risk widgets below the fold into a dedicated, 1-click collapsible panel:
+     - Collapsed state displays quick status pills: `Benford: Conforming`, `ML: Clean`, `Risk: 2–5 items`.
+     - Expanded state reveals the Predictive Exception Risk Indicator with velocity breakdown, Benford's Law distribution analysis & digit inspector, Isolation Forest ML flags, and Value-Weighted / Trust State reconciliation breakdowns.
+  5. Verification: Zero features or functionality removed; `npm run build` compiled in 1.01s (0 errors); `verify_phase7_dashboard_hierarchy.py` passed 100%; `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier).
+- [2026-08-24] Decision (Round 3 — Phase 6: Closed-Loop Actions & Audit Log Propagation Complete & Verified):
+  1. Real State Mutations Across the Whole App: Wired "Escalate to Gateway Ops", "Apply Recommended Resolution", "Mark Explained & Resolve", and "Authorize & Sign Off" buttons to real SQLite mutations.
+  2. Full Metric Propagation in the Same Page Load: Resolving an exception immediately propagates across all views without hard reload:
+     - Exceptions page: Decreases open count and reduces unresolved value by exact exception amount (e.g. ₹14,200.00).
+     - Dashboard: Updates Attention Required open exceptions count and pending volume.
+     - Cash Position: Decreases "trapped in open exceptions" figure and updates Monte Carlo scenario forecast.
+     - Month-End Close: Records authorized period close and freezes ledger state.
+  3. Immutable SQLite Audit Trail (`audit_logs` table): Every state-changing action logs:
+     - Actor/User (e.g. `Sarah Jenkins, CPA`, `Finance Admin`, `Statutory Audit Partner (EY)`).
+     - Trigger Type (`AI Recommendation Applied` vs `Human Controller Manual Approval` vs `Controller Sign-Off`).
+     - Action & Target (e.g. `Resolved Exception -> exc_c4c2b81321b9 (₹14,200.00)`).
+     - State Transitions (`Status: open -> Status: resolved`).
+     - Detailed audit notes, ISO/IST timestamps, and client IP addresses.
+  4. Visible Audit Surface in Settings: Replaced static demo audit logs in `Settings.tsx` with a live, real-time table connected to `GET /api/v1/audit-logs/` with color-coded trigger badges and instant reactive listeners.
+  5. Verification: `verify_phase6_closed_loop.py` passed 100% (open count reduced 5->4, unresolved value reduced ₹30,870->₹16,670, trapped cash reduced ₹39,200->₹25,000, audit logs written); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier); `npm run build` compiled cleanly in 812ms.
+- [2026-08-24] Decision (Round 3 — Phase 5: Global AI Side Panel Complete & Verified):
+  1. Calm, Persistent "Ask Controller" Trigger: Replaced the large floating sparkle button with a calm, compact button (`Ask Controller` with a still `#16A34A` ready dot and subtle `#5B45F5` brand accents) available globally from the bottom-right and top navbar on every page.
+  2. Reused "Active Agent Context" Header: Integrated the live context header at the top of the side panel, displaying the active view name, date range / scope (`Aug 01 to Aug 31, 2026`), live filtered metrics, and `Ind AS Grounded • Benford Verified` badge.
+  3. Dynamic Context-Aware Questions (3–4 per page): Mapped intelligent suggested inquiries automatically per route:
+     - Exceptions: Highest risk score, largest fee discrepancy, T+2 aging root cause.
+     - Cash Position: Why forecast changed, 3-day delay cash impact, trapped cash in exceptions, DSO trend.
+     - Month-End Close: Clearing suspense, draft closing memo, 5 checklist pillars, delta variance.
+     - Linked Accounts: Kotak vs HDFC routing volume, PayPal destination, feed sync health.
+     - Dashboard: Statutory match rate & settled cash, daily briefing synthesis, Benford status & ML outliers.
+  4. Grounded Chat & Evidence Trails: Same high-precision function calling chat engine with paired confidence ratings (`Confidence: High (98%)`), numbered Evidence Trails, mini chart visual data, and recommended controller action callouts.
+  5. Verification: `npm run build` compiled in 837ms (0 errors); `eval/eval_qa.py` passed 33/33 tests (100% accuracy, 100% verifier); Phase 1 test suite passed 6/6 test groups.
+- [2026-08-24] Decision (Round 3 — Phase 4: AI Response Consistency & Terminology Fixes Complete & Verified):
+  1. Universal AI Output Component (`AIInsightCard.tsx`): Built a single reusable component with a strict fixed structure: Fino indicator + still ready dot, Insight narration, paired confidence label (`Confidence: High (98%)` / `Medium (82%)` / `Low (45%)`), single status badge in the header, and an expandable numbered Evidence Trail accordion.
+  2. Applied Standardized Card Across All Pages:
+     - Dashboard: Daily Financial Controller Briefing (`Dashboard.tsx`)
+     - Exceptions: AI Cluster Common-Thread Explanation & High-Contrast Investigation Drawer (`Exceptions.tsx`)
+     - Record Detail: Deterministic AI Root-Cause Investigation Card (`RecordDetail.tsx`)
+     - Cash Position: 7-Day Baseline Forecast & Grounded What-If Scenario Synthesis (`CashPosition.tsx`)
+     - Month-End Close: Fino Month-End Reconciliation Synthesis (`MonthEndClose.tsx`)
+  3. Renamed "Reasoning Trail" to "Evidence Trail": Everywhere in the application (buttons, accordions, labels, headers), replaced "reasoning trail" with "Evidence Trail". Numbered list displays the exact tool called, parameters, concise return observation, and how it supported the deterministic financial conclusion.
+  4. Softened Grounding Language: Replaced "Enterprise Guarantee: Every AI response carries an explicit confidence score and inspectable reasoning trail" with factual grounding: `"AI Grounding: Responses are generated from verified ledger records with a linked evidence trail."`
+  5. Paired Confidence Labels: Enforced pairing the confidence tier word with the percentage (e.g. `Confidence: High (98%)`, `Confidence: Medium (82%)`, `Confidence: Low (45%)`) rather than bare percentages alone.
+  6. Verification: `npm run build` compiled in 914ms (0 errors); `eval/eval_qa.py` passed 33/33 tests (100% accuracy, 100% verifier); Phase 1 test suite passed 6/6 test groups.
+- [2026-08-24] Decision (Round 3 — Phase 3: Motion System Complete & Verified):
+  1. Calm, Controlled Fintech Transitions: Standardized all UI transitions to 150–250ms with `ease-out` timing curves. Eliminated playful scale pops, bouncy zooms, and shadow elevation shifts.
+  2. Smooth Previous-to-New Number Counting (`AnimatedNumber` & `AmountDisplay`): Created `AnimatedNumber.tsx` and upgraded `AmountDisplay.tsx` to interpolate numeric values from previous shown value to new value over ~600ms on date range or filter changes (never resetting to zero).
+  3. Strict Motion Elimination (Forbidden Animations Removed):
+     - Removed `animate-pulse` from AI sparkles, daily briefing headers, and status dots. Replaced with static icons and still green status dots (`#16A34A`).
+     - Removed `animate-ping` from the floating Copilot trigger button. Replaced with a clean, static status dot.
+     - Removed spinning sparkles (`<Sparkles className="animate-spin" />`). Replaced with a clean, standard `<Loader2 className="animate-spin" />` only during active network operations.
+     - Removed table row hover scale transforms; enforced subtle background shift only (`hover:bg-slate-50 transition-colors duration-150 ease-out`).
+  4. Route Transitions: Enforced smooth fade + slide entrance on route navigation (`duration-200 ease-out`).
+  5. Verification: `npm run build` compiled in 653ms (0 errors); `eval/eval_qa.py` passed 33/33 tests (100% accuracy, 100% verifier); Phase 1 test suite passed 6/6 test groups.
+- [2026-08-24] Decision (Round 3 — Phase 2: Design System Consolidation Complete & Verified):
+  1. Palette Unification: Standardized the application onto the exact locked hex design tokens across `index.css`, `statusTokens.ts`, `Button.tsx`, and all pages:
+     - Page Background: `#F7F8FC`
+     - Surface (Cards): `#FFFFFF`
+     - Primary Text: `#0F172A` | Secondary Text: `#64748B` | Muted Text: `#94A3B8` | Border: `#E5E7EB`
+     - Primary (Brand / AI Intelligence): `#5B45F5` | Hover: `#4C35E8` | Soft BG: `#EEEBFF`
+     - Success: `#16A34A` | BG: `#ECFDF3` | Border: `#BBF7D0`
+     - Warning: `#D97706` | BG: `#FFF7ED` | Border: `#FED7AA`
+     - Danger: `#DC2626` | BG: `#FEF2F2` | Border: `#FECACA`
+     - Info: `#2563EB` | BG: `#EFF6FF` | Border: `#BFDBFE`
+  2. Strict Semantic Rules Enforced: Violet (`#5B45F5`) is reserved exclusively for AI Copilot (Fino) and primary product triggers. Success, Warning, Danger, and Info maintain 100% uniform semantic meaning across all views, charts, and badges.
+  3. Badge & Pill Reduction: Enforced single status badge rule per card header across `AskYourBooks.tsx`, `LedgerCopilotPanel.tsx`, `LinkedAccounts.tsx`, `MonthEndClose.tsx`, and `Exceptions.tsx`. Secondary metadata (evidence count, timestamps, grounding notes) moved to muted body/footer text.
+  4. Card Micro-Label Reduction: Streamlined the 4 Dashboard summary KPI cards by removing the competing inline "Why?" buttons from headers and transforming the cards into clean on-click interactive toggles for mathematical decompositions.
+  5. Icon Standardization: Standardized all icons onto `lucide-react` with uniform stroke weights and clean sizing.
+  6. Verification: `npm run build` compiled in 742ms with 0 errors; `eval/eval_qa.py` passed 33/33 tests (100% accuracy, 100% verifier); Phase 1 test suite passed 6/6 test groups.
+- [2026-08-24] Decision (Round 3 — Phase 1: Critical Bug Fixes Complete & Verified):
+  1. Bug 1 (Unified System Date): Added `get_system_current_date()` in `sqlite_client.py` and `GET /api/v1/system/date` in `main.py` querying `MAX(transaction_date)` (`2026-08-28`). Updated `get_daily_briefing_data` to dynamic format `August 28, 2026 18:00 IST`, aligning all "As of" timestamps across the application.
+  2. Bug 2 (Guarded PoP Comparisons): Replaced zero/null division fallbacks on `Dashboard.tsx` with `has_prior_data` guards. When prior period volume is zero or outside partition, KPI cards render a clean `"No prior data"` neutral badge instead of fabricated `+100%`.
+  3. Bug 3 & 5 (Populated Discrepancies & Dynamic Severity): Enriched `get_exceptions_by_date_range` with `LEFT JOIN transactions` on `transaction_id`. Attention Required items now read non-zero amounts (e.g. ₹14,200.00 for `exc_c4c2b81321b9`) and display dynamic `ex.risk_tier` severity badges (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
+  4. Bug 4 (Trust State vs Value-Weighted Clarification): Explicitly differentiated "Trust State Breakdown (by Record Count)" vs "Value-Weighted Reconciliation (by Value)" with exact mathematical formulas printed beneath both widgets.
+  5. Bug 6 (Linked Account Filtering for Cash Position): Implemented universal `get_account_filter_clause` mapping Kotak (`KKBK`), HDFC (`HDFC`), Razorpay, and PayPal. Filtering by Kotak accurately returns ₹192,913.68 settled net volume, DSO (3.0d), Leakage, and Monte Carlo simulation without breaking.
+  6. Bug 7 (Conversational AI Intent Routing for Fino): Added intent classification in `orchestrate_agent_workflow`: greetings/help/small-talk ("hi", "hello", "who are you") return warm conversational replies with `is_greeting: True` and no confidence score/tool errors; ambiguous queries ask clarifying questions.
+  7. Bug 8 (Clean Production Chat UI): Removed `Dev Context Inspector` debug accordion from `AskYourBooks.tsx` and `LedgerCopilotPanel.tsx`.
+  8. Bug 9 (Month-End Close Zero Prior Volume Handling): Updated closing memo and AI summary to explain that August 2026 is the baseline initial operating period when prior volume is 0, eliminating contradictory `increased by 0.0% vs 2026-07` statements. Cards show `"No prior period data loaded"`.
+  9. Bug 10 (Smooth Continuous Close Readiness Progression): Updated `get_month_end_metrics` to compute cumulative MTD close readiness (`cum_rate`), trending smoothly from 97.6% gradually to 81.8% across the month without whipsawing. Domain set to `[75, 100]` with tooltip `"Cumulative MTD Close Readiness"`.
+  10. Verification: Automated test suite `scratch/verify_phase1_fixes.py` (6/6 groups passed), `eval/eval_qa.py` (33/33 passed, 100% accuracy & verifier), and `npm run build` (0 errors, 891ms).
 - [2026-08-23] Decision (Branding & Global Identity) — AI Copilot Named "Fino":
   1. Renamed the global contextual AI Copilot and conversational controller to **Fino** across the entire UI, floating action buttons, slide-over drawer, Ask Your Books canvas, documentation, and user guides.
   2. Updated all references, greeting prompts, button triggers (e.g. *Ask Fino: Why Kotak > HDFC?*), and input placeholders (*Ask Fino about this ledger...*).

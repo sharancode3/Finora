@@ -15,6 +15,7 @@ import {
   Sparkles,
   ArrowUpRight,
   TrendingUp,
+  Workflow,
   HelpCircle
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
@@ -177,7 +178,7 @@ export default function LinkedAccounts() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#5B45F5] hover:bg-[#4C35E8] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} />
           Connect Integration
@@ -186,12 +187,12 @@ export default function LinkedAccounts() {
 
       {/* Sync Success Feedback Banner */}
       {syncSuccessMessage && (
-        <div className="p-3.5 bg-emerald-50 text-emerald-900 rounded-xl border border-emerald-200 flex items-center justify-between gap-3 text-xs font-medium animate-in fade-in duration-200">
+        <div className="p-3.5 bg-[#ECFDF3] text-[#16A34A] rounded-xl border border-[#BBF7D0] flex items-center justify-between gap-3 text-xs font-medium animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+            <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
             <span>{syncSuccessMessage}</span>
           </div>
-          <button onClick={() => setSyncSuccessMessage(null)} className="text-emerald-700 hover:text-emerald-900 cursor-pointer">
+          <button onClick={() => setSyncSuccessMessage(null)} className="text-[#16A34A] hover:opacity-80 cursor-pointer">
             <X size={14} />
           </button>
         </div>
@@ -203,21 +204,21 @@ export default function LinkedAccounts() {
           {staleAccounts.map(stale => (
             <div 
               key={stale.account_id}
-              className="p-4 bg-amber-50/90 text-amber-950 rounded-2xl border border-amber-300 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="p-4 bg-[#FFF7ED] text-[#D97706] rounded-2xl border border-[#FED7AA] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-amber-200/60 text-amber-800 rounded-xl shrink-0 mt-0.5">
+                <div className="p-2 bg-[#FED7AA]/60 text-[#D97706] rounded-xl shrink-0 mt-0.5">
                   <AlertTriangle size={18} />
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold uppercase tracking-wider text-amber-900">Sync Delay Flagged</span>
-                    <span className="text-amber-800 font-mono">({stale.name})</span>
+                    <span className="font-bold uppercase tracking-wider text-[#D97706]">Sync Delay Flagged</span>
+                    <span className="text-[#D97706] font-mono">({stale.name})</span>
                   </div>
                   
                   {/* Grounded AI Explanation */}
-                  <div className="p-2.5 bg-white/90 rounded-xl border border-amber-200/70 text-slate-800 flex items-start gap-2">
-                    <Sparkles size={14} className="text-indigo-600 shrink-0 mt-0.5" />
+                  <div className="p-2.5 bg-white/90 rounded-xl border border-[#FED7AA]/70 text-slate-800 flex items-start gap-2">
+                    <Sparkles size={14} className="text-[#5B45F5] shrink-0 mt-0.5" />
                     <p className="leading-relaxed font-medium">
                       {stale.ai_sync_explanation || stale.sync_issue || `Last synced against a 15-minute polling interval.`}
                     </p>
@@ -225,16 +226,14 @@ export default function LinkedAccounts() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                <button
-                  onClick={() => handleSyncNow(stale.account_id)}
-                  disabled={syncingId === stale.account_id}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
-                >
-                  <RefreshCw size={12} className={syncingId === stale.account_id ? 'animate-spin' : ''} />
-                  {syncingId === stale.account_id ? 'Syncing...' : 'Sync Now'}
-                </button>
-              </div>
+              <button
+                onClick={() => handleSyncNow(stale.account_id)}
+                disabled={syncingId === stale.account_id}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#D97706] text-white hover:bg-[#B45309] rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+              >
+                {syncingId === stale.account_id ? <RefreshCw size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+                <span>{syncingId === stale.account_id ? 'Syncing...' : 'Sync Gateway Feed'}</span>
+              </button>
             </div>
           ))}
         </div>
@@ -242,11 +241,11 @@ export default function LinkedAccounts() {
 
       {/* 🌟 MONEY FLOW VISUALIZATION 🌟 */}
       {crossRecon && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
-                <TrendingUp size={18} />
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#EEEBFF] text-[#5B45F5] rounded-2xl border border-[#DDD7FE] shadow-xs">
+                <Workflow size={20} />
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900">August 2026 Money Movement & Route Settlement</h3>
@@ -256,9 +255,9 @@ export default function LinkedAccounts() {
             
             <button
               onClick={() => handleAskFlowQuestion("Why did more money go to Kotak than HDFC?")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors cursor-pointer self-start md:self-auto"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#EEEBFF] hover:bg-[#DDD7FE] text-[#5B45F5] border border-[#DDD7FE] rounded-xl text-xs font-bold transition-colors cursor-pointer self-start md:self-auto"
             >
-              <Sparkles size={13} className="text-indigo-600" />
+              <Sparkles size={13} className="text-[#5B45F5]" />
               Ask Fino: Why Kotak &gt; HDFC?
             </button>
           </div>
@@ -273,9 +272,9 @@ export default function LinkedAccounts() {
               </div>
 
               {/* Razorpay Gateway Box */}
-              <div className="p-4 bg-white rounded-xl border border-indigo-200 shadow-xs space-y-2">
+              <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                  <span className="text-[11px] font-bold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
                     Payment Gateway
                   </span>
                   <span className="text-xs font-mono font-bold text-slate-900">
@@ -375,9 +374,9 @@ export default function LinkedAccounts() {
               </div>
 
               {/* Kotak Bank Destination */}
-              <div className="p-4 bg-white rounded-xl border-2 border-emerald-200 shadow-xs space-y-2">
+              <div className="p-4 bg-white rounded-xl border-2 border-[#BBF7D0] shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[11px] font-bold text-[#16A34A] bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
                     Primary Bank
                   </span>
                   <span className="text-xs font-mono font-bold text-emerald-950">
@@ -508,7 +507,7 @@ export default function LinkedAccounts() {
                     </div>
 
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border flex items-center gap-1 ${
-                      isHealthy ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'
+                      isHealthy ? 'text-[#16A34A] bg-[#ECFDF3] border-[#BBF7D0]' : 'text-[#D97706] bg-[#FFF7ED] border-[#FED7AA]'
                     }`}>
                       {isHealthy ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
                       {isHealthy ? 'Healthy' : 'Delayed'}

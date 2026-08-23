@@ -15,19 +15,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     switch (variant) {
       case 'primary':
-        variantStyles = 'bg-primary-accent text-white hover:bg-primary-accent-hover shadow-sm';
+        variantStyles = 'bg-[#5B45F5] text-white hover:bg-[#4C35E8] shadow-xs';
         break;
       case 'secondary':
-        variantStyles = 'bg-surface text-slate-700 border border-border hover:bg-slate-50 shadow-sm';
+        variantStyles = 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-xs';
         break;
       case 'danger':
-        variantStyles = 'bg-surface text-danger border border-danger hover:bg-danger/5 shadow-sm';
+        variantStyles = 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] hover:bg-[#FEE2E2] shadow-xs';
         break;
       case 'ghost':
         variantStyles = 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100';
         break;
       case 'outline':
-        variantStyles = 'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm';
+        variantStyles = 'bg-transparent text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-xs';
         break;
     }
 

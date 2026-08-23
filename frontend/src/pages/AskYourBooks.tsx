@@ -115,7 +115,7 @@ export default function AskYourBooks() {
               </div>
               <h3 className="font-bold text-base text-slate-800 mb-1">Ask Fino About Your Books</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Ask Fino questions about match rates, gateway fee leakage, delayed settlements, or multi-step period comparisons. Every conclusion produces an inspectable reasoning trail and confidence score.
+                Ask Fino questions about match rates, gateway fee leakage, delayed settlements, or multi-step period comparisons. Every conclusion produces a linked evidence trail and paired confidence rating.
               </p>
             </div>
           ) : (
@@ -127,7 +127,7 @@ export default function AskYourBooks() {
 
               return (
                 <div key={idx} className={`flex gap-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${msg.role === 'user' ? 'bg-[#5B45F5] text-white' : 'bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE]'}`}>
                     {msg.role === 'user' ? <User size={15} /> : <Sparkles size={15} />}
                   </div>
                   
@@ -137,26 +137,26 @@ export default function AskYourBooks() {
                     <div 
                       className={`p-4 rounded-2xl text-xs leading-relaxed shadow-xs w-full max-w-fit ${
                         msg.role === 'user' 
-                          ? 'bg-indigo-600 text-white rounded-tr-xs' 
+                          ? 'bg-[#5B45F5] text-white rounded-tr-xs' 
                           : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs'
                       }`}
                     >
-                      {/* AI Confidence Header */}
-                      {msg.role === 'ai' && (
+                      {/* AI Confidence Header (Single Status Badge) */}
+                      {msg.role === 'ai' && conf && !meta.is_greeting && (
                         <div className="flex items-center justify-between gap-3 pb-2.5 mb-2.5 border-b border-slate-100">
                           <div className="flex items-center gap-1.5">
                             {conf === 'HIGH' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]">
                                 <ShieldCheck size={11} /> High Confidence ({Math.round((meta.confidence_score || 0.98) * 100)}%)
                               </span>
                             )}
                             {conf === 'MEDIUM' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FFF7ED] text-[#D97706] border border-[#FED7AA]">
                                 <AlertTriangle size={11} /> Medium Confidence ({Math.round((meta.confidence_score || 0.75) * 100)}%)
                               </span>
                             )}
                             {conf === 'LOW' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]">
                                 <AlertTriangle size={11} /> Low Confidence ({Math.round((meta.confidence_score || 0.35) * 100)}%)
                               </span>
                             )}
@@ -173,7 +173,7 @@ export default function AskYourBooks() {
                       <div className="whitespace-pre-wrap font-medium">{msg.content}</div>
 
                       {/* Low/Medium Confidence Escalation Path Banner */}
-                      {msg.role === 'ai' && meta.escalation_recommendation && (
+                      {msg.role === 'ai' && meta.escalation_recommendation && !meta.is_greeting && (
                         <div className="mt-3 p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 space-y-2">
                           <div className="flex items-center gap-1.5 font-bold text-[11px] text-amber-800">
                             <UserCheck size={14} /> Recommended Controller Action
@@ -230,33 +230,33 @@ export default function AskYourBooks() {
                       )}
                     </div>
                     
-                    {/* Auditable Reasoning Trail Section */}
-                    {msg.role === 'ai' && steps.length > 0 && (
+                    {/* Grounded Evidence Trail Section */}
+                    {msg.role === 'ai' && steps.length > 0 && !meta.is_greeting && (
                       <div className="w-full max-w-xl">
                         <button 
                           onClick={() => toggleTrail(idx)}
-                          className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-colors py-1 cursor-pointer"
+                          className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-[#5B45F5] transition-colors py-1 cursor-pointer"
                         >
                           {isTrailOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-                          <GitFork size={12} className="text-indigo-500" />
-                          <span>{isTrailOpen ? 'Hide Auditable Reasoning Trail' : `Show Reasoning Trail (${steps.length} tool steps)`}</span>
+                          <GitFork size={12} className="text-[#5B45F5]" />
+                          <span>{isTrailOpen ? 'Hide Evidence Trail' : `Show Evidence Trail (${steps.length} tool steps)`}</span>
                         </button>
 
                         {isTrailOpen && (
                           <div className="mt-1.5 p-3.5 bg-white text-slate-800 rounded-xl border border-slate-200 shadow-xs space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-150 text-[11px]">
                             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 pb-1 border-b border-slate-100 flex justify-between items-center">
-                              <span>Sequential Tool Orchestration</span>
-                              <span className="text-emerald-700 font-bold">Grounded Execution</span>
+                              <span>Numbered Ledger Evidence Trail</span>
+                              <span className="text-[#16A34A] font-bold">Grounded Execution</span>
                             </div>
-                            {steps.map((s: any) => (
-                              <div key={s.step_number} className="flex gap-2.5 items-start bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                                <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">
-                                  {s.step_number}
+                            {steps.map((s: any, sIdx: number) => (
+                              <div key={sIdx} className="flex gap-2.5 items-start bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                <span className="w-4 h-4 rounded-full bg-[#5B45F5] text-white flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">
+                                  {s.step_number || (sIdx + 1)}
                                 </span>
                                 <div className="space-y-0.5 flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className="font-bold text-slate-900">{s.action}</span>
-                                    <span className="font-mono text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">{s.tool}</span>
+                                    <span className="font-bold text-slate-900">{s.action || 'Tool Execution'}</span>
+                                    <span className="font-mono text-[10px] text-[#5B45F5] bg-[#EEEBFF] px-1.5 py-0.5 rounded border border-[#DDD7FE]">{s.tool || 'query'}</span>
                                   </div>
                                   <p className="text-slate-600 text-[10px] leading-tight">{s.observation}</p>
                                 </div>
@@ -267,24 +267,6 @@ export default function AskYourBooks() {
                       </div>
                     )}
 
-                    {/* Dev Mode Context Inspector */}
-                    {msg.role === 'ai' && meta?.debug_page_context && (
-                      <details className="w-full max-w-xl text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2.5 border border-slate-200 cursor-pointer">
-                        <summary className="font-bold flex items-center justify-between text-slate-700 select-none">
-                          <span className="flex items-center gap-1.5">
-                            <Sparkles size={11} className="text-indigo-600" />
-                            Dev Context Inspector (Injected Viewport State)
-                          </span>
-                          <span className="font-mono text-[9px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
-                            {meta.debug_page_context.page_name} ({meta.debug_page_context.route})
-                          </span>
-                        </summary>
-                        <pre className="mt-2 p-2 bg-white rounded-lg border border-slate-200 text-slate-800 font-mono text-[10px] overflow-x-auto leading-relaxed">
-                          {JSON.stringify(meta.debug_page_context, null, 2)}
-                        </pre>
-                      </details>
-                    )}
-
                   </div>
                 </div>
               );
@@ -293,11 +275,11 @@ export default function AskYourBooks() {
 
           {isLoading && (
             <div className="flex gap-3 max-w-[85%]">
-              <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE] flex items-center justify-center shrink-0">
                 <Sparkles size={15} />
               </div>
               <div className="bg-white border border-slate-200 p-4 rounded-2xl text-xs text-slate-500 flex items-center gap-2 shadow-xs">
-                <Loader2 size={14} className="animate-spin text-indigo-600" />
+                <Loader2 size={14} className="animate-spin text-[#5B45F5]" />
                 <span>Executing multi-step ledger tools and validating confidence...</span>
               </div>
             </div>
@@ -314,12 +296,12 @@ export default function AskYourBooks() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#5B45F5] focus:bg-white transition-all disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white p-2.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-xs"
+            className="bg-[#5B45F5] hover:bg-[#4C35E8] text-white p-2.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-xs"
           >
             <Send size={15} />
           </button>
@@ -342,11 +324,11 @@ export default function AskYourBooks() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Orchestrator:</span>
-              <span className="font-semibold text-indigo-600">Multi-Step Function Calling</span>
+              <span className="font-semibold text-[#5B45F5]">Multi-Step Function Calling</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Forensic Checks:</span>
-              <span className="font-semibold text-emerald-600">Benford + Isolation Forest</span>
+              <span className="font-semibold text-[#16A34A]">Benford + Isolation Forest</span>
             </div>
           </div>
         </div>
@@ -360,6 +342,7 @@ export default function AskYourBooks() {
             
             <div className="space-y-2">
               {[
+                "Where and how is AI used in Finora?",
                 "Compare settlement speed and volume this month vs last month",
                 "Check our Benford forensic status and anomaly outliers",
                 "What is my value match rate and settled amount?",
@@ -370,7 +353,7 @@ export default function AskYourBooks() {
                   key={i}
                   onClick={() => handleSuggestedAsk(q)}
                   disabled={isLoading}
-                  className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50 text-xs font-medium text-slate-700 transition-all active:scale-[0.98] cursor-pointer"
+                  className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-[#DDD7FE] hover:bg-[#EEEBFF]/40 text-xs font-medium text-slate-700 transition-colors duration-150 ease-out cursor-pointer"
                 >
                   {q}
                 </button>
@@ -378,8 +361,8 @@ export default function AskYourBooks() {
             </div>
           </div>
 
-          <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl text-[11px] text-indigo-900 leading-snug">
-            <span className="font-bold">Enterprise Guarantee:</span> Every AI response carries an explicit confidence score and inspectable reasoning trail.
+          <div className="p-3 bg-[#EEEBFF]/70 border border-[#DDD7FE] rounded-xl text-[11px] text-slate-700 leading-snug">
+            <span className="font-bold text-[#5B45F5]">AI Grounding:</span> Responses are generated from verified ledger records with a linked evidence trail.
           </div>
         </div>
 

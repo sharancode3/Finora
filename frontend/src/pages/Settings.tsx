@@ -43,8 +43,12 @@ interface TeamMember {
 interface AuditLogEntry {
   id: string;
   user: string;
+  trigger_type?: string;
   action: string;
   target: string;
+  previous_value?: string;
+  new_value?: string;
+  notes?: string;
   timestamp: string;
   ip: string;
 }
@@ -83,7 +87,7 @@ export default function Settings() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     { id: '1', name: 'Finance Admin', email: 'finance@razorpay.demo', role: 'Organization Admin', status: 'Active' },
     { id: '2', name: 'Sarah Jenkins, CPA', email: 'sarah.j@razorpay.demo', role: 'Finance Controller', status: 'Active' },
-    { id: '3', name: 'Statutory Audit Partner (EY)', email: 'audit.partner@ey.demo', role: 'Viewer / Auditor', status: 'Active' }
+    { id: '3', name: 'Statutory Audit Partner (External)', email: 'audit.partner@external-audit.demo', role: 'Viewer / Auditor', status: 'Active' }
   ]);
 
   // SoD Conflict & Scope Modal State
@@ -100,13 +104,32 @@ export default function Settings() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'Organization Admin' | 'Finance Controller' | 'Viewer / Auditor'>('Finance Controller');
 
-  // Audit Logs
-  const [auditLogs] = useState<AuditLogEntry[]>([
-    { id: 'log-1', user: 'Sarah Jenkins, CPA', action: 'Authorized Period Close', target: 'August 2026 Books', timestamp: 'Today, 17:05', ip: '103.21.14.82' },
-    { id: 'log-2', user: 'Finance Admin', action: 'Connected Bank Feed', target: 'HDFC Corporate Current', timestamp: 'Today, 16:52', ip: '103.21.14.82' },
-    { id: 'log-3', user: 'Sarah Jenkins, CPA', action: 'Resolved Exception', target: 'EXC-88291 (Fee Discrepancy)', timestamp: 'Today, 14:15', ip: '103.21.14.82' },
-    { id: 'log-4', user: 'Statutory Audit Partner (EY)', action: 'Exported Reconciliation Package', target: 'July 2026 Audit Report', timestamp: 'Yesterday, 11:30', ip: '49.207.201.12' },
-  ]);
+  // Live Audit Logs from SQLite
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [loadingAuditLogs, setLoadingAuditLogs] = useState(false);
+
+  const fetchAuditLogs = async () => {
+    setLoadingAuditLogs(true);
+    try {
+      const res = await api.get('/audit-logs/');
+      setAuditLogs(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch audit logs', err);
+    } finally {
+      setLoadingAuditLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuditLogs();
+    const handleUpdate = () => fetchAuditLogs();
+    window.addEventListener('finora-audit-log-updated', handleUpdate);
+    window.addEventListener('finora-exception-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('finora-audit-log-updated', handleUpdate);
+      window.removeEventListener('finora-exception-updated', handleUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     setPageContext({
@@ -131,6 +154,7 @@ export default function Settings() {
   const tabs = [
     { id: 'profile', label: 'My Profile', icon: <User size={16} /> },
     { id: 'team', label: 'Team & Governance', icon: <Users size={16} /> },
+    { id: 'ai-config', label: 'AI Architecture & Tools', icon: <Sparkles size={16} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
     { id: 'security', label: 'Security & Posture', icon: <Shield size={16} /> },
     { id: 'about', label: 'About & Roadmap', icon: <Info size={16} /> },
@@ -242,7 +266,7 @@ export default function Settings() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   activeTab === tab.id 
-                    ? 'bg-indigo-50 text-indigo-700 shadow-xs' 
+                    ? 'bg-[#EEEBFF] text-[#5B45F5] shadow-xs' 
                     : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -265,7 +289,7 @@ export default function Settings() {
               </div>
               
               <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-700 font-bold text-xl flex items-center justify-center border border-indigo-200">
+                <div className="w-16 h-16 rounded-2xl bg-[#EEEBFF] text-[#5B45F5] font-bold text-xl flex items-center justify-center border border-[#DDD7FE]">
                   FA
                 </div>
                 <div>
@@ -437,6 +461,120 @@ export default function Settings() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* AI CONFIGURATION & ARCHITECTURE TAB */}
+          {activeTab === 'ai-config' && (
+            <div className="p-8 space-y-6">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">AI Controller Architecture & Grounding Policy</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Transparent specifications of local model inference, registered reconciliation tools, and mathematical grounding policies.
+                </p>
+              </div>
+
+              {/* 1. Model Runtime & Privacy */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-slate-100 pb-3">
+                  <Sparkles size={16} className="text-[#5B45F5]" />
+                  <h4 className="text-xs uppercase tracking-wider">Model Runtime & Privacy Guarantees</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Underlying Model</span>
+                    <span className="text-sm font-bold font-mono text-slate-900 block mt-0.5">Gemma 3 4B-Instruct</span>
+                    <p className="text-[11px] text-slate-500 mt-1">Fine-tuned lightweight model optimized for financial ops and accounting precision.</p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Inference Execution</span>
+                    <span className="text-sm font-bold text-[#16A34A] block mt-0.5 flex items-center gap-1">
+                      <ShieldCheck size={14} /> 100% Local On-Device
+                    </span>
+                    <p className="text-[11px] text-slate-500 mt-1">Runs locally on CPU/ONNX runtime. Zero financial ledger data is sent to external third-party APIs.</p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block">Grounding Mode</span>
+                    <span className="text-sm font-bold font-mono text-[#5B45F5] block mt-0.5">Deterministic (Temp: 0.0)</span>
+                    <p className="text-[11px] text-slate-500 mt-1">Zero hallucination tolerance. Every assertion must map to an underlying SQLite record.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Registered Agent Tool Catalog */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold">
+                    <Layers size={16} className="text-[#5B45F5]" />
+                    <h4 className="text-xs uppercase tracking-wider">Registered Agent Tool Catalog (6 Tools)</h4>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">Direct SQLite & Python Bindings</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    { name: 'sqlite_settlements_query', desc: 'Queries raw gateway settlement feeds, bank UTR records, and ledger credits to verify cash settlement velocity.', category: 'Ledger Retrieval' },
+                    { name: 'deterministic_variance_detector', desc: 'Executes 4-factor root-cause audit check (refund offsets, 2% MDR fee variance, T+3 float latency, duplicate records).', category: 'Exception Audit' },
+                    { name: 'stochastic_monte_carlo_engine', desc: 'Runs 1,000 empirical geometric Brownian path trials to project day-7 P10, P50, and P90 cash liquidity ranges.', category: 'Probabilistic Forecasting' },
+                    { name: 'benford_law_inspector', desc: 'Calculates leading-digit distribution across ledger amounts and flags anomalous deviations (Z-score > 2.5).', category: 'Forensic Compliance' },
+                    { name: 'segregation_of_duties_evaluator', desc: 'Deterministic rule engine evaluating capability bundles against internal dual-custody internal controls.', category: 'Governance & SoD' },
+                    { name: 'month_end_close_memo_synthesizer', desc: 'Compiles grounded statutory closing memorandum from verified period gross volumes and pre-lock checklist state.', category: 'Continuous Accounting' }
+                  ].map((tool, tIdx) => (
+                    <div key={tIdx} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-bold text-xs text-[#5B45F5]">{tool.name}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-white text-slate-600 rounded border border-slate-200">{tool.category}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">{tool.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Grounding & Guardrail Policy Rules */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-slate-100 pb-3">
+                  <FileCheck size={16} className="text-[#16A34A]" />
+                  <h4 className="text-xs uppercase tracking-wider">Grounding &amp; Guardrail Policy (Immutable Rules)</h4>
+                </div>
+
+                <div className="space-y-2.5 text-xs text-slate-700 font-medium">
+                  <div className="p-3 bg-[#ECFDF3]/60 rounded-xl border border-[#BBF7D0] flex items-start gap-2.5">
+                    <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-slate-900 block">Rule 1: Tool-Grounded Sourcing Only</strong>
+                      <span>Responses are generated strictly from verified SQLite ledger records returned by deterministic tool calls. The model never fabricates financial figures.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#ECFDF3]/60 rounded-xl border border-[#BBF7D0] flex items-start gap-2.5">
+                    <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-slate-900 block">Rule 2: Complete Mathematical Traceability</strong>
+                      <span>The agent never states or asserts a financial figure, match rate, or variance it cannot mathematically trace to a source record or closed-period ledger batch.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#ECFDF3]/60 rounded-xl border border-[#BBF7D0] flex items-start gap-2.5">
+                    <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-slate-900 block">Rule 3: Inspectable Evidence Trail Required</strong>
+                      <span>Every recommendation and synthesis includes an inspectable Evidence Trail accordion displaying exact tool steps and paired confidence ratings.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#ECFDF3]/60 rounded-xl border border-[#BBF7D0] flex items-start gap-2.5">
+                    <CheckCircle2 size={16} className="text-[#16A34A] shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-slate-900 block">Rule 4: Dual-Custody State Mutation Controls</strong>
+                      <span>All state-mutating actions (resolve exception, escalate, period lock) require human controller authorization and write immutable audit log records to SQLite.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -767,10 +905,10 @@ export default function Settings() {
                   </div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                     <p className="font-bold text-slate-900 flex items-center gap-1.5 mb-1">
-                      <Lock size={14} className="text-emerald-600" /> AES-256 GCM At Rest
+                      <Lock size={14} className="text-[#16A34A]" /> Encrypted At Rest
                     </p>
                     <p className="text-slate-500 leading-relaxed text-[11px]">
-                      All database credentials, bank account IDs, and journal hashes are encrypted at rest using AES-256 GCM.
+                      All database credentials, bank tokens, and ledger journal hashes are securely protected and encrypted at rest.
                     </p>
                   </div>
                 </div>
@@ -854,34 +992,71 @@ export default function Settings() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-xs text-slate-900">Immutable Audit Trail</h4>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                        Illustrative Demo Trail
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
+                        Live SQLite Ledger ({auditLogs.length} entries)
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500">Record of controller actions, exceptions signed off, and ledger freeze events.</p>
+                    <p className="text-[11px] text-slate-500">Record of controller actions, AI recommendations applied, exceptions resolved, and ledger freeze events.</p>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Ind AS & SOX Compliant</span>
                 </div>
 
-                <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs">
+                <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs bg-white shadow-xs">
                   <table className="w-full text-left">
                     <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase">
                       <tr>
-                        <th className="py-2.5 px-3">User</th>
-                        <th className="py-2.5 px-3">Action</th>
-                        <th className="py-2.5 px-3">Target</th>
-                        <th className="py-2.5 px-3">Timestamp</th>
+                        <th className="py-2.5 px-3">Actor / User</th>
+                        <th className="py-2.5 px-3">Trigger Type</th>
+                        <th className="py-2.5 px-3">Action & Target</th>
+                        <th className="py-2.5 px-3">State Transition & Notes</th>
+                        <th className="py-2.5 px-3 text-right">Timestamp</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-[11px]">
-                      {auditLogs.map(log => (
-                        <tr key={log.id}>
-                          <td className="py-2.5 px-3 font-semibold text-slate-800">{log.user}</td>
-                          <td className="py-2.5 px-3 text-slate-700">{log.action}</td>
-                          <td className="py-2.5 px-3 font-mono text-[10px] text-indigo-700">{log.target}</td>
-                          <td className="py-2.5 px-3 text-slate-500 font-mono text-[10px]">{log.timestamp}</td>
-                        </tr>
-                      ))}
+                      {auditLogs.map(log => {
+                        let triggerBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                        if (log.trigger_type === 'AI Recommendation Applied') {
+                          triggerBadgeClass = 'bg-[#EEEBFF] text-[#5B45F5] border-[#DDD7FE]';
+                        } else if (log.trigger_type === 'Controller Sign-Off') {
+                          triggerBadgeClass = 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]';
+                        } else if (log.trigger_type === 'Human Controller Manual Approval') {
+                          triggerBadgeClass = 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]';
+                        }
+
+                        return (
+                          <tr key={log.id} className="hover:bg-slate-50 transition-colors duration-150 ease-out">
+                            <td className="py-3 px-3">
+                              <div className="font-semibold text-slate-900">{log.user}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">{log.ip}</div>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${triggerBadgeClass}`}>
+                                {log.trigger_type || 'Manual Approval'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3">
+                              <div className="font-semibold text-slate-800">{log.action}</div>
+                              <div className="font-mono text-[10px] text-[#5B45F5] truncate max-w-[180px]">{log.target}</div>
+                            </td>
+                            <td className="py-3 px-3">
+                              {(log.previous_value || log.new_value) && (
+                                <div className="text-[10px] font-mono text-slate-600 space-x-1">
+                                  <span className="text-slate-400">{log.previous_value}</span>
+                                  {log.previous_value && log.new_value && <span className="text-slate-400">&rarr;</span>}
+                                  <span className="font-bold text-slate-800">{log.new_value}</span>
+                                </div>
+                              )}
+                              {log.notes && (
+                                <div className="text-[10px] text-slate-500 mt-0.5 truncate max-w-xs">{log.notes}</div>
+                              )}
+                            </td>
+                            <td className="py-3 px-3 text-right text-slate-500 font-mono text-[10px] whitespace-nowrap">
+                              {log.timestamp}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

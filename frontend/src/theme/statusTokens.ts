@@ -1,66 +1,112 @@
 /**
- * Finora Design Token System: Single Source of Truth for Status & Trust-State Colors
+ * Finora Design Token System: Single Source of Truth for Status & Brand Colors
  * 
- * STRICT FINTECH COLOR MAPPING:
- * 1. GREEN (emerald): Verified, Healthy, Pass, Good, Resolved, Settled, Balanced.
- * 2. AMBER (amber): Probable, Pending, Needs Attention, Review Required, In Suspense, Stale, Warning, Medium/Low Severity.
- * 3. RED (rose): Exception, Critical, Failed, High Risk, Unresolved, Open Exception, Error.
- * 4. INDIGO (indigo): Reserved EXCLUSIVELY for AI-generated content, AI Copilot, AI Verified badge, Sparkles, and AI reasoning trails.
- * 5. SLATE (slate): Neutral metadata, structural borders, labels, timestamps.
- * 
- * PROHIBITED: Blue or decorative colors for statuses/badges.
+ * EXACT LOCKED DESIGN SYSTEM PALETTE:
+ * - Page Background:     #F7F8FC
+ * - Surface (Cards):      #FFFFFF
+ * - Primary Text:          #0F172A
+ * - Secondary Text:        #64748B
+ * - Muted Text:            #94A3B8
+ * - Border:                #E5E7EB
+ * - Primary (Brand/AI):    #5B45F5 (Hover: #4C35E8, Soft BG: #EEEBFF)
+ * - Success:               #16A34A (BG: #ECFDF3, Border: #BBF7D0)
+ * - Warning:               #D97706 (BG: #FFF7ED, Border: #FED7AA)
+ * - Danger:                #DC2626 (BG: #FEF2F2, Border: #FECACA)
+ * - Info:                  #2563EB (BG: #EFF6FF, Border: #BFDBFE)
  */
 
+export const PALETTE_HEX = {
+  bgPage: '#F7F8FC',
+  surface: '#FFFFFF',
+  textPrimary: '#0F172A',
+  textSecondary: '#64748B',
+  textMuted: '#94A3B8',
+  border: '#E5E7EB',
+  primaryBrand: '#5B45F5',
+  primaryBrandHover: '#4C35E8',
+  primaryBrandSoft: '#EEEBFF',
+  success: '#16A34A',
+  successBg: '#ECFDF3',
+  warning: '#D97706',
+  warningBg: '#FFF7ED',
+  danger: '#DC2626',
+  dangerBg: '#FEF2F2',
+  info: '#2563EB',
+  infoBg: '#EFF6FF',
+} as const;
+
 export const STATUS_COLORS = {
-  // 1. GREEN: Verified / Healthy / Pass / Settled / Reconciled
+  // 1. SUCCESS (Green #16A34A / #ECFDF3): Verified / Healthy / Pass / Settled / Reconciled
   verified: {
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    border: 'border-emerald-200',
-    badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-    dot: 'bg-emerald-500',
-    solid: 'bg-emerald-600 text-white'
+    hex: '#16A34A',
+    bgHex: '#ECFDF3',
+    bg: 'bg-[#ECFDF3]',
+    text: 'text-[#16A34A]',
+    border: 'border-[#BBF7D0]',
+    badge: 'bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]',
+    dot: 'bg-[#16A34A]',
+    solid: 'bg-[#16A34A] text-white'
   },
   
-  // 2. AMBER: Probable / Pending / Review Required / Stale / Warning / Medium
+  // 2. WARNING (Amber #D97706 / #FFF7ED): Probable / Pending / Needs Review / Stale / Warning / Medium
   pending: {
-    bg: 'bg-amber-50',
-    text: 'text-amber-800',
-    border: 'border-amber-200',
-    badge: 'bg-amber-50 text-amber-800 border border-amber-200',
-    dot: 'bg-amber-500',
-    solid: 'bg-amber-600 text-white'
+    hex: '#D97706',
+    bgHex: '#FFF7ED',
+    bg: 'bg-[#FFF7ED]',
+    text: 'text-[#D97706]',
+    border: 'border-[#FED7AA]',
+    badge: 'bg-[#FFF7ED] text-[#D97706] border border-[#FED7AA]',
+    dot: 'bg-[#D97706]',
+    solid: 'bg-[#D97706] text-white'
   },
   
-  // 3. RED: Exception / Critical / Failed / Unresolved / Error / Open
+  // 3. DANGER (Red #DC2626 / #FEF2F2): Exception / Critical / Failed / High Risk / Unresolved / Error / Open
   exception: {
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
-    border: 'border-rose-200',
-    badge: 'bg-rose-50 text-rose-700 border border-rose-200',
-    dot: 'bg-rose-500',
-    solid: 'bg-rose-600 text-white'
+    hex: '#DC2626',
+    bgHex: '#FEF2F2',
+    bg: 'bg-[#FEF2F2]',
+    text: 'text-[#DC2626]',
+    border: 'border-[#FECACA]',
+    badge: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
+    dot: 'bg-[#DC2626]',
+    solid: 'bg-[#DC2626] text-white'
   },
 
-  // 4. INDIGO: Reserved EXCLUSIVELY for AI Intelligence / AI-Generated Content / Copilot
+  // 4. INFO (Blue #2563EB / #EFF6FF): Informational / Feeds / Sync status
+  info: {
+    hex: '#2563EB',
+    bgHex: '#EFF6FF',
+    bg: 'bg-[#EFF6FF]',
+    text: 'text-[#2563EB]',
+    border: 'border-[#BFDBFE]',
+    badge: 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]',
+    dot: 'bg-[#2563EB]',
+    solid: 'bg-[#2563EB] text-white'
+  },
+
+  // 5. BRAND / AI (Violet #5B45F5 / #EEEBFF): Reserved EXCLUSIVELY for Fino AI intelligence & Copilot
   ai: {
-    bg: 'bg-indigo-50',
-    text: 'text-indigo-700',
-    border: 'border-indigo-200',
-    badge: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
-    dot: 'bg-indigo-600',
-    solid: 'bg-indigo-600 text-white',
-    sparkle: 'text-indigo-600'
+    hex: '#5B45F5',
+    bgHex: '#EEEBFF',
+    bg: 'bg-[#EEEBFF]',
+    text: 'text-[#5B45F5]',
+    border: 'border-[#DDD7FE]',
+    badge: 'bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE]',
+    dot: 'bg-[#5B45F5]',
+    solid: 'bg-[#5B45F5] hover:bg-[#4C35E8] text-white',
+    sparkle: 'text-[#5B45F5]'
   },
 
-  // 5. SLATE: Neutral / Informational / Labels
+  // 6. NEUTRAL (Slate #64748B / #F1F5F9): Muted metadata / Structure / Low Risk
   neutral: {
-    bg: 'bg-slate-50',
-    text: 'text-slate-700',
-    border: 'border-slate-200',
-    badge: 'bg-slate-100 text-slate-700 border border-slate-200',
-    dot: 'bg-slate-400',
-    solid: 'bg-slate-700 text-white'
+    hex: '#64748B',
+    bgHex: '#F1F5F9',
+    bg: 'bg-[#F1F5F9]',
+    text: 'text-[#64748B]',
+    border: 'border-[#E5E7EB]',
+    badge: 'bg-[#F1F5F9] text-[#64748B] border border-[#E5E7EB]',
+    dot: 'bg-[#94A3B8]',
+    solid: 'bg-[#64748B] text-white'
   }
 } as const;
 
@@ -75,17 +121,20 @@ export type TrustStateEnum =
   | 'AI_GENERATED';
 
 export function getTrustStateStyles(state: string): string {
-  const upper = state.toUpperCase();
+  const upper = (state || '').toUpperCase();
   if (upper === 'VERIFIED' || upper === 'RESOLVED' || upper === 'HEALTHY' || upper === 'PASS' || upper === 'SETTLED' || upper === 'MATCHED') {
     return STATUS_COLORS.verified.badge;
   }
-  if (upper === 'PROBABLE' || upper === 'REVIEW REQUIRED' || upper === 'PENDING' || upper === 'IN_SUSPENSE' || upper === 'STALE' || upper === 'WARNING' || upper === 'MEDIUM' || upper === 'LOW') {
+  if (upper === 'PROBABLE' || upper === 'REVIEW REQUIRED' || upper === 'PENDING' || upper === 'IN_SUSPENSE' || upper === 'STALE' || upper === 'WARNING' || upper === 'MEDIUM' || upper === 'ACTION REQUIRED') {
     return STATUS_COLORS.pending.badge;
   }
-  if (upper === 'EXCEPTION' || upper === 'UNRESOLVED' || upper === 'CRITICAL' || upper === 'HIGH' || upper === 'FAILED' || upper === 'ERROR' || upper === 'OPEN' || upper === 'ESCALATED') {
+  if (upper === 'EXCEPTION' || upper === 'UNRESOLVED' || upper === 'CRITICAL' || upper === 'HIGH' || upper === 'FAILED' || upper === 'ERROR' || upper === 'OPEN' || upper === 'ESCALATED' || upper === 'DELAYED') {
     return STATUS_COLORS.exception.badge;
   }
-  if (upper.includes('AI') || upper === 'COPILOT') {
+  if (upper === 'INFO' || upper === 'INFORMATION' || upper === 'SYNC') {
+    return STATUS_COLORS.info.badge;
+  }
+  if (upper.includes('AI') || upper === 'COPILOT' || upper === 'FINO') {
     return STATUS_COLORS.ai.badge;
   }
   return STATUS_COLORS.neutral.badge;

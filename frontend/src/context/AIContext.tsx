@@ -63,6 +63,10 @@ interface AIContextType {
   lastSentContext: PageContext | null;
   isCopilotOpen: boolean;
   setIsCopilotOpen: (open: boolean) => void;
+  isReconciliationModalOpen: boolean;
+  setIsReconciliationModalOpen: (open: boolean) => void;
+  reconciliationTargetScope: string;
+  setReconciliationTargetScope: (scope: string) => void;
 }
 
 const AIContext = createContext<AIContextType | undefined>(undefined);
@@ -78,6 +82,8 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [pageContext, setPageContext] = useState<PageContext | null>(null);
   const [lastSentContext, setLastSentContext] = useState<PageContext | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [isReconciliationModalOpen, setIsReconciliationModalOpen] = useState(false);
+  const [reconciliationTargetScope, setReconciliationTargetScope] = useState("2026-08");
   const navigate = useNavigate();
 
   const clearMessages = () => {
@@ -225,7 +231,11 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       setPageContext,
       lastSentContext,
       isCopilotOpen,
-      setIsCopilotOpen
+      setIsCopilotOpen,
+      isReconciliationModalOpen,
+      setIsReconciliationModalOpen,
+      reconciliationTargetScope,
+      setReconciliationTargetScope
     }}>
       {children}
     </AIContext.Provider>
