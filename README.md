@@ -211,48 +211,49 @@ Finora unifies conversational AI across the entire platform through **The Ledger
 ```mermaid
 flowchart TD
     subgraph INGESTION["1. Data Ingestion Layer"]
-        A1[Internal ERP Records CSV] --> N1[Data Normalizer]
-        A2[Razorpay Settlement Feeds] --> N1
-        A3[Bank UTR Statements] --> N1
+        A1["Internal ERP Records (CSV)"] --> N1["Data Normalizer"]
+        A2["Razorpay Settlement Feeds"] --> N1
+        A3["Bank Statement UTR Batches"] --> N1
     end
 
     subgraph MATCHER["2. 4-Stage Matching Engine"]
-        N1 --> M1[Stage 1: 1-to-1 Exact Match]
-        M1 -->|Unmatched| M2[Stage 2: Batched Settlement Match]
-        M2 -->|Variance| M3[Stage 3: Fee & MDR Tolerance Detection]
-        M3 -->|Exceptions| M4[Stage 4: Anomaly & Risk Triage]
+        N1 --> M1["Stage 1: 1-to-1 Exact Match"]
+        M1 -->|Unmatched| M2["Stage 2: Batched Settlement Match"]
+        M2 -->|Variance| M3["Stage 3: Fee & MDR Tolerance Detection"]
+        M3 -->|Exceptions| M4["Stage 4: Anomaly & Risk Triage"]
     end
 
     subgraph STORAGE["3. ACID Storage & Audit Ledger"]
-        M1 --> DB[(SQLite ACID Ledger)]
+        M1 --> DB[("SQLite ACID Ledger")]
         M2 --> DB
         M3 --> DB
         M4 --> DB
     end
 
     subgraph INTELLIGENCE["4. Intelligence & Analytic Services"]
-        DB --> S1[Isolation Forest ML Engine]
-        DB --> S2[Benford's Law Forensic Analyzer]
-        DB --> S3[1,000-Trial Monte Carlo Engine]
-        DB --> S4[Gemma 3 Agentic AI Shell]
-        S4 --> V1[Zero-Hallucination Verifier Guardrail]
+        DB --> S1["Isolation Forest ML Engine"]
+        DB --> S2["Benford Law Forensic Analyzer"]
+        DB --> S3["1,000-Trial Monte Carlo Engine"]
+        DB --> S4["Gemma 3 Agentic AI Shell"]
+        S4 --> V1["Zero-Hallucination Verifier Guardrail"]
     end
 
     subgraph API["5. FastAPI Backend Services"]
-        S1 --> E1[/api/v1/analytics/statistical-anomalies]
-        S2 --> E2[/api/v1/analytics/benford-analysis]
-        S3 --> E3[/api/v1/analytics/cash-scenario-simulation]
-        V1 --> E4[/api/v1/chat/ask & /api/v1/analytics/daily-briefing]
-        DB --> E5[/api/v1/transactions & /api/v1/exceptions]
+        S1 --> E1["/api/v1/analytics/statistical-anomalies"]
+        S2 --> E2["/api/v1/analytics/benford-analysis"]
+        S3 --> E3["/api/v1/analytics/cash-scenario-simulation"]
+        V1 --> E4["/api/v1/chat/ask & daily-briefing"]
+        DB --> E5["/api/v1/transactions & exceptions"]
     end
 
     subgraph UI["6. High-Contrast Frontend & Ledger Copilot"]
-        E1 & E2 & E3 & E4 & E5 --> UI1[Executive Dashboard + KPI Decompositions]
-        E1 & E2 & E3 & E4 & E5 --> UI2[Exceptions Queue + AI Investigation Agent]
-        E1 & E2 & E3 & E4 & E5 --> UI3[Cash Position + What-If Monte Carlo Sliders]
-        E1 & E2 & E3 & E4 & E5 --> UI4[Month-End Close + AI Closing Memo]
-        E1 & E2 & E3 & E4 & E5 --> UI5[Settings + Segregation of Duties Copilot]
-        E1 & E2 & E3 & E4 & E5 --> UI6[Persistent Global Ledger Copilot Drawer]
+        E1 --> UI1["Executive Dashboard & KPI Decompositions"]
+        E2 --> UI1
+        E3 --> UI3["Cash Position & What-If Monte Carlo Sliders"]
+        E4 --> UI6["Persistent Global Ledger Copilot Drawer"]
+        E5 --> UI2["Exceptions Queue & AI Investigation Agent"]
+        E5 --> UI4["Month-End Close & AI Closing Memo"]
+        E5 --> UI5["Settings & Segregation of Duties Copilot"]
     end
 ```
 
