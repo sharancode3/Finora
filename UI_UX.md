@@ -15,7 +15,7 @@ Color in Finora carries strict, unambiguous semantic meaning. Decorative color f
 | **GREEN** | `emerald` (`bg-emerald-50`, `text-emerald-700`, `border-emerald-200`, `bg-emerald-600`) | **Verified / Healthy / Pass / Good / Settled** | • Exact Match Trust Badge<br>• Healthy Feed Sync State<br>• Benford MAD Compliant Pass<br>• Month-End Close Balanced / Finalized<br>• Resolved Exception Status | • Decorative buttons<br>• Arbitrary card accents |
 | **AMBER / ORANGE** | `amber` (`bg-amber-50`, `text-amber-800`, `border-amber-200`, `bg-amber-600`) | **Probable / Pending / Needs Attention / Review Required / Stale** | • Fuzzy Match Trust Badge<br>• Sync Delay / Stale Feed SLA Alert<br>• Statistical Check "Sample Too Small"<br>• Medium/Low Exception Severity Badge<br>• Escalated Pending Review Badge | • Unverified positive metrics |
 | **RED / ROSE** | `rose` (`bg-rose-50`, `text-rose-700`, `border-rose-200`, `bg-rose-600`) | **Exception / Critical / Failed / High Risk / Unresolved** | • Unmatched / Open Exception Badge<br>• Critical & High Risk Tier Badges<br>• SoD Governance Blockers<br>• Month-End Out-of-Balance Warning<br>• Destructive Confirmation Trigger | • Non-urgent warnings |
-| **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`, `text-indigo-600`) | **AI-Generated Content / Copilot Intelligence / Sparkles** | • ✨ AI Copilot launcher & reasoning trails<br>• AI-generated Forensic Narrations<br>• AI Root-Cause Investigation Summaries<br>• AI Month-End Close Narrative Memo | • Standard system status badges<br>• General navigation elements |
+| **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`, `text-indigo-600`) | **AI-Generated Content / Fino Intelligence / Sparkles** | • ✨ Fino AI launcher & reasoning trails<br>• AI-generated Forensic Narrations<br>• AI Root-Cause Investigation Summaries<br>• AI Month-End Close Narrative Memo | • Standard system status badges<br>• General navigation elements |
 | **SLATE / GRAY** | `slate` (`bg-slate-50` to `bg-slate-900`, `text-slate-700`) | **Neutral Chrome / Structural Bounds / Metadata** | • Data table borders & headers<br>• Transaction IDs, UTRs, timestamps<br>• Standard icon containers<br>• Secondary filters & search inputs | • Trust state encoding |
 
 > [!IMPORTANT]
@@ -39,8 +39,8 @@ When statistical or unsupervised ML checks cannot evaluate meaningfully due to a
 
 ---
 
-## 4. Global Ledger Copilot Uniformity
-The Ledger Copilot interface is identical across all 7 views (`/`, `/exceptions`, `/reconciliation`, `/cash-position`, `/linked-accounts`, `/month-end-close`, `/ask-your-books`):
-- **Visual Launcher**: Uniform bottom-right floating trigger with sparkling AI indicator.
+## 4. Global Fino AI Copilot Uniformity
+The Fino Copilot interface is identical across all 7 views (`/`, `/exceptions`, `/reconciliation`, `/cash-position`, `/linked-accounts`, `/month-end-close`, `/ask-your-books`):
+- **Visual Launcher**: Uniform bottom-right floating trigger with sparkling Fino AI indicator.
 - **Context Injection**: Live, dynamic `PageContext` reading current route, active filters, and visible numbers at moment of submission.
 - **Trust-Badge & Reasoning Trail**: Every answer renders confidence level (`HIGH`, `MEDIUM`, `LOW`), underlying transaction evidence chips, verifier status, and step-by-step tool reasoning chain.

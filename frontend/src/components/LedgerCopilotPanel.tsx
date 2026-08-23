@@ -75,10 +75,10 @@ export const LedgerCopilotPanel: React.FC = () => {
         <button
           onClick={() => setIsCopilotOpen(true)}
           className="fixed bottom-6 right-6 z-40 bg-indigo-600 hover:bg-indigo-700 text-white w-13 h-13 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border-2 border-white group"
-          title="Open Ledger Copilot"
+          title="Open Fino (AI Copilot)"
         >
           <Sparkles size={22} className="group-hover:rotate-12 transition-transform" />
-          <span className="sr-only">Open Ledger Copilot</span>
+          <span className="sr-only">Open Fino (AI Copilot)</span>
           
           {/* Subtle contextual hint badge */}
           {pageContext && (
@@ -102,12 +102,12 @@ export const LedgerCopilotPanel: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Ledger Copilot</h3>
+                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino</h3>
                   <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 font-mono">
-                    Grounded AI
+                    AI Copilot
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">Page-aware deterministic finance assistant</p>
+                <p className="text-[11px] text-slate-500">Page-aware deterministic finance controller</p>
               </div>
             </div>
 
@@ -174,7 +174,7 @@ export const LedgerCopilotPanel: React.FC = () => {
                   <Sparkles size={24} />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-bold text-sm text-slate-700">How can I assist your review?</h4>
+                  <h4 className="font-bold text-sm text-slate-700">How can Fino assist your review?</h4>
                   <p className="text-xs text-slate-500 max-w-xs">
                     I have live read-only context of this <strong className="text-slate-800">{pageContext?.page_name || 'ledger'}</strong> view. Ask about variances, anomalies, or cash metrics.
                   </p>
@@ -363,7 +363,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               type="text"
               value={inputQuestion}
               onChange={(e) => setInputQuestion(e.target.value)}
-              placeholder={`Ask about ${pageContext?.page_name || 'this ledger'}...`}
+              placeholder={`Ask Fino about ${pageContext?.page_name || 'this ledger'}...`}
               disabled={isLoading}
               className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium"
             />

@@ -87,11 +87,11 @@ export default function AppInfoGuide() {
     },
     {
       step: 7,
-      title: "Ask the Ledger Copilot from Any Screen",
+      title: "Ask Fino (AI Copilot) from Any Screen",
       route: "/ask_your_books",
       icon: <Sparkles className="text-indigo-600" size={20} />,
       badge: "Contextual AI Everywhere",
-      desc: "Click the sparkling Copilot launcher on the bottom-right of any page. Ask any question in plain English (e.g. 'Why did more money go to Kotak than HDFC?' or 'Show exceptions above ₹10,000').",
+      desc: "Click the sparkling Fino launcher on the bottom-right of any page. Ask any question in plain English (e.g. 'Why did more money go to Kotak than HDFC?' or 'Show exceptions above ₹10,000').",
       tips: "Every answer includes inspectable reasoning steps and 100% mathematically verified citations backed by raw SQLite ledger records."
     }
   ];
@@ -373,7 +373,7 @@ export default function AppInfoGuide() {
             <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl w-fit">
               <Sparkles size={18} />
             </div>
-            <h4 className="text-xs font-bold text-slate-900">The Ledger Copilot</h4>
+            <h4 className="text-xs font-bold text-slate-900">Fino — AI Copilot</h4>
             <p className="text-[11px] text-slate-600 leading-relaxed">
               Global, page-aware AI assistant with zero-hallucination mathematical verifiers cross-checking every answer against raw SQLite ledger data.
             </p>

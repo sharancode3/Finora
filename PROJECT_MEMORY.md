@@ -4,6 +4,9 @@
 - Cleanup Phase 6 — Final Pass & Pack Completion (All Phases 0–6 Complete & Verified)
 
 ## Decisions Log
+- [2026-08-23] Decision (Branding & Global Identity) — AI Copilot Named "Fino":
+  1. Renamed the global contextual AI Copilot and conversational controller to **Fino** across the entire UI, floating action buttons, slide-over drawer, Ask Your Books canvas, documentation, and user guides.
+  2. Updated all references, greeting prompts, button triggers (e.g. *Ask Fino: Why Kotak > HDFC?*), and input placeholders (*Ask Fino about this ledger...*).
 - [2026-08-23] Decision (Cleanup Phase 6) — Final Consistency Pass & Cleanup Pack Completion:
   1. Multi-Account Consistency Audit: Verified all screens (Dashboard, Exceptions, Cash Position, Linked Accounts, Month-End Close, Settings, About Finora) show the 4 accounts (`Razorpay Gateway`, `Kotak Mahindra Bank`, `HDFC Bank`, `PayPal Wallet`) and confirmed zero leftover legacy ICICI references across the entire frontend and backend.
   2. Strict Color Enforcement: Confirmed single source-of-truth color system (`statusTokens.ts`) holds across all pages with zero arbitrary blue/purple status badges.

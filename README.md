@@ -1,7 +1,7 @@
 # Finora — AI Financial Controller & Autonomous Reconciliation Platform
 
 <p align="center">
-  <strong>Next-Generation 3-Way Financial Reconciliation • Statistical ML Forensics • Monte Carlo Treasury Forecasting • Ind AS Continuous Close • The Ledger Copilot</strong>
+  <strong>Next-Generation 3-Way Financial Reconciliation • Statistical ML Forensics • Monte Carlo Treasury Forecasting • Ind AS Continuous Close • Fino (AI Financial Copilot)</strong>
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
   - [6. Multi-Rail Bank & Gateway Feed Synchronization](#6-multi-rail-bank--gateway-feed-synchronization)
   - [7. Continuous Month-End Close (Ind AS Compliant)](#7-continuous-month-end-close-ind-as-compliant)
   - [8. Governance, Internal Controls & Segregation of Duties](#8-governance-internal-controls--segregation-of-duties)
-  - [9. The Ledger Copilot — Global Contextual AI Architecture](#9-the-ledger-copilot--global-contextual-ai-architecture)
+  - [9. Fino — Global Contextual AI Architecture](#9-fino--global-contextual-ai-architecture)
 - [System Architecture & Data Flow](#-system-architecture--data-flow)
 - [Design System & Semantic Color Tokens](#-design-system--semantic-color-tokens)
 - [Mathematical & Statistical Formulations](#-mathematical--statistical-formulations)
@@ -44,7 +44,7 @@
 ## 📌 Executive Summary & Plain-English Overview
 
 ### What is Finora in Simple Words?
-Think of **Finora** as your business's **Automated AI Financial Controller**.
+Think of **Finora** as your business's **Automated AI Financial Controller**, accompanied by **Fino** — your 24/7 contextual AI copilot.
 
 When customers buy goods or services from your business online:
 1. **Your Store / ERP** records the gross sale order (e.g. ₹10,000).
@@ -70,7 +70,7 @@ Without Finora, business owners and accounting teams must manually export three 
 - *Which specific customer orders were in yesterday's bulk bank deposit?*
 - *Is cash stuck in gateway suspense or transit?*
 
-**Finora automates this entire lifecycle** in real time using a deterministic 4-stage matching engine, machine learning anomaly detection, Monte Carlo cash forecasting, and a grounded AI Copilot that never hallucinates numbers.
+**Finora automates this entire lifecycle** in real time using a deterministic 4-stage matching engine, machine learning anomaly detection, Monte Carlo cash forecasting, and **Fino** — our grounded AI Copilot that never hallucinates numbers.
 
 ---
 
@@ -80,7 +80,7 @@ Without Finora, business owners and accounting teams must manually export three 
 - **Stop Hidden Fee Leakage:** Verifies that every transaction fee matches contracted Merchant Discount Rates (2.0% MDR + 18% GST). Never overpay on gateway commissions.
 - **Track Real Bank Float:** Know instantly how much cash has cleared into your bank account versus what is still pending in $T+2$ transit.
 - **Zero Manual Spreadsheets:** 1-click automated reconciliation replaces tedious Excel matching and saves 15+ hours every month.
-- **Plain-English Answers:** Ask questions like *"Why was my deposit lower today?"* and get instant, grounded explanations without needing an accounting degree.
+- **Plain-English Answers with Fino:** Ask questions like *"Why was my deposit lower today?"* and get instant, grounded explanations without needing an accounting degree.
 
 ### For Mid-Market & Large Enterprises
 - **Multi-Rail Routing & Attribution:** Track multi-account money movements across domestic gateways (Razorpay), cross-border international wallets (PayPal), and multiple corporate operating accounts (Kotak, HDFC) with exact upstream attribution.
@@ -95,7 +95,7 @@ Without Finora, business owners and accounting teams must manually export three 
 ```text
 [1. Link Accounts] ──► [2. 3-Way Match] ──► [3. Executive Dashboard] ──► [4. AI Exception Audit]
                                                                                 │
-[7. Ledger Copilot] ◄── [6. Month-End Close] ◄── [5. Monte Carlo Forecast] ◄───┘
+[7. Fino AI Copilot] ◄── [6. Month-End Close] ◄── [5. Monte Carlo Forecast] ◄───┘
 ```
 
 1. **Step 1: Link Accounts (`/accounts`)**
@@ -124,8 +124,8 @@ Without Finora, business owners and accounting teams must manually export three 
    - Validate the 5-Pillar Statutory Pre-Lock Checklist.
    - Click **"What's needed to clear?"** to see blocking items, generate an executive AI Closing Memorandum, and apply a cryptographic period lock.
 
-7. **Step 7: The Ledger Copilot Everywhere (`✨ Copilot`)**
-   - Launch the persistent Copilot on any screen. The AI reads your current viewport context and answers inquiries with 100% verified citation trails.
+7. **Step 7: Ask Fino from Any Screen (`✨ Ask Fino`)**
+   - Launch the persistent Fino Copilot on any screen. Fino reads your current viewport context and answers inquiries with 100% verified citation trails.
 
 ---
 
@@ -230,13 +230,13 @@ Finora enforces an uncompromising enterprise design principle:
 - **Granular Notification Rule Rationales:** Explains statutory purpose and delivery channel rationale (Email vs In-App) for all 5 alert triggers.
 - **Role-Based Access Control (RBAC):** Organization Admin, Finance Controller, and Statutory Auditor roles.
 
-### 9. The Ledger Copilot — Global Contextual AI Architecture
-Finora unifies conversational AI across the entire platform through **The Ledger Copilot** — a persistent, page-aware AI assistant reachable from every view. Rather than running fragmented bots, Finora uses a single unified orchestrator, verifier, and read-only tool registry with dynamic `PageContext` injection.
+### 9. Fino — Global Contextual AI Architecture
+Finora unifies conversational AI across the entire platform through **Fino** — a persistent, page-aware AI Financial Copilot reachable from every view. Rather than running fragmented bots, Finora uses a single unified orchestrator, verifier, and read-only tool registry with dynamic `PageContext` injection.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 THE LEDGER COPILOT                                     │
-│        (Persistent Global AI Assistant Reachable Across Every View in Finora)          │
+│                              FINO — AI FINANCIAL COPILOT                               │
+│            (Persistent Global AI Assistant Reachable Across Every View in Finora)      │
 └───────────────────────────────────────────┬────────────────────────────────────────────┘
                                             │ Injects PageContext
                                             ▼
@@ -276,7 +276,7 @@ Finora enforces a strict, standardized semantic color token mapping to eliminate
 | **GREEN** | `emerald` (`bg-emerald-50`, `text-emerald-700`, `border-emerald-200`) | **Verified / Healthy / Pass / Settled** | Exact Match Trust Badge, Healthy Feed Sync, Benford MAD Compliant Pass, Balanced Month-End Close |
 | **AMBER** | `amber` (`bg-amber-50`, `text-amber-800`, `border-amber-200`) | **Probable / Pending / Review Required / Stale** | Fuzzy Match Trust Badge, Sync SLA Delay Alert, Statistical Sample &lt; 30, Medium Severity Badge |
 | **RED** | `rose` (`bg-rose-50`, `text-rose-700`, `border-rose-200`) | **Exception / Critical / Failed / High Risk** | Unmatched / Open Exception Badge, Critical & High Risk Tier Badges, SoD Governance Blockers |
-| **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`) | **AI Intelligence / Copilot Sparkles** | ✨ AI Copilot launcher, Forensic AI Narrations, AI Root-Cause Investigation Summaries |
+| **INDIGO** | `indigo` (`bg-indigo-50`, `text-indigo-700`, `border-indigo-200`) | **AI Intelligence / Fino Sparkles** | ✨ Fino AI launcher, Forensic AI Narrations, AI Root-Cause Investigation Summaries |
 | **SLATE** | `slate` (`bg-slate-50` to `bg-slate-900`, `text-slate-700`) | **Neutral Chrome / Structural Bounds** | Data table borders, headers, transaction IDs, UTRs, timestamps |
 
 > **Prohibited:** Blue is strictly prohibited from status encoding and reserved solely for hyperlinks and navigation breadcrumbs.
@@ -323,11 +323,11 @@ flowchart TD
         DB --> E5["/api/v1/transactions & exceptions"]
     end
 
-    subgraph UI["6. High-Contrast Frontend & Ledger Copilot"]
+    subgraph UI["6. High-Contrast Frontend & Fino AI Copilot"]
         E1 --> UI1["Executive Dashboard & KPI Decompositions"]
         E2 --> UI1
         E3 --> UI3["Cash Position & What-If Monte Carlo Sliders"]
-        E4 --> UI6["Persistent Global Ledger Copilot Drawer"]
+        E4 --> UI6["Persistent Fino AI Slide-Over Drawer"]
         E5 --> UI2["Exceptions Queue & AI Investigation Agent"]
         E5 --> UI4["Month-End Close & AI Closing Memo"]
         E5 --> UI5["Settings & Segregation of Duties Copilot"]
@@ -342,7 +342,7 @@ Finora is evaluated against an automated 33-question benchmark suite testing loo
 
 ```text
 ===========================================================================
-FINORA — COMPREHENSIVE QA & CONTEXTUAL COPILOT EVALUATION SUITE
+FINORA — COMPREHENSIVE QA & FINO COPILOT EVALUATION SUITE
 ===========================================================================
 Total Evaluated Questions : 33
 Overall Accuracy          : 100.0% (33/33 Passed)

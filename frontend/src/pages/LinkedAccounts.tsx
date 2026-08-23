@@ -259,7 +259,7 @@ export default function LinkedAccounts() {
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors cursor-pointer self-start md:self-auto"
             >
               <Sparkles size={13} className="text-indigo-600" />
-              Ask Copilot: Why Kotak &gt; HDFC?
+              Ask Fino: Why Kotak &gt; HDFC?
             </button>
           </div>
 

@@ -94,7 +94,7 @@ export default function AskYourBooks() {
               <Sparkles size={16} />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-slate-900 leading-tight">AI Financial Controller</h2>
+              <h2 className="font-bold text-sm text-slate-900 leading-tight">Fino — AI Financial Controller</h2>
               <p className="text-[11px] text-slate-500">Multi-Step Tool Orchestration • Auditable Reasoning Chains</p>
             </div>
           </div>
@@ -113,9 +113,9 @@ export default function AskYourBooks() {
               <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 border border-indigo-100">
                 <Bot size={28} />
               </div>
-              <h3 className="font-bold text-base text-slate-800 mb-1">Ask Your Financial Ledger</h3>
+              <h3 className="font-bold text-base text-slate-800 mb-1">Ask Fino About Your Books</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Ask questions about match rates, gateway fee leakage, delayed settlements, or multi-step period comparisons. Every conclusion produces an inspectable reasoning trail and confidence score.
+                Ask Fino questions about match rates, gateway fee leakage, delayed settlements, or multi-step period comparisons. Every conclusion produces an inspectable reasoning trail and confidence score.
               </p>
             </div>
           ) : (
