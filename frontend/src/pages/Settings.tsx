@@ -30,6 +30,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import AppInfoGuide from '../components/AppInfoGuide';
 
 interface TeamMember {
   id: string;
@@ -889,55 +890,10 @@ export default function Settings() {
             </div>
           )}
 
-          {/* Tab 5: About & Roadmap */}
+          {/* Tab 5: About & User Guide */}
           {activeTab === 'about' && (
-            <div className="space-y-6 animate-in fade-in duration-150">
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-700">
-                  <Sparkles size={14} className="text-indigo-600" />
-                  <span>Architecture &amp; Mission</span>
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">About Finora Financial Controller</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Finora bridges high-volume payment processor feeds (Razorpay, PayPal), upstream corporate bank accounts (Kotak Mahindra Bank, HDFC Bank), and internal ERP order ledgers. Powered by an ACID SQLite transactional core, a 4-stage deterministic matching engine, and a local Gemma 3 AI orchestrator with mathematical citation verifiers, Finora automates settlement reconciliation, exception root-cause diagnosis, and month-end close workflows.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                    <div className="text-xs font-bold text-slate-900">4-Stage Matching</div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Exact UTR &rarr; Batched &rarr; Fuzzy &rarr; Exceptions</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                    <div className="text-xs font-bold text-slate-900">Citation Verifier</div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">100% mathematical proof against raw SQLite ledger</p>
-                  </div>
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                    <div className="text-xs font-bold text-slate-900">Forensic Checks</div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Benford's Law &amp; Isolation Forest ML anomaly alerts</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Roadmap Note Section */}
-              <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-white/10 rounded-lg">
-                      <Sparkles size={16} className="text-indigo-300" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white">What's Next &amp; Future Roadmap</h4>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-white/10 text-slate-300 border border-white/20 rounded-full uppercase">
-                    Roadmap Note
-                  </span>
-                </div>
-
-                <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl">
-                  <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                    The same account-linking and grounded-AI-explanation architecture built for business reconciliation is designed to extend naturally to a personal-finance view for individual users — spend tracking, EMI monitoring, and savings goals — as a future direction, while keeping the current submission strictly focused on business finance operations.
-                  </p>
-                </div>
-              </div>
+            <div className="animate-in fade-in duration-150">
+              <AppInfoGuide />
             </div>
           )}
 
