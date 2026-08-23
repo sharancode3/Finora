@@ -322,6 +322,24 @@ export const LedgerCopilotPanel: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Dev Mode Context Inspector */}
+                    {msg.metadata?.debug_page_context && (
+                      <details className="mt-1 text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2.5 border border-slate-200 cursor-pointer">
+                        <summary className="font-bold flex items-center justify-between text-slate-700 select-none">
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={11} className="text-indigo-600" />
+                            Dev Context Inspector
+                          </span>
+                          <span className="font-mono text-[9px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                            {msg.metadata.debug_page_context.route}
+                          </span>
+                        </summary>
+                        <pre className="mt-2 p-2 bg-white rounded-lg border border-slate-200 text-slate-800 font-mono text-[10px] overflow-x-auto leading-relaxed">
+                          {JSON.stringify(msg.metadata.debug_page_context, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+
                   </div>
                 )}
 

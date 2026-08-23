@@ -25,7 +25,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis
 import { Link } from 'react-router-dom';
 
 export default function AskYourBooks() {
-  const { messages, sendMessage, isLoading } = useAI();
+  const { messages, sendMessage, isLoading, setPageContext } = useAI();
   const [input, setInput] = useState('');
   const [expandedTrails, setExpandedTrails] = useState<Record<number, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -33,6 +33,23 @@ export default function AskYourBooks() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    setPageContext({
+      page_name: 'Ask Your Books (Conversational Ledger)',
+      route: '/ask-your-books',
+      visible_metrics: {
+        interface_mode: 'interactive_chat',
+        connected_capabilities: 'gemma3_local_inference,zero_hallucination_verifier'
+      },
+      suggested_inquiries: [
+        "What is our statutory value match rate for August 2026?",
+        "Breakdown total fees and GST deductions for last month",
+        "Why was settlement PAY-00001 lower than the gross amount?",
+        "Are there any unresolved high-severity exceptions?"
+      ]
+    });
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -248,6 +265,24 @@ export default function AskYourBooks() {
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {/* Dev Mode Context Inspector */}
+                    {msg.role === 'ai' && meta?.debug_page_context && (
+                      <details className="w-full max-w-xl text-[10px] text-slate-500 bg-slate-50 rounded-xl p-2.5 border border-slate-200 cursor-pointer">
+                        <summary className="font-bold flex items-center justify-between text-slate-700 select-none">
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles size={11} className="text-indigo-600" />
+                            Dev Context Inspector (Injected Viewport State)
+                          </span>
+                          <span className="font-mono text-[9px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                            {meta.debug_page_context.page_name} ({meta.debug_page_context.route})
+                          </span>
+                        </summary>
+                        <pre className="mt-2 p-2 bg-white rounded-lg border border-slate-200 text-slate-800 font-mono text-[10px] overflow-x-auto leading-relaxed">
+                          {JSON.stringify(meta.debug_page_context, null, 2)}
+                        </pre>
+                      </details>
                     )}
 
                   </div>

@@ -44,6 +44,8 @@ export interface PageContext {
   selected_record_id?: string;
   suggested_inquiries?: string[];
   extra_hints?: string;
+  date_range?: { start: string; end: string };
+  [key: string]: any;
 }
 
 interface AIContextType {
@@ -58,6 +60,7 @@ interface AIContextType {
   lastResponse: ChatResponse | null;
   pageContext: PageContext | null;
   setPageContext: (ctx: PageContext) => void;
+  lastSentContext: PageContext | null;
   isCopilotOpen: boolean;
   setIsCopilotOpen: (open: boolean) => void;
 }
@@ -73,6 +76,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [highlightedRecordId, setHighlightedRecordId] = useState<string | null>(null);
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
   const [pageContext, setPageContext] = useState<PageContext | null>(null);
+  const [lastSentContext, setLastSentContext] = useState<PageContext | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -91,21 +95,64 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setMessages(prev => [...prev, userMsg]);
     
     try {
-      // Gather dynamic context
-      const screen = window.location.pathname.replace('/', '') || 'landing';
+      // Dynamically resolve current route fresh at the exact moment of query submission
+      const currentPath = window.location.pathname;
+      
+      const routeToPageName: Record<string, string> = {
+        '/': 'Executive Command Center',
+        '/dashboard': 'Executive Command Center',
+        '/exceptions': 'Exceptions Queue',
+        '/cash-position': 'Cash Position & Treasury',
+        '/accounts': 'Linked Accounts & Feeds',
+        '/month-end-close': 'Continuous Month-End Close',
+        '/ask-your-books': 'Ask Your Books (Conversational Ledger)',
+        '/settings': 'Team & Governance Settings',
+        '/reconciliation': '3-Way Reconciliation Ledger'
+      };
+
+      const defaultPageName = routeToPageName[currentPath] || (currentPath.replace('/', '') || 'Executive Command Center');
+
+      // Check if pageContext in state matches the active route; if not, discard stale context
+      const isContextMatchingRoute = Boolean(
+        pageContext && (
+          pageContext.route === currentPath || 
+          (currentPath === '/' && pageContext.route === '/dashboard') ||
+          (currentPath === '/dashboard' && pageContext.route === '/')
+        )
+      );
+
+      const activePageName = isContextMatchingRoute ? pageContext!.page_name : defaultPageName;
+      const activeFilters = isContextMatchingRoute ? (pageContext!.active_filters || {}) : {};
+      const activeMetrics = isContextMatchingRoute ? (pageContext!.visible_metrics || {}) : {};
+      const activeRecordId = isContextMatchingRoute ? pageContext!.selected_record_id : undefined;
+
       let dateRange = { start: '2026-08-01', end: '2026-08-31' };
       try {
         const storedRange = localStorage.getItem('finora_dashboard_range');
         if (storedRange) dateRange = JSON.parse(storedRange);
       } catch (e) {}
       
-      const context = {
-        screen,
+      const freshContext: PageContext = {
+        page_name: activePageName,
+        route: currentPath,
+        screen: currentPath.replace('/', '') || 'dashboard',
         date_range: dateRange,
-        ...(pageContext || {})
+        active_filters: activeFilters,
+        visible_metrics: activeMetrics,
+        selected_record_id: activeRecordId,
+        suggested_inquiries: isContextMatchingRoute ? pageContext!.suggested_inquiries : undefined,
+        extra_hints: isContextMatchingRoute ? pageContext!.extra_hints : undefined,
+        ...(isContextMatchingRoute ? pageContext : {})
       };
 
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question, context });
+      // Explicitly enforce current page_name and route to prevent any stale bleed
+      freshContext.page_name = activePageName;
+      freshContext.route = currentPath;
+      freshContext.screen = currentPath.replace('/', '') || 'dashboard';
+
+      setLastSentContext(freshContext);
+
+      const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question, context: freshContext });
       const data: any = res.data;
       setLastResponse(data);
       
@@ -121,7 +168,8 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           escalation_recommendation: data.escalation_recommendation,
           reasoning_trail: data.reasoning_trail,
           evidence_record_ids: data.evidence_ids,
-          visual_data: data.visual_data
+          visual_data: data.visual_data,
+          debug_page_context: freshContext
         }
       };
       setMessages(prev => [...prev, aiMsg]);
@@ -175,6 +223,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       lastResponse,
       pageContext,
       setPageContext,
+      lastSentContext,
       isCopilotOpen,
       setIsCopilotOpen
     }}>

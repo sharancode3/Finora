@@ -30,6 +30,8 @@ export default function LinkedAccounts() {
   const [crossRecon, setCrossRecon] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [syncSuccessMessage, setSyncSuccessMessage] = useState<string | null>(null);
+  const [recentSyncedIds, setRecentSyncedIds] = useState<Record<string, boolean>>({});
   
   // Connect Account Modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -82,9 +84,19 @@ export default function LinkedAccounts() {
 
   const handleSyncNow = async (accountId: string) => {
     setSyncingId(accountId);
+    setSyncSuccessMessage(null);
     try {
+      const targetAcct = accounts.find(a => a.account_id === accountId);
       await api.post(`/accounts/${accountId}/sync-now`);
       await fetchAccountsData();
+      setRecentSyncedIds(prev => ({ ...prev, [accountId]: true }));
+      setSyncSuccessMessage(
+        `Successfully synchronized ${targetAcct?.name || 'feed'}. Last sync updated to just now and sync SLA delay cleared.`
+      );
+      setTimeout(() => {
+        setSyncSuccessMessage(null);
+        setRecentSyncedIds(prev => ({ ...prev, [accountId]: false }));
+      }, 5000);
     } catch (err) {
       console.error(err);
     } finally {

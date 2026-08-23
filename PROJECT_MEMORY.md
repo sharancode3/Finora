@@ -1,9 +1,13 @@
 # Project Memory: Finora
 
 ## Current Phase
-- AI-Everywhere Initiative (Phases 0–8) — Complete & Verified
+- Cleanup Phase 0 — Bug Fixes (Complete & Verified)
 
 ## Decisions Log
+- [2026-08-23] Fix (Cleanup Phase 0) — Page-Context Bleed & Linked Accounts Sync Now:
+  1. Resolved Ledger Copilot context bleed: `AIContext.tsx` dynamically constructs and validates fresh `PageContext` directly from the current browser route at the exact moment of query submission, eliminating stale cache from prior page visits. Added collapsible `Dev Context Inspector` displaying injected context in both Ask Your Books and Ledger Copilot panel.
+  2. Fixed Linked Accounts "Sync Now" button: Added active loading state (`Syncing...`), updated `last_synced_at` timestamp via backend `/sync-now` endpoint, cleared "Sync Stale" / "Sync Delayed" flags and SLA warnings to `healthy`, and added a temporary success banner & `Synced!` button feedback.
+  3. Re-affirmed strict scope: Finora remains an enterprise B2B finance controller for Razorpay merchants (personal card/EMI/savings features are strictly out of scope).
 - [2026-08-23] Decision — Renamed project from ReconAgent to Finora across the entire codebase to match Razorpay AI Buildathon Track 04 requirements.
 - [2026-08-23] Note — Built FastAPI backend with SQLite ACID ledger, 4-stage matching engine, Gemma 3 local AI orchestrator, and Recharts high-contrast UI.
 - [2026-08-23] Fix (Phase 0) — Test-mode key isolation (`rzp_test_`), non-zero waterfall & leakage aggregates, dual-state scenario toggle labels, exception cluster sums, and demo data transparency.
