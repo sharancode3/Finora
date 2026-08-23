@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, File, UploadFile
+from fastapi import FastAPI, APIRouter, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional, Any, Dict
 from pydantic import BaseModel
@@ -6,18 +6,17 @@ import time
 import os
 import sys
 
-# Import our DAL strictly
-from db.firestore_client import (
-    get_latest_batch_run, get_batch_runs, get_settlements, get_settlement_by_id,
-    get_bank_transactions, get_bank_transaction_by_id, get_ledger_entries, get_ledger_entry_by_id,
-    get_matches, get_match_by_id, get_exceptions, get_exception_by_id, get_record_evidence_trail
+# Phase 0 DAL strictly
+from backend.db.sqlite_client import (
+    get_transactions_by_date_range, get_transactions_by_business,
+    get_exceptions_by_date_range, get_aggregates,
+    get_transaction_by_id, get_exception_by_id,
+    resolve_exception, escalate_exception,
+    get_cash_position_analytics
 )
-from connectors.base import active_connectors
-from scripts.ingest_results import ingest_data
-from matching.matcher import run_reconciliation
-from ai.orchestrator import process_question
+from backend.ai_agent import ask_finora_agent
 
-app = FastAPI(title="Finora API", description="AI Finance Controller API - Phase 4")
+app = FastAPI(title="Finora API", description="AI Finance Controller API - Phase 0 (Data Foundation)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,322 +26,166 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Routers ---
-reconciliation_router = APIRouter(prefix="/api/v1/reconciliation", tags=["Reconciliation"])
-records_router = APIRouter(prefix="/api/v1/records", tags=["Records"])
-chat_router = APIRouter(prefix="/api/v1/chat", tags=["Chat"])
-forecast_router = APIRouter(prefix="/api/v1/forecast", tags=["Forecast"])
-connectors_router = APIRouter(prefix="/api/v1/connectors", tags=["Connectors"])
-dashboard_router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
+# --- Phase 0 & Phase 4 Routers ---
+transactions_router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
+exceptions_router = APIRouter(prefix="/api/v1/exceptions", tags=["Exceptions"])
+analytics_router = APIRouter(prefix="/api/v1/analytics", tags=["Analytics"])
+chat_router = APIRouter(prefix="/api/v1/chat", tags=["AI Chat"])
 
-# --- Models for requests/responses (some are in schemas.py, but we can define explicit request models here) ---
-class RunRequest(BaseModel):
-    business_id: Optional[str] = None
-    batch_id: Optional[str] = None
-
-class RZPKey(BaseModel):
-    api_key: str
-
-class ChatRequest(BaseModel):
+class ChatReq(BaseModel):
     question: str
-    session_id: Optional[str] = None
+    context: dict = {}
 
-# ================= RECONCILIATION =================
-@reconciliation_router.post("/run")
-def api_run_reconciliation(req: RunRequest):
-    import csv
-    start_time = time.time()
-    
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'output')
-    
-    def load_csv(name):
-        with open(os.path.join(data_dir, name), 'r', encoding='utf-8') as f:
-            return list(csv.DictReader(f))
-            
-    try:
-        settlements = load_csv('settlement_report.csv')
-        banks = load_csv('bank_statement.csv')
-        ledgers = load_csv('internal_ledger.csv')
-        
-        # Call matcher directly
-        res = run_reconciliation(settlements, banks, ledgers)
-        
-        # Write temporary json for ingestion script
-        import json
-        with open(os.path.join(data_dir, 'matched_records.json'), 'w') as f:
-            json.dump(res['matched_records'], f)
-        with open(os.path.join(data_dir, 'exceptions.json'), 'w') as f:
-            json.dump(res['exceptions'], f)
-            
-        processing_time = int((time.time() - start_time) * 1000)
-        
-        # Ingest to Firestore
-        batch_run = ingest_data(data_dir, processing_time_ms=processing_time, value_reconciliation_rate=res['metrics']['value_reconciliation_rate'])
-        
-        return {"batch_id": batch_run['id'], "status": "success", "summary": batch_run}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@reconciliation_router.get("/summary")
-def api_get_summary():
-    data = get_latest_batch_run()
-    if not data:
-        raise HTTPException(status_code=404, detail="No batch runs found")
-    return data
-
-@reconciliation_router.get("/runs")
-def api_get_runs():
-    return get_batch_runs()
-
-# ================= RECORDS =================
-@records_router.get("/settlements")
-def api_get_settlements(business_id: Optional[str] = None, status: Optional[str] = None):
-    # Ignoring status parameter for now as it wasn't strictly defined in requirements
-    return get_settlements(business_id=business_id)
-
-@records_router.get("/settlements/{id}")
-def api_get_settlement(id: str):
-    trail = get_record_evidence_trail(id)
-    if not trail["settlement"]:
-        raise HTTPException(status_code=404, detail="Not found")
-    return trail
-
-@records_router.get("/bank-transactions")
-def api_get_bank_transactions():
-    return get_bank_transactions()
-
-@records_router.get("/bank-transactions/{id}")
-def api_get_bank_transaction(id: str):
-    trail = get_record_evidence_trail(id)
-    if not trail["bank_transaction"]:
-        raise HTTPException(status_code=404, detail="Not found")
-    return trail
-
-@records_router.get("/ledger-entries")
-def api_get_ledger_entries(business_id: Optional[str] = None, status: Optional[str] = None):
-    return get_ledger_entries(business_id=business_id, order_status=status)
-
-@records_router.get("/ledger-entries/{id}")
-def api_get_ledger_entry(id: str):
-    trail = get_record_evidence_trail(id)
-    if not trail["ledger_entry"]:
-        raise HTTPException(status_code=404, detail="Not found")
-    return trail
-
-@records_router.get("/matches")
-def api_get_matches(method: Optional[str] = None, trust_state: Optional[str] = None):
-    return get_matches(method=method, trust_state=trust_state)
-
-@records_router.get("/matches/{id}")
-def api_get_match(id: str):
-    m = get_match_by_id(id)
-    if not m:
-        raise HTTPException(status_code=404, detail="Not found")
-    return m
-
-@records_router.get("/exceptions")
-def api_get_exceptions(
-    reason_filter: Optional[str] = None,
-    severity: Optional[str] = None,
-    trust_state: Optional[str] = None
-):
-    reason_list = reason_filter.split(",") if reason_filter else None
-    return get_exceptions(severity=severity, trust_state=trust_state, reason_list=reason_list)
-
-@records_router.get("/exceptions/{id}")
-def api_get_exception(id: str):
-    e = get_exception_by_id(id)
-    if not e:
-        raise HTTPException(status_code=404, detail="Not found")
-    # Simulate evidence trail
-    trail = {}
-    if e.get("related_settlement_id"):
-        trail = get_record_evidence_trail(e["related_settlement_id"])
-    e["evidence_trail"] = trail
-    return e
-
-# ================= CHAT =================
 @chat_router.post("/ask")
-def api_chat_ask(req: ChatRequest):
-    try:
-        res = process_question(req.question, req.session_id)
-        return res
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def api_chat_ask(req: ChatReq):
+    return ask_finora_agent(req.question, req.context)
 
-# ================= FORECAST =================
-@forecast_router.get("/cash-position")
-def api_cash_position():
-    return {"cash_available": 1050000.0, "pending_settlements": 250000.0}
+@transactions_router.get("/")
+def api_get_transactions(start_date: str = Query(...), end_date: str = Query(...)):
+    return get_transactions_by_date_range(start_date, end_date)
 
-@forecast_router.get("/projected")
-def api_projected_forecast():
-    return {"expected_inflows": 500000.0, "expected_outflows": 120000.0}
+@transactions_router.get("/business/{business_id}")
+def api_get_transactions_by_business(business_id: str):
+    return get_transactions_by_business(business_id)
 
-@forecast_router.post("/what-if")
-def api_what_if():
-    # Phase 7 stub
-    return {"status": "simulated"}
+@transactions_router.get("/{tx_id}")
+def api_get_transaction(tx_id: str):
+    tx = get_transaction_by_id(tx_id)
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return tx
 
-# ================= CONNECTORS =================
-@connectors_router.get("/")
-def api_get_connectors():
-    return [c.get_status().model_dump() for c in active_connectors.values()]
+@exceptions_router.get("/")
+def api_get_exceptions(start_date: str = Query(...), end_date: str = Query(...), reason: Optional[str] = None, status: Optional[str] = None):
+    return get_exceptions_by_date_range(start_date, end_date, reason, status)
 
-@connectors_router.post("/csv-upload")
-def api_upload_csv(file: UploadFile = File(...)):
-    try:
-        content = file.file.read().decode('utf-8')
-        res = active_connectors["csv"].connect({"file_content": content})
-        if not res.success:
-            raise HTTPException(status_code=400, detail=res.error)
-        records = active_connectors["csv"].fetch_transactions(None)
-        return {
-            "row_count": len(records),
-            "sample": records[:2] if len(records) > 0 else []
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+@exceptions_router.get("/{exc_id}")
+def api_get_exception(exc_id: str):
+    exc = get_exception_by_id(exc_id)
+    if not exc:
+        raise HTTPException(status_code=404, detail="Exception not found")
+    return exc
 
-@connectors_router.post("/razorpay-test-key")
-def api_setup_rzp(req: RZPKey):
-    res = active_connectors["rzp_test"].connect({"api_key": req.api_key})
-    if not res.success:
-        raise HTTPException(status_code=401, detail=res.error)
+class ResolveReq(BaseModel):
+    reason: str
+    note: str = ""
+
+class EscalateReq(BaseModel):
+    note: str = ""
+
+@exceptions_router.post("/{exc_id}/resolve")
+def api_resolve_exception(exc_id: str, req: ResolveReq):
+    resolve_exception(exc_id, req.reason, req.note)
     return {"status": "success"}
 
-@connectors_router.get("/razorpay-test-key/status")
-def api_rzp_status():
-    return active_connectors["rzp_test"].get_status()
+@exceptions_router.post("/{exc_id}/escalate")
+def api_escalate_exception(exc_id: str, req: EscalateReq):
+    escalate_exception(exc_id, req.note)
+    return {"status": "success"}
 
-# ================= DASHBOARD =================
-@dashboard_router.get("/metrics")
-def api_dashboard_metrics():
-    # Fetch from latest batch run
-    latest = get_latest_batch_run()
-    if not latest:
-        return {}
-    
-    return {
-        "total_processed": latest.get("total_records", 0),
-        "settled_amount": 21947046.65, # From Phase 3 eval
-        "unreconciled_amount": 567733.81, # From Phase 3 eval
-        "match_rate": latest.get("overall_match_rate", 0),
-        "exception_count": latest.get("exception_count", 0),
-        "cash_available": 1050000.0,
-        "pending_settlements": 250000.0,
-        "expected_inflows": 500000.0,
-        "expected_outflows": 120000.0,
-        "finance_health_score": 92,
-        "attention_items": [] # Fetch from exceptions
-    }
+@analytics_router.get("/aggregates")
+def api_get_aggregates(interval: str = Query("monthly")):
+    try:
+        return get_aggregates(interval)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@dashboard_router.get("/attention")
-def api_dashboard_attention():
-    exceptions = get_exceptions()
-    items = []
-    for e in exceptions[:5]:
-        items.append({
-            "type": "EXCEPTION",
-            "severity": e.get("severity", "MEDIUM"),
-            "message": e.get("reason", "Unknown Exception"),
-            "amount": e.get("amount", 0.0),
-            "record_id": e.get("id"),
-            "recommended_action": e.get("recommended_action", "Review manually")
-        })
-    return items
+@analytics_router.get("/cash-position")
+def get_cash_position(start_date: str, end_date: str, account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_cash_position_analytics
+        return get_cash_position_analytics(start_date, end_date, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Register routers
-app.include_router(reconciliation_router)
-app.include_router(records_router)
+@analytics_router.get("/month-end-summary")
+def get_month_end_summary(target_month: str = "2026-08"):
+    try:
+        from backend.ai_agent import generate_month_end_summary
+        return generate_month_end_summary(target_month)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/statistical-anomalies")
+def get_statistical_anomalies(start_date: str = "2026-03-01", end_date: str = "2026-09-05", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_transactions_by_date_range
+        from backend.anomaly_engine import run_isolation_forest_analysis
+        txs = get_transactions_by_date_range(start_date, end_date, account_id)
+        return run_isolation_forest_analysis(txs)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/benford-analysis")
+def get_benford_analysis(start_date: str = "2026-03-01", end_date: str = "2026-09-05", account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_transactions_by_date_range
+        from backend.anomaly_engine import compute_benfords_law_distribution
+        txs = get_transactions_by_date_range(start_date, end_date, account_id)
+        return compute_benfords_law_distribution(txs)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/exception-intelligence")
+def get_exception_intelligence_endpoint(start_date: str = "2026-03-01", end_date: str = "2026-09-05", status: Optional[str] = None, account_id: Optional[str] = None):
+    try:
+        from backend.db.sqlite_client import get_exception_intelligence
+        return get_exception_intelligence(start_date, end_date, status, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+from backend.db.sqlite_client import get_accounts, connect_new_account, sync_account, get_cross_account_reconciliation
+
+accounts_router = APIRouter(prefix="/api/v1/accounts", tags=["Accounts"])
+
+class ConnectAccountReq(BaseModel):
+    name: str
+    type: str
+    config: Optional[Dict[str, Any]] = None
+
+@accounts_router.get("/")
+def api_get_accounts():
+    return get_accounts()
+
+@accounts_router.post("/connect")
+def api_connect_account(req: ConnectAccountReq):
+    try:
+        acct_id = connect_new_account(req.name, req.type, req.config)
+        return {"status": "success", "account_id": acct_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@accounts_router.post("/connect-demo")
+def api_connect_demo(req: ConnectAccountReq):
+    try:
+        acct_id = connect_new_account(req.name, req.type, req.config)
+        return {"status": "success", "account_id": acct_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@accounts_router.post("/{account_id}/sync-now")
+def api_sync_now(account_id: str):
+    try:
+        return sync_account(account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@accounts_router.get("/cross-reconciliation")
+def api_cross_reconciliation(start_date: str = "2026-08-01", end_date: str = "2026-08-31"):
+    try:
+        return get_cross_account_reconciliation(start_date, end_date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+app.include_router(transactions_router)
+app.include_router(exceptions_router)
+app.include_router(analytics_router)
 app.include_router(chat_router)
-app.include_router(forecast_router)
-app.include_router(connectors_router)
-app.include_router(dashboard_router)
+app.include_router(accounts_router)
 
-from backend.forecast.forecast_engine import compute_forecast
-from backend.forecast.what_if import run_what_if_simulation
-from backend.scoring.health_score import compute_health_score
-from backend.metrics.value_weighted import compute_value_metrics
-from backend.metrics.why_breakdown import get_cash_position_why, get_variance_why
-from backend.metrics.timeline_builder import build_transaction_timeline
-from backend.ai.briefing import generate_daily_briefing
-from backend.alerts.alert_engine import run_alert_engine
-from backend.db.firestore_client import get_alerts, get_latest_briefing
-from backend.business.multi_business import get_all_businesses, get_business_summary
-from typing import Dict, Any
-from fastapi import HTTPException
-
-# ---------------------------------------------------------
-# Phase 7: Advanced Analytics Routes
-# ---------------------------------------------------------
-phase7_router = APIRouter(prefix="/api/v1", tags=["Phase 7 Advanced"])
-
-@phase7_router.get("/business")
-def get_businesses_route():
-    return {"businesses": get_all_businesses()}
-
-@phase7_router.get("/business/summary")
-def get_business_summary_route():
-    return {"summary": get_business_summary()}
-
-@phase7_router.get("/scoring/health")
-def get_health_score_route(business_id: str = None):
-    return compute_health_score(business_id)
-
-@phase7_router.get("/metrics/value-weighted")
-def get_value_weighted_metrics_route(business_id: str = None):
-    return compute_value_metrics(business_id)
-
-@phase7_router.get("/forecast/compute")
-def get_cash_forecast_route(business_id: str = None, days: int = 7):
-    return compute_forecast(business_id, days)
-
-@phase7_router.post("/forecast/what-if")
-def post_what_if_route(request: Dict[str, Any]):
-    scenario = request.get('scenario')
-    params = request.get('params', {})
-    business_id = request.get('business_id')
-    
-    if not scenario:
-        raise HTTPException(status_code=400, detail="Missing scenario")
-        
-    return run_what_if_simulation(business_id, scenario, params)
-
-@phase7_router.get("/metrics/why/cash-position")
-def get_why_cash_position():
-    return {"breakdown": get_cash_position_why()}
-
-@phase7_router.get("/metrics/why/variance/{record_id}")
-def get_why_variance(record_id: str):
-    return {"breakdown": get_variance_why(record_id)}
-
-@phase7_router.get("/metrics/timeline/{record_id}")
-def get_transaction_timeline_route(record_id: str):
-    return {"timeline": build_transaction_timeline(record_id)}
-
-@phase7_router.get("/briefing")
-def get_daily_briefing_route(business_id: str = None, force_generate: bool = False):
-    if force_generate:
-        return generate_daily_briefing(business_id)
-        
-    latest = get_latest_briefing()
-    if latest:
-        return latest
-    return generate_daily_briefing(business_id)
-
-@phase7_router.get("/alerts")
-def get_alerts_route(business_id: str = None):
-    # Run the engine to generate any pending alerts
-    run_alert_engine(business_id)
-    
-    alerts = get_alerts(active_only=True)
-    if business_id:
-        alerts = [a for a in alerts if a.get('business_id') == business_id]
-        
-    return {"alerts": alerts}
-
-app.include_router(phase7_router)
+# Note: All previous routers and logic (reconciliation, chat, forecast, connectors, dashboard, phase7 features)
+# have been temporarily removed in Phase 0 as they depended on the deprecated Firebase DAL.
+# They will be restored and migrated to the new SQLite schema in subsequent phases.
 
 if __name__ == "__main__":
     import uvicorn

@@ -16,6 +16,7 @@ interface ChatResponse {
   verifier_retries: number;
   ui_action?: UIAction;
   verifier_passed?: boolean;
+  visual_data?: any;
 }
 
 export interface ChatMessage {
@@ -57,8 +58,21 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setMessages(prev => [...prev, userMsg]);
     
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question });
-      const data: ChatResponse = res.data;
+      // Gather dynamic context
+      const screen = window.location.pathname.replace('/', '') || 'landing';
+      let dateRange = { start: '2026-08-01', end: '2026-08-31' };
+      try {
+        const storedRange = localStorage.getItem('finora_dashboard_range');
+        if (storedRange) dateRange = JSON.parse(storedRange);
+      } catch (e) {}
+      
+      const context = {
+        screen,
+        date_range: dateRange
+      };
+
+      const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question, context });
+      const data: any = res.data;
       setLastResponse(data);
       
       // Add AI response to UI
@@ -67,7 +81,13 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         content: data.answer,
         metadata: {
           verifier_passed: data.verifier_passed,
-          evidence_record_ids: data.evidence_ids
+          confidence: data.confidence,
+          confidence_score: data.confidence_score,
+          confidence_rationale: data.confidence_rationale,
+          escalation_recommendation: data.escalation_recommendation,
+          reasoning_trail: data.reasoning_trail,
+          evidence_record_ids: data.evidence_ids,
+          visual_data: data.visual_data
         }
       };
       setMessages(prev => [...prev, aiMsg]);

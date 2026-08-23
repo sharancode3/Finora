@@ -7,31 +7,27 @@ interface SeverityBadgeProps {
   className?: string;
 }
 
-export const SeverityBadge = ({ severity, className = '' }: SeverityBadgeProps) => {
-  let bgColor, textColor;
+export const SeverityBadge: React.FC<SeverityBadgeProps> = ({ severity, className = '' }) => {
+  let styleClasses = '';
 
   switch (severity) {
     case 'CRITICAL':
-      bgColor = 'bg-danger';
-      textColor = 'text-white';
+      styleClasses = 'bg-rose-600 text-white shadow-xs';
       break;
     case 'HIGH':
-      bgColor = 'bg-danger/15';
-      textColor = 'text-danger';
+      styleClasses = 'bg-rose-50 text-rose-700 border border-rose-200';
       break;
     case 'MEDIUM':
-      bgColor = 'bg-warning/15';
-      textColor = 'text-warning';
+      styleClasses = 'bg-amber-50 text-amber-700 border border-amber-200';
       break;
     case 'LOW':
     default:
-      bgColor = 'bg-secondary/15';
-      textColor = 'text-secondary';
+      styleClasses = 'bg-slate-100 text-slate-600 border border-slate-200';
       break;
   }
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider ${bgColor} ${textColor} ${className}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${styleClasses} ${className}`}>
       {severity}
     </span>
   );
