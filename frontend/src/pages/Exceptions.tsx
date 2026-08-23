@@ -503,10 +503,10 @@ export default function Exceptions() {
                   const riskTier = ex.risk_tier || 'MEDIUM';
                   const breakdown = ex.risk_breakdown || { amount_pts: 10, ml_pts: 10, age_pts: 5 };
 
-                  let riskBadgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
+                  let riskBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
                   if (riskTier === 'CRITICAL') riskBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
-                  else if (riskTier === 'HIGH') riskBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
-                  else if (riskTier === 'MEDIUM') riskBadgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                  else if (riskTier === 'HIGH') riskBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+                  else if (riskTier === 'MEDIUM') riskBadgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
 
                   return (
                     <React.Fragment key={ex.id}>
@@ -824,11 +824,11 @@ export default function Exceptions() {
                                         placeholder="Reason for escalation (e.g., Unrecognized UTR credit)..."
                                         value={actionNotes[ex.id] || ''}
                                         onChange={(e) => setActionNotes({ ...actionNotes, [ex.id]: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                       />
                                       <div className="flex justify-end gap-2 pt-1">
                                         <button onClick={() => setAction(ex.id, null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                                        <button onClick={() => handleEscalate(ex.id)} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
+                                        <button onClick={() => handleEscalate(ex.id)} className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
                                       </div>
                                     </>
                                   )}

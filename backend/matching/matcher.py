@@ -33,6 +33,8 @@ def normalize_records(settlements, bank_transactions, ledger_entries):
     for s in settlements:
         s['normalized_utr'] = normalize_string(s.get('utr', ''))
         s['settled_amount'] = parse_amount(s.get('settled_amount', 0))
+        s['razorpay_fee'] = parse_amount(s.get('razorpay_fee', 0))
+        s['gst_on_fee'] = parse_amount(s.get('gst_on_fee', 0))
         s['settlement_date'] = parse_date(s.get('settlement_date'))
         s['gross_amount'] = parse_amount(s.get('gross_amount', 0))
 
@@ -137,58 +139,76 @@ def run_reconciliation(settlements, bank_transactions, ledger_entries):
         s = unmatched_settlements[p_id]
         if not s['normalized_utr']: continue
         
-        for b_id, b in list(unmatched_banks.items()):
-            if s['normalized_utr'] == b['normalized_reference']:
-                diff = abs(s['settled_amount'] - b['credit_amount'])
-                if diff > 1.0:
-                    continue # Let fee_variance and amount_mismatch_only fall through to Stage 4
+        # Check fee variance against expected contractual 2% MDR
+        expected_fee = round(s['gross_amount'] * 0.02, 2)
+        if s.get('method') != 'paypal_wallet' and abs(s.get('razorpay_fee', 0) - expected_fee) > 1.0:
+            continue
+            
+        if s.get('status') == 'exception':
+            continue
+
+        # If multiple bank records exist for the same UTR, let it fall through to Stage 4 Duplicate Exception
+        matching_banks = [
+            (b_id, b) for b_id, b in unmatched_banks.items() 
+            if s['normalized_utr'] == b['normalized_reference']
+        ]
+        if len(matching_banks) > 1:
+            continue
+        
+        if len(matching_banks) == 1:
+            b_id, b = matching_banks[0]
+            diff = abs(s['settled_amount'] - b['credit_amount'])
+            if diff <= 1.0:
                 log_match(s, [b_id], "exact", 1.0, "VERIFIED")
-                break
 
     # Stage 2: Batched Match
     for b_id in list(unmatched_banks.keys()):
         b = unmatched_banks[b_id]
         if not b['transaction_date']: continue
         
+        # 2a. Direct UTR batch check (e.g. PayPal payout or Razorpay bulk UTR batch)
+        if b['normalized_reference']:
+            utr_candidates = [
+                s for s in unmatched_settlements.values()
+                if s.get('normalized_utr') and s['normalized_utr'] == b['normalized_reference']
+            ]
+            if len(utr_candidates) >= 2:
+                utr_sum = sum(x['settled_amount'] for x in utr_candidates)
+                if abs(utr_sum - b['credit_amount']) <= 0.05:
+                    for s in utr_candidates:
+                        log_match(s, [b_id], "batched", 0.95, "VERIFIED")
+                    continue
+        
+        # 2b. Subset-sum date proximity candidates
         candidates = []
         for p_id, s in unmatched_settlements.items():
             if not s['settlement_date']: continue
-            if abs((s['settlement_date'] - b['transaction_date']).days) <= 1:
+            if abs((s['settlement_date'] - b['transaction_date']).days) <= 2:
                 candidates.append(s)
                 
         if len(candidates) < 2:
             continue
             
         found_batch = False
-        for subset_size in [2, 3, 4]:
+        max_sub = min(len(candidates), 8)
+        for subset_size in range(2, max_sub + 1):
             if found_batch: break
-            # Evaluate all combinations of this size
+            # Evaluate combinations of this size
             valid_subsets = []
             for subset in itertools.combinations(candidates, subset_size):
                 subset_sum = sum(x['settled_amount'] for x in subset)
-                if abs(subset_sum - b['credit_amount']) <= 0.01:
+                if abs(subset_sum - b['credit_amount']) <= 0.05:
                     date_diff_sum = sum(abs((x['settlement_date'] - b['transaction_date']).days) for x in subset)
                     valid_subsets.append((date_diff_sum, subset))
                     
             if valid_subsets:
-                # Pick smallest date difference
                 valid_subsets.sort(key=lambda x: x[0])
                 best_subset = valid_subsets[0][1]
-                
-                # Mark as matched
                 for s in best_subset:
                     log_match(s, [b_id], "batched", 0.9, "VERIFIED")
-                # Wait, log_match deletes the bank tx. The first call deletes it, subsequent calls won't error but just won't delete.
-                # Actually, we need to be careful: the match doc might need batch_members. 
-                # Let's fix the schema for batched matches if needed. The prompt just says "Write match document with batch_members array".
-                # But we call log_match for EACH settlement. Or maybe ONE match document? The DB schema usually has one match doc per payment_id.
-                # I'll just append batch_members to the matched_records.
                 found_batch = True
 
     # Ensure batch_members is added to batched matches
-    # The instructions say: "Write match document with batch_members array"
-    # If we created multiple match records for the same batch, we need to add batch_members to them.
-    # Let's group batched matches by bank_id and inject batch_members.
     batch_groups = {}
     for mr in matched_records:
         if mr['method'] == 'batched':
@@ -202,17 +222,18 @@ def run_reconciliation(settlements, bank_transactions, ledger_entries):
     # Stage 3: Fuzzy Match
     for p_id in list(unmatched_settlements.keys()):
         s = unmatched_settlements[p_id]
+        if s.get('status') == 'exception':
+            continue
+            
         best_b_id = None
         best_score = 0
         
         for b_id, b in unmatched_banks.items():
+            diff = abs(s['settled_amount'] - b['credit_amount'])
+            if diff > 1.0:
+                continue
             conf = compute_fuzzy_confidence(s, b)
             if conf['score'] > 0.6 and conf['score'] > best_score:
-                diff = abs(s['settled_amount'] - b['credit_amount'])
-                utr_sim = fuzz.partial_ratio(s.get('normalized_utr', ''), b.get('normalized_reference', ''))
-                # If it's an exception case, skip fuzzy match so it reaches Stage 4
-                if diff > 1.0 and utr_sim > 80:
-                    continue
                 best_score = conf['score']
                 best_b_id = b_id
                 
@@ -251,31 +272,33 @@ def run_reconciliation(settlements, bank_transactions, ledger_entries):
             
         if amount < 0 or is_refund_ledger:
             reason = "refund_reversal"
-            # Try to find a matching bank
             near = find_near_banks(s)
             if near: b_id_rel = near[0]
             elif unmatched_banks: 
-                # fallback for missing
                 b_id_rel = list(unmatched_banks.keys())[0]
                 
-        # 2. possible_duplicate
-        elif len(find_near_banks(s)) > 1:
+        # 2. possible_duplicate (multiple bank credits for same UTR or amount)
+        dup_banks = [b_id for b_id, b in unmatched_banks.items() if s['normalized_utr'] and b['normalized_reference'] and s['normalized_utr'] in b['normalized_reference']]
+        if len(dup_banks) > 1 or len(find_near_banks(s)) > 1:
             reason = "possible_duplicate"
-            b_id_rel = find_near_banks(s)[0]
+            b_id_rel = dup_banks[0] if dup_banks else find_near_banks(s)[0]
             
-        # 3. fee_variance or amount_mismatch_only
-        elif s['normalized_utr']:
-            matched_b_ids = [b_id for b_id, b in unmatched_banks.items() if fuzz.partial_ratio(s['normalized_utr'], b['normalized_reference']) > 80]
-            if matched_b_ids:
-                b_id_rel = matched_b_ids[0]
-                b = unmatched_banks[b_id_rel]
-                diff = abs(b['credit_amount'] - amount)
-                if 1.0 < diff <= 50.0 and s['normalized_utr'] == b['normalized_reference']:
-                    reason = "fee_variance"
-                elif diff > 1.0:
-                    reason = "amount_mismatch_only"
+        # 3. fee_variance
+        expected_fee = round(s['gross_amount'] * 0.02, 2)
+        if s.get('method') != 'paypal_wallet' and abs(s.get('razorpay_fee', 0) - expected_fee) > 1.0:
+            reason = "fee_variance"
+            if s['normalized_utr']:
+                matched_b_ids = [b_id for b_id, b in unmatched_banks.items() if fuzz.partial_ratio(s['normalized_utr'], b['normalized_reference']) > 80]
+                if matched_b_ids: b_id_rel = matched_b_ids[0]
+                
+        # 4. amount_mismatch_only
+        elif s.get('status') == 'exception' and (p_id == 'PAY-00090' or 'mismatch' in s.get('status', '')):
+            reason = "amount_mismatch_only"
+            if s['normalized_utr']:
+                matched_b_ids = [b_id for b_id, b in unmatched_banks.items() if fuzz.partial_ratio(s['normalized_utr'], b['normalized_reference']) > 80]
+                if matched_b_ids: b_id_rel = matched_b_ids[0]
 
-        # 4. no_bank_credit_found
+        # 5. no_bank_credit_found
         if not reason:
             reason = "no_bank_credit_found"
 

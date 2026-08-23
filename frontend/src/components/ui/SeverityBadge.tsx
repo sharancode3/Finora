@@ -1,28 +1,30 @@
 import React from 'react';
+import { STATUS_COLORS } from '../../theme/statusTokens';
 
 export type SeverityLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 interface SeverityBadgeProps {
-  severity: SeverityLevel;
+  severity: SeverityLevel | string;
   className?: string;
 }
 
 export const SeverityBadge: React.FC<SeverityBadgeProps> = ({ severity, className = '' }) => {
   let styleClasses = '';
+  const upper = severity.toUpperCase();
 
-  switch (severity) {
+  switch (upper) {
     case 'CRITICAL':
-      styleClasses = 'bg-rose-600 text-white shadow-xs';
+      styleClasses = STATUS_COLORS.exception.solid;
       break;
     case 'HIGH':
-      styleClasses = 'bg-rose-50 text-rose-700 border border-rose-200';
+      styleClasses = STATUS_COLORS.exception.badge;
       break;
     case 'MEDIUM':
-      styleClasses = 'bg-amber-50 text-amber-700 border border-amber-200';
+      styleClasses = STATUS_COLORS.pending.badge;
       break;
     case 'LOW':
     default:
-      styleClasses = 'bg-slate-100 text-slate-600 border border-slate-200';
+      styleClasses = STATUS_COLORS.neutral.badge;
       break;
   }
 

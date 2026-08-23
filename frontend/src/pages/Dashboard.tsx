@@ -362,16 +362,19 @@ export default function Dashboard() {
     transactions.forEach(t => {
       const acctId = t.business_id;
       const acct = accounts.find(a => a.account_id === acctId);
-      const name = acct ? acct.name : (acctId === 'demo_org_1' ? 'Razorpay Primary' : acctId);
+      const name = t.source_account || (acct ? acct.name : (acctId === 'demo_org_1' ? 'Razorpay Gateway (Business)' : acctId));
       if (!map[name]) map[name] = { name, volume: 0 };
       map[name].volume += t.gross_amount;
     });
     const total = transactions.reduce((acc, t) => acc + t.gross_amount, 0);
-    return Object.values(map).map(item => ({
-      name: item.name,
-      volume: item.volume,
-      pct: total > 0 ? Math.round((item.volume / total) * 100) : 0
-    }));
+    return Object.values(map)
+      .filter(item => item.volume > 0)
+      .map(item => ({
+        name: item.name,
+        volume: item.volume,
+        pct: total > 0 ? ((item.volume / total) * 100).toFixed(1) : '0.0'
+      }))
+      .sort((a, b) => b.volume - a.volume);
   }, [transactions, selectedAccount, accounts]);
 
   if (loading && !transactions.length) {
@@ -405,12 +408,15 @@ export default function Dashboard() {
           
           {/* Per-Account Origin Breakdown when in combined view */}
           {selectedAccount === 'all' && accountContributions.length > 0 && (
-            <div className="flex items-center gap-2 text-[11px] bg-slate-100/70 border border-slate-200/80 rounded-xl px-3 py-1 mt-2.5 self-start flex-wrap">
+            <div className="flex items-center gap-2 text-[11px] bg-slate-100/80 border border-slate-200/90 rounded-xl px-3 py-1.5 mt-2.5 self-start flex-wrap shadow-2xs">
               <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Volume By Origin:</span>
               {accountContributions.map((c, i) => (
-                <span key={c.name} className="flex items-center gap-1 text-slate-700 font-medium">
-                  <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-indigo-600' : 'bg-blue-500'}`}></span>
-                  {c.name}: <strong className="font-mono font-bold text-slate-900">{c.pct}%</strong>
+                <span key={c.name} className="flex items-center gap-1.5 text-slate-700 font-medium">
+                  <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-slate-800' : 'bg-slate-500'}`}></span>
+                  <span>{c.name}:</span>
+                  <strong className="font-mono font-bold text-slate-900">{c.pct}%</strong>
+                  <span className="text-slate-400 font-mono text-[10px]">(₹{c.volume.toLocaleString('en-IN')})</span>
+                  {i < accountContributions.length - 1 && <span className="text-slate-300 ml-1">·</span>}
                 </span>
               ))}
             </div>
@@ -794,44 +800,59 @@ export default function Dashboard() {
         <div className="md:col-span-2 bg-white text-slate-900 rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
+              <div className={`p-2 rounded-xl border ${
+                transactions.length < 30 ? 'bg-amber-50 text-amber-700 border-amber-200' : (benfordData?.is_compliant ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200')
+              }`}>
                 <ShieldCheck size={18} />
               </div>
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Forensic Integrity Check • Benford's Law</h3>
                 <p className="text-sm font-bold text-slate-900 mt-0.5">
-                  {benfordData ? benfordData.status : 'Evaluating Leading Digit Distribution...'}
+                  {transactions.length < 30 ? 'Insufficient Sample Size' : (benfordData ? benfordData.status : 'Evaluating Leading Digit Distribution...')}
                 </p>
               </div>
             </div>
             
             {benfordData && (
-              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${benfordData.is_compliant ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`}>
-                MAD {benfordData.mad}
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                transactions.length < 30 ? 'bg-amber-50 text-amber-800 border-amber-200' : (benfordData.is_compliant ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200')
+              }`}>
+                {transactions.length < 30 ? 'Sample < 30' : `MAD ${benfordData.mad}`}
               </span>
             )}
           </div>
 
-          {/* Grounded AI Narration Box */}
-          <div className="my-3 p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-start gap-2.5">
-            <Sparkles size={14} className="text-indigo-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-indigo-950 leading-relaxed font-medium">
-              {forensicNarration?.benford?.ai_narration || benfordData?.forensic_summary || "Evaluated 281 ledger transactions across leading digits 1–9. The Mean Absolute Deviation (MAD) is 0.0076, confirming authentic transaction distribution under Ind AS audit guidelines."}
-            </p>
-          </div>
+          {/* Forensic Result / Sample Size Notification Box */}
+          {transactions.length < 30 ? (
+            <div className="my-3 p-3 bg-amber-50/70 rounded-xl border border-amber-200 flex items-start gap-2.5">
+              <AlertTriangle size={14} className="text-amber-700 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-900 leading-relaxed font-medium">
+                Fewer than 30 transactions in this view (found {transactions.length}) — statistical checks need a larger sample to be meaningful.
+              </p>
+            </div>
+          ) : (
+            <div className="my-3 p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-start gap-2.5">
+              <Sparkles size={14} className="text-indigo-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-indigo-950 leading-relaxed font-medium">
+                {forensicNarration?.benford?.ai_narration || benfordData?.forensic_summary || "Evaluated ledger transactions across leading digits 1–9. Confirms authentic transaction distribution under Ind AS audit guidelines."}
+              </p>
+            </div>
+          )}
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Evaluated across {benfordData?.total_evaluated || transactions.length} transactions</span>
-            <button 
-              onClick={() => setShowBenfordModal(!showBenfordModal)}
-              className="text-indigo-600 hover:text-indigo-800 font-bold hover:underline cursor-pointer"
-            >
-              {showBenfordModal ? 'Hide Digit Breakdown' : 'View Digit Breakdown'}
-            </button>
+            {transactions.length >= 30 && (
+              <button 
+                onClick={() => setShowBenfordModal(!showBenfordModal)}
+                className="text-indigo-600 hover:text-indigo-800 font-bold hover:underline cursor-pointer"
+              >
+                {showBenfordModal ? 'Hide Digit Breakdown' : 'View Digit Breakdown'}
+              </button>
+            )}
           </div>
 
           {/* Interactive Digit Breakdown Drawer */}
-          {showBenfordModal && benfordData?.digits && (
+          {showBenfordModal && benfordData?.digits && transactions.length >= 30 && (
             <div className="mt-4 pt-3 border-t border-slate-100 space-y-2 animate-in fade-in duration-150">
               <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5 text-center">
                 {benfordData.digits.map((d: any) => (
@@ -850,30 +871,49 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Unsupervised ML Signal</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full">
-              Isolation Forest
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+              transactions.length < 20 
+                ? 'bg-amber-50 text-amber-800 border-amber-200' 
+                : (mlAnomalies.length > 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+            }`}>
+              {transactions.length < 20 ? 'Sample < 20' : (mlAnomalies.length > 0 ? `${mlAnomalies.length} Flagged` : 'Clean Signal')}
             </span>
           </div>
 
           <div className="my-2">
             <div className="text-2xl font-bold text-slate-900 font-mono">
-              {mlAnomalies.length}
+              {transactions.length < 20 ? '—' : mlAnomalies.length}
             </div>
             <p className="text-xs text-slate-600 mt-1">
-              Transactions flagged as statistically unusual based on multi-dimensional feature isolation.
+              {transactions.length < 20 
+                ? 'Unsupervised anomaly detection requires active transactional baseline.'
+                : 'Transactions flagged as statistically unusual based on multi-dimensional feature isolation.'}
             </p>
           </div>
 
-          {/* Grounded AI Narration */}
-          <div className="my-2 p-2.5 bg-purple-50/60 rounded-xl border border-purple-100 text-[11px] text-purple-950 leading-relaxed font-medium">
-            {forensicNarration?.isolation_forest?.ai_narration || `${mlAnomalies.length} transactions were flagged by the Isolation Forest model as statistically unusual based on fee-to-gross ratio and transit duration — 2 are already linked to open exceptions and 1 is a new signal recommended for review.`}
-          </div>
+          {/* Grounded AI Narration or Sample Size Warning */}
+          {transactions.length < 20 ? (
+            <div className="my-2 p-2.5 bg-amber-50/70 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed font-medium">
+              Fewer than 20 transactions in this view (found {transactions.length}) — statistical checks need a larger sample to be meaningful.
+            </div>
+          ) : (
+            <div className="my-2 p-2.5 bg-indigo-50/60 rounded-xl border border-indigo-100 text-[11px] text-indigo-950 leading-relaxed font-medium flex items-start gap-1.5">
+              <Sparkles size={12} className="text-indigo-600 shrink-0 mt-0.5" />
+              <span>
+                {forensicNarration?.isolation_forest?.ai_narration || `${mlAnomalies.length} transactions flagged by Isolation Forest model based on fee-to-gross ratio and transit duration.`}
+              </span>
+            </div>
+          )}
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
             <span className="text-[11px] text-slate-400">Beyond explicit rules</span>
-            <Link to="/exceptions" className="text-xs font-bold text-indigo-600 hover:underline">
-              Inspect Outliers &rarr;
-            </Link>
+            {transactions.length >= 20 && mlAnomalies.length > 0 ? (
+              <Link to="/exceptions" className="text-xs font-bold text-indigo-600 hover:underline">
+                Inspect Outliers &rarr;
+              </Link>
+            ) : (
+              <span className="text-xs text-slate-400">No outliers</span>
+            )}
           </div>
         </div>
       </div>

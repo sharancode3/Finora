@@ -15,6 +15,7 @@ import LinkedAccounts from './pages/LinkedAccounts';
 import Settings from './pages/Settings';
 import MonthEndClose from './pages/MonthEndClose';
 import DesignSystemGallery from './pages/DesignSystemGallery';
+import AboutFinora from './pages/AboutFinora';
 
 import LandingPage from './pages/LandingPage';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/accounts" element={<MainLayout><LinkedAccounts /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
           <Route path="/month-end-close" element={<MainLayout><MonthEndClose /></MainLayout>} />
+          <Route path="/about" element={<MainLayout><AboutFinora /></MainLayout>} />
           <Route path="/design-system" element={<MainLayout><DesignSystemGallery /></MainLayout>} />
         </Routes>
       </AIProvider>

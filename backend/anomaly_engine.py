@@ -64,6 +64,15 @@ def run_isolation_forest_analysis(transactions: List[Dict[str, Any]]) -> Dict[st
         features.append([gross, fee_ratio, gst_ratio, delay_days])
         valid_txs.append(tx)
 
+    if len(valid_txs) < 20:
+        return {
+            "anomalies": [],
+            "total_evaluated": len(valid_txs),
+            "unusual_count": 0,
+            "sample_too_small": True,
+            "explanation": f"Fewer than 20 transactions in this view (found {len(valid_txs)}) — statistical checks need a larger sample to be meaningful."
+        }
+
     X = np.array(features)
 
     # Train Isolation Forest (unsupervised tree partitioning)
@@ -165,11 +174,15 @@ def compute_benfords_law_distribution(transactions: List[Dict[str, Any]]) -> Dic
                 digit_counts[leading_digit] += 1
                 total_valid += 1
 
-    if total_valid == 0:
+    if total_valid < 30:
         return {
-            "status": "Insufficient Data",
+            "status": "Insufficient Sample",
             "is_compliant": True,
             "mad": 0.0,
+            "total_evaluated": total_valid,
+            "sample_too_small": True,
+            "explanation": f"Fewer than 30 transactions in this view (found {total_valid}) — statistical checks need a larger sample to be meaningful.",
+            "forensic_summary": f"Fewer than 30 transactions in this view (found {total_valid}) — statistical checks need a larger sample to be meaningful.",
             "digits": []
         }
 

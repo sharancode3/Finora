@@ -112,7 +112,7 @@ export default function DataSources() {
         <AlertCircle className="text-amber-500 shrink-0 mt-0.5" />
         <div>
           <h4 className="text-sm font-bold text-amber-900 mb-1">Bank API Integrations</h4>
-          <p className="text-sm text-amber-800">Direct connections to HDFC, ICICI, and Axis Bank via Account Aggregator are currently in private beta. Please contact support to request early access.</p>
+          <p className="text-sm text-amber-800">Direct connections to Kotak Mahindra Bank, HDFC Bank, and Axis Bank via Account Aggregator are currently in private beta. Please contact support to request early access.</p>
         </div>
       </div>
     </div>

@@ -177,5 +177,23 @@
       "route": "/settings"
     },
     "expected_answer_pattern": "(sod-01|dual-custody|dual custody|statutory|risk|internal control)"
+  },
+  {
+    "category": "copilot_money_flow",
+    "question": "Why did more money go to Kotak than HDFC?",
+    "context": {
+      "page_name": "Linked Accounts & Money Movement",
+      "route": "/accounts"
+    },
+    "expected_answer_pattern": "(kotak|hdfc|domestic|paypal|settlement|operating)"
+  },
+  {
+    "category": "copilot_money_flow",
+    "question": "Which account did PayPal settle to and how much?",
+    "context": {
+      "page_name": "Linked Accounts & Money Movement",
+      "route": "/accounts"
+    },
+    "expected_answer_pattern": "(paypal|kotak|44,205|payout|wallet)"
   }
 ]

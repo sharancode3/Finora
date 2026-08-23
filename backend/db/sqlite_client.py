@@ -81,7 +81,15 @@ def init_db():
         )
     ''')
 
-    # Run migrations for Phase 3 & Phase 9 columns
+    # Run migrations for Phase 3, Phase 9 & Cleanup Phase 1 columns
+    try:
+        cursor.execute("ALTER TABLE transactions ADD COLUMN source_account TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE exceptions ADD COLUMN source_account TEXT")
+    except sqlite3.OperationalError:
+        pass
     try:
         cursor.execute("ALTER TABLE exceptions ADD COLUMN status TEXT DEFAULT 'open'")
     except sqlite3.OperationalError:
@@ -119,30 +127,37 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
-    # Ensure rich multi-account seed exists
+    # Ensure rich 4-account structure exists (Razorpay, Kotak Bank, HDFC Bank, PayPal Wallet)
     cursor.execute("SELECT COUNT(*) as c FROM accounts")
     if cursor.fetchone()['c'] == 0:
         cursor.execute('''
             INSERT INTO accounts (account_id, name, type, status, connected_at, last_synced_at, sync_status, sync_message, key_id) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('demo_org_1', 'Razorpay Gateway (Primary)', 'payment_gateway', 'connected', '2026-08-01T00:00:00Z', '2026-08-31T17:40:00Z', 'healthy', None, 'rzp_test_89aNqP44v'))
+        ''', ('demo_org_1', 'Razorpay Gateway (Business)', 'payment_gateway', 'connected', '2026-08-01T00:00:00Z', '2026-08-31T17:40:00Z', 'healthy', None, 'rzp_test_89aNqP44v'))
         
         cursor.execute('''
             INSERT INTO accounts (account_id, name, type, status, connected_at, last_synced_at, sync_status, sync_message, account_number) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('acct_hdfc_bank', 'HDFC Corporate Current Feed', 'bank_feed', 'connected', '2026-08-05T00:00:00Z', '2026-08-30T09:15:00Z', 'stale', 'No incoming bank settlement UTR updates in 36 hours. Credit verification delayed.', '50200084920192'))
+        ''', ('acct_kotak_bank', 'Kotak Mahindra Bank — Business Current Account', 'bank_feed', 'connected', '2026-08-01T00:00:00Z', '2026-08-31T17:15:00Z', 'healthy', None, '981200481920'))
 
         cursor.execute('''
             INSERT INTO accounts (account_id, name, type, status, connected_at, last_synced_at, sync_status, sync_message, account_number) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('acct_icici_bank', 'ICICI Escrow Account', 'bank_feed', 'connected', '2026-08-10T00:00:00Z', '2026-08-31T16:55:00Z', 'healthy', None, '001205018392'))
+        ''', ('acct_hdfc_bank', 'HDFC Bank — Business Current Account', 'bank_feed', 'connected', '2026-08-05T00:00:00Z', '2026-08-31T17:15:00Z', 'healthy', None, '50200084920192'))
+
+        cursor.execute('''
+            INSERT INTO accounts (account_id, name, type, status, connected_at, last_synced_at, sync_status, sync_message, key_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', ('acct_paypal_wallet', 'PayPal — International Wallet', 'wallet', 'connected', '2026-08-08T00:00:00Z', '2026-08-31T16:30:00Z', 'healthy', None, 'paypal_merch_in_94'))
 
     # Indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tx_date ON transactions(transaction_date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tx_business ON transactions(business_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_tx_source ON transactions(source_account)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_exc_date ON exceptions(transaction_date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_exc_reason ON exceptions(reason)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_exc_status ON exceptions(status)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_exc_source ON exceptions(source_account)')
     
     conn.commit()
     conn.close()
@@ -590,77 +605,201 @@ def get_cross_account_reconciliation(start_date: str = "2026-08-01", end_date: s
     conn = get_connection()
     c = conn.cursor()
 
-    # 1. Fetch total transactions grouped by account
+    # 1. Primary settlement flows computed directly from transactions
+    # 1a. Razorpay -> Kotak
     c.execute('''
-        SELECT 
-            t.business_id,
-            COALESCE(a.name, 'Primary Gateway') as account_name,
-            COALESCE(a.type, 'payment_gateway') as account_type,
-            COALESCE(a.sync_status, 'healthy') as sync_status,
-            COALESCE(a.last_synced_at, '2026-08-31T17:40:00Z') as last_synced_at,
-            COUNT(*) as tx_count,
-            SUM(t.gross_amount) as gross_volume,
-            SUM(t.fee) as total_fees,
-            SUM(t.gst) as total_gst,
-            SUM(t.net_amount) as net_settled
-        FROM transactions t
-        LEFT JOIN accounts a ON t.business_id = a.account_id
-        WHERE t.transaction_date BETWEEN ? AND ?
-        GROUP BY t.business_id
+        SELECT COUNT(*) as cnt, SUM(gross_amount) as gross, SUM(net_amount) as net, SUM(fee + gst) as deductions
+        FROM transactions
+        WHERE business_id = 'demo_org_1' AND bank_reference LIKE 'KKBK%' AND status = 'settled'
+          AND transaction_date BETWEEN ? AND ?
     ''', (start_date, end_date))
-    rows = c.fetchall()
+    rzp_kotak = c.fetchone()
+    rzp_kotak_net = float(rzp_kotak['net'] or 0.0)
+    rzp_kotak_cnt = int(rzp_kotak['cnt'] or 0)
 
-    total_gross = sum(r['gross_volume'] or 0.0 for r in rows)
-    total_net = sum(r['net_settled'] or 0.0 for r in rows)
-
-    # 2. Fetch trapped in exceptions
+    # 1b. Razorpay -> HDFC
     c.execute('''
-        SELECT SUM(t.gross_amount) as trapped
+        SELECT COUNT(*) as cnt, SUM(gross_amount) as gross, SUM(net_amount) as net, SUM(fee + gst) as deductions
+        FROM transactions
+        WHERE business_id = 'demo_org_1' AND bank_reference LIKE 'HDFC%' AND status = 'settled'
+          AND transaction_date BETWEEN ? AND ?
+    ''', (start_date, end_date))
+    rzp_hdfc = c.fetchone()
+    rzp_hdfc_net = float(rzp_hdfc['net'] or 0.0)
+    rzp_hdfc_cnt = int(rzp_hdfc['cnt'] or 0)
+
+    # 1c. PayPal -> Kotak
+    c.execute('''
+        SELECT COUNT(*) as cnt, SUM(gross_amount) as gross, SUM(net_amount) as net, SUM(fee + gst) as deductions
+        FROM transactions
+        WHERE business_id = 'acct_paypal_wallet' AND status = 'settled'
+          AND transaction_date BETWEEN ? AND ?
+    ''', (start_date, end_date))
+    pp_kotak = c.fetchone()
+    pp_kotak_net = float(pp_kotak['net'] or 0.0)
+    pp_kotak_cnt = int(pp_kotak['cnt'] or 0)
+
+    # 1d. Direct inward HDFC
+    c.execute('''
+        SELECT COUNT(*) as cnt, SUM(gross_amount) as gross, SUM(net_amount) as net
+        FROM transactions
+        WHERE business_id = 'acct_hdfc_bank'
+          AND transaction_date BETWEEN ? AND ?
+    ''', (start_date, end_date))
+    hdfc_direct = c.fetchone()
+    hdfc_direct_net = float(hdfc_direct['net'] or 0.0)
+    hdfc_direct_cnt = int(hdfc_direct['cnt'] or 0)
+
+    # 1e. Trapped in exceptions / suspense
+    c.execute('''
+        SELECT COUNT(*) as cnt, SUM(t.gross_amount) as trapped
         FROM exceptions e
         JOIN transactions t ON e.transaction_id = t.transaction_id
         WHERE e.status = 'open' AND t.transaction_date BETWEEN ? AND ?
     ''', (start_date, end_date))
     trapped_row = c.fetchone()
-    trapped_cash = trapped_row['trapped'] or 0.0
+    trapped_cash = float(trapped_row['trapped'] or 0.0)
+    trapped_cnt = int(trapped_row['cnt'] or 0)
 
-    contributions = []
-    for r in rows:
-        vol = float(r['gross_volume'] or 0.0)
-        share_pct = round((vol / total_gross * 100), 1) if total_gross > 0 else 0.0
-        contributions.append({
-            "account_id": r['business_id'],
-            "account_name": r['account_name'],
-            "account_type": r['account_type'],
-            "sync_status": r['sync_status'],
-            "last_synced_at": r['last_synced_at'],
-            "transaction_count": r['tx_count'],
-            "gross_volume": round(vol, 2),
-            "net_settled": round(float(r['net_settled'] or 0.0), 2),
-            "share_percentage": share_pct
+    # 2. Total collected volume
+    c.execute('''
+        SELECT SUM(gross_amount) as total_gross, SUM(net_amount) as total_net
+        FROM transactions
+        WHERE transaction_date BETWEEN ? AND ?
+    ''', (start_date, end_date))
+    totals = c.fetchone()
+    total_gross = float(totals['total_gross'] or 0.0)
+    total_bank_settled = rzp_kotak_net + rzp_hdfc_net + pp_kotak_net + hdfc_direct_net
+
+    # 3. Kotak Bank Aggregates & Upstream Split
+    kotak_total_credits = rzp_kotak_net + pp_kotak_net
+    kotak_upstream = [
+        {
+            "source_id": "demo_org_1",
+            "source_name": "Razorpay Gateway (Business)",
+            "source_type": "payment_gateway",
+            "amount": round(rzp_kotak_net, 2),
+            "percentage": round((rzp_kotak_net / kotak_total_credits * 100), 1) if kotak_total_credits > 0 else 0.0,
+            "count": rzp_kotak_cnt,
+            "flow_label": "Direct INR Gateway Settlements (T+2)"
+        },
+        {
+            "source_id": "acct_paypal_wallet",
+            "source_name": "PayPal — International Wallet",
+            "source_type": "wallet",
+            "amount": round(pp_kotak_net, 2),
+            "percentage": round((pp_kotak_net / kotak_total_credits * 100), 1) if kotak_total_credits > 0 else 0.0,
+            "count": pp_kotak_cnt,
+            "flow_label": "Periodic Batched Lump-Sum Payouts"
+        }
+    ]
+
+    # 4. HDFC Bank Aggregates & Upstream Split
+    hdfc_total_credits = rzp_hdfc_net + hdfc_direct_net
+    hdfc_upstream = [
+        {
+            "source_id": "demo_org_1",
+            "source_name": "Razorpay Gateway (Business)",
+            "source_type": "payment_gateway",
+            "amount": round(rzp_hdfc_net, 2),
+            "percentage": round((rzp_hdfc_net / hdfc_total_credits * 100), 1) if hdfc_total_credits > 0 else 0.0,
+            "count": rzp_hdfc_cnt,
+            "flow_label": "Secondary INR Gateway Settlements (T+2)"
+        }
+    ]
+    if hdfc_direct_net > 0:
+        hdfc_upstream.append({
+            "source_id": "acct_hdfc_direct",
+            "source_name": "Direct Inward NEFT Credit",
+            "source_type": "bank_feed",
+            "amount": round(hdfc_direct_net, 2),
+            "percentage": round((hdfc_direct_net / hdfc_total_credits * 100), 1) if hdfc_total_credits > 0 else 0.0,
+            "count": hdfc_direct_cnt,
+            "flow_label": "Direct Bank Inflow (Unreconciled)"
         })
 
-    # Realistic inter-account settlement route flows
+    # 5. Fetch all accounts with enriched per-account breakdown
+    accounts_list = get_accounts()
+    enriched_accounts = []
+    for a in accounts_list:
+        aid = a['account_id']
+        acct_dict = dict(a)
+        if aid == 'demo_org_1':
+            c.execute('SELECT COUNT(*) as c, SUM(gross_amount) as g, SUM(net_amount) as n, SUM(fee) as f, SUM(gst) as gst FROM transactions WHERE business_id = ? AND transaction_date BETWEEN ? AND ?', (aid, start_date, end_date))
+            st = c.fetchone()
+            gross_val = float(st['g'] or 0.0)
+            net_val = float(st['n'] or 0.0)
+            acct_dict['monthly_total'] = round(gross_val, 2)
+            acct_dict['net_settled'] = round(net_val, 2)
+            acct_dict['total_fees'] = round(float(st['f'] or 0.0) + float(st['gst'] or 0.0), 2)
+            acct_dict['transaction_count'] = int(st['c'] or 0)
+            acct_dict['downstream_destinations'] = [
+                {"name": "Kotak Mahindra Bank", "amount": round(rzp_kotak_net, 2), "percentage": round((rzp_kotak_net / net_val * 100), 1) if net_val > 0 else 0.0, "count": rzp_kotak_cnt},
+                {"name": "HDFC Bank", "amount": round(rzp_hdfc_net, 2), "percentage": round((rzp_hdfc_net / net_val * 100), 1) if net_val > 0 else 0.0, "count": rzp_hdfc_cnt},
+                {"name": "Exceptions / Suspense", "amount": round(trapped_cash, 2), "percentage": round((trapped_cash / gross_val * 100), 1) if gross_val > 0 else 0.0, "count": trapped_cnt}
+            ]
+        elif aid == 'acct_paypal_wallet':
+            c.execute('SELECT COUNT(*) as c, SUM(gross_amount) as g, SUM(net_amount) as n, SUM(fee) as f, SUM(gst) as gst FROM transactions WHERE business_id = ? AND transaction_date BETWEEN ? AND ?', (aid, start_date, end_date))
+            st = c.fetchone()
+            gross_val = float(st['g'] or 0.0)
+            net_val = float(st['n'] or 0.0)
+            acct_dict['monthly_total'] = round(gross_val, 2)
+            acct_dict['net_settled'] = round(net_val, 2)
+            acct_dict['total_fees'] = round(float(st['f'] or 0.0) + float(st['gst'] or 0.0), 2)
+            acct_dict['transaction_count'] = int(st['c'] or 0)
+            acct_dict['downstream_destinations'] = [
+                {"name": "Kotak Mahindra Bank", "amount": round(pp_kotak_net, 2), "percentage": 100.0, "count": pp_kotak_cnt}
+            ]
+        elif aid == 'acct_kotak_bank':
+            acct_dict['monthly_total'] = round(kotak_total_credits, 2)
+            acct_dict['net_settled'] = round(kotak_total_credits, 2)
+            acct_dict['transaction_count'] = rzp_kotak_cnt + pp_kotak_cnt
+            acct_dict['upstream_breakdown'] = kotak_upstream
+        elif aid == 'acct_hdfc_bank':
+            acct_dict['monthly_total'] = round(hdfc_total_credits, 2)
+            acct_dict['net_settled'] = round(hdfc_total_credits, 2)
+            acct_dict['transaction_count'] = rzp_hdfc_cnt + hdfc_direct_cnt
+            acct_dict['upstream_breakdown'] = hdfc_upstream
+            
+        enriched_accounts.append(acct_dict)
+
+    # 6. Concrete inter-account settlement flows
     inter_account_flows = [
         {
-            "from_account": "Razorpay Gateway (Primary)",
-            "to_account": "HDFC Corporate Current Feed (A/C ...9192)",
-            "settled_amount": round(total_net * 0.76, 2),
+            "from_account": "Razorpay Gateway (Business)",
+            "to_account": "Kotak Mahindra Bank — Business Current Account (A/C ...1920)",
+            "settled_amount": round(rzp_kotak_net, 2),
             "status": "settled",
-            "cycle": "T+2 Rolling Settlement"
+            "cycle": "T+2 Rolling Settlement (Domestic INR)",
+            "transaction_count": rzp_kotak_cnt,
+            "share_percentage": round((rzp_kotak_net / total_bank_settled * 100), 1) if total_bank_settled > 0 else 0.0
         },
         {
-            "from_account": "Razorpay Gateway (Primary)",
-            "to_account": "ICICI Escrow Account (A/C ...8392)",
-            "settled_amount": round(total_net * 0.24, 2),
+            "from_account": "Razorpay Gateway (Business)",
+            "to_account": "HDFC Bank — Business Current Account (A/C ...0192)",
+            "settled_amount": round(rzp_hdfc_net, 2),
             "status": "settled",
-            "cycle": "T+1 Priority Float"
+            "cycle": "T+2 Rolling Settlement (Secondary INR)",
+            "transaction_count": rzp_hdfc_cnt,
+            "share_percentage": round((rzp_hdfc_net / total_bank_settled * 100), 1) if total_bank_settled > 0 else 0.0
         },
         {
-            "from_account": "Razorpay Gateway (Primary)",
+            "from_account": "PayPal — International Wallet",
+            "to_account": "Kotak Mahindra Bank — Business Current Account (A/C ...1920)",
+            "settled_amount": round(pp_kotak_net, 2),
+            "status": "settled",
+            "cycle": "Periodic Batched Lump-Sum Payout",
+            "transaction_count": pp_kotak_cnt,
+            "share_percentage": round((pp_kotak_net / total_bank_settled * 100), 1) if total_bank_settled > 0 else 0.0
+        },
+        {
+            "from_account": "Razorpay Gateway (Business)",
             "to_account": "Pending / Exceptions Suspense",
             "settled_amount": round(trapped_cash, 2),
             "status": "trapped",
-            "cycle": "Awaiting UTR Match & Fee Validation"
+            "cycle": "Awaiting UTR Match & Fee Validation",
+            "transaction_count": trapped_cnt,
+            "share_percentage": round((trapped_cash / total_gross * 100), 1) if total_gross > 0 else 0.0
         }
     ]
 
@@ -669,11 +808,15 @@ def get_cross_account_reconciliation(start_date: str = "2026-08-01", end_date: s
     return {
         "summary": {
             "total_collected": round(total_gross, 2),
-            "total_bank_settled": round(total_net, 2),
+            "total_bank_settled": round(total_bank_settled, 2),
             "trapped_in_exceptions": round(trapped_cash, 2),
-            "connected_accounts_count": len(rows)
+            "connected_accounts_count": len(enriched_accounts),
+            "kotak_total_credits": round(kotak_total_credits, 2),
+            "hdfc_total_credits": round(hdfc_total_credits, 2)
         },
-        "contributions": contributions,
+        "accounts": enriched_accounts,
+        "kotak_upstream": kotak_upstream,
+        "hdfc_upstream": hdfc_upstream,
         "inter_account_flows": inter_account_flows
     }
 

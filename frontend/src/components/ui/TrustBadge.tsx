@@ -1,10 +1,20 @@
 import React from 'react';
-import { CheckCircle2, AlertCircle, Eye, HelpCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, HelpCircle, Sparkles, Clock, AlertTriangle } from 'lucide-react';
+import { STATUS_COLORS } from '../../theme/statusTokens';
 
-export type TrustState = 'VERIFIED' | 'PROBABLE' | 'REVIEW REQUIRED' | 'UNRESOLVED' | 'EXCEPTION' | 'ESCALATED' | 'RESOLVED';
+export type TrustState = 
+  | 'VERIFIED' 
+  | 'PROBABLE' 
+  | 'REVIEW REQUIRED' 
+  | 'UNRESOLVED' 
+  | 'EXCEPTION' 
+  | 'ESCALATED' 
+  | 'RESOLVED'
+  | 'AI_VERIFIED'
+  | 'AI_GENERATED';
 
 interface TrustBadgeProps {
-  state: TrustState;
+  state: TrustState | string;
   className?: string;
 }
 
@@ -12,25 +22,41 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({ state, className = '' })
   let styleClasses = '';
   let Icon = AlertCircle;
 
-  switch (state) {
+  const upper = state.toUpperCase();
+
+  switch (upper) {
     case 'VERIFIED':
     case 'RESOLVED':
-      styleClasses = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    case 'SETTLED':
+    case 'HEALTHY':
+    case 'PASS':
+      styleClasses = STATUS_COLORS.verified.badge;
       Icon = CheckCircle2;
       break;
+
     case 'PROBABLE':
-      styleClasses = 'bg-amber-50 text-amber-700 border border-amber-200';
-      Icon = HelpCircle;
-      break;
     case 'REVIEW REQUIRED':
-    case 'ESCALATED':
-      styleClasses = 'bg-purple-50 text-purple-700 border border-purple-200';
-      Icon = Eye;
+    case 'PENDING':
+    case 'IN_SUSPENSE':
+    case 'STALE':
+      styleClasses = STATUS_COLORS.pending.badge;
+      Icon = upper === 'STALE' ? AlertTriangle : (upper === 'PENDING' ? Clock : HelpCircle);
       break;
+
+    case 'AI_VERIFIED':
+    case 'AI_GENERATED':
+    case 'COPILOT':
+      styleClasses = STATUS_COLORS.ai.badge;
+      Icon = Sparkles;
+      break;
+
     case 'UNRESOLVED':
     case 'EXCEPTION':
+    case 'ESCALATED':
+    case 'CRITICAL':
+    case 'HIGH':
     default:
-      styleClasses = 'bg-rose-50 text-rose-700 border border-rose-200';
+      styleClasses = STATUS_COLORS.exception.badge;
       Icon = AlertCircle;
       break;
   }

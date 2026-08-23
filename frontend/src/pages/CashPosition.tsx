@@ -212,9 +212,9 @@ export default function CashPosition() {
       {/* Anomaly Banner */}
       {anomaly?.is_anomalous && (
         <div className={`p-4 rounded-2xl border flex items-start gap-3 shadow-xs ${
-          anomaly.direction === 'down' ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-blue-50 border-blue-200 text-blue-900'
+          anomaly.direction === 'down' ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'
         }`}>
-          <AlertTriangle className={`mt-0.5 shrink-0 ${anomaly.direction === 'down' ? 'text-amber-500' : 'text-blue-500'}`} size={18} />
+          <AlertTriangle className={`mt-0.5 shrink-0 ${anomaly.direction === 'down' ? 'text-amber-500' : 'text-emerald-500'}`} size={18} />
           <div className="text-xs">
             <span className="font-bold block mb-0.5 text-slate-900">Volume Statistical Anomaly Flagged</span>
             {anomaly.description}

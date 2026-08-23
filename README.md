@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Architecture-Deterministic_Core_%2B_Agentic_Shell-indigo?style=for-the-badge" alt="Architecture" />
   <img src="https://img.shields.io/badge/Compliance-Ind_AS_/_ICAI_Aligned-blue?style=for-the-badge" alt="Compliance" />
   <img src="https://img.shields.io/badge/AI_Engine-Gemma_3_(Local_Inference)-purple?style=for-the-badge" alt="AI Engine" />
-  <img src="https://img.shields.io/badge/Eval_Accuracy-100.0%25_(31/31_Passed)-success?style=for-the-badge" alt="Eval Accuracy" />
+  <img src="https://img.shields.io/badge/Eval_Accuracy-100.0%25_(33/33_Passed)-success?style=for-the-badge" alt="Eval Accuracy" />
 </p>
 
 ---
@@ -42,8 +42,8 @@
 
 Modern enterprise finance operations face a critical tri-party reconciliation bottleneck:
 1. **Internal Books (ERP / Ledgers):** Invoices, sales orders, and shopping cart checkouts capturing expected gross customer receivables.
-2. **Payment Gateway Feeds (Razorpay):** Gross customer charges, Merchant Discount Rates (MDR ~2%), and statutory Goods and Services Tax withholdings (GST 18%).
-3. **Bank Statement Batches (HDFC / ICICI / Axis):** Lump-sum net settlement deposits arriving via Unique Transaction Reference (UTR) clearing batches on staggered $T+2$ schedules.
+2. **Payment Gateway & Wallet Feeds (Razorpay / PayPal):** Gross customer charges, Merchant Discount Rates (MDR ~2%), cross-border fees (4.4% + ₹25), and statutory Goods and Services Tax withholdings (GST 18%).
+3. **Bank Statement Batches (Kotak Mahindra Bank / HDFC Bank):** Lump-sum net settlement deposits arriving via Unique Transaction Reference (UTR) clearing batches on staggered $T+2$ schedules and batched wallet payouts.
 
 ```text
 ┌─────────────────────────┐       ┌─────────────────────────┐       ┌─────────────────────────┐
@@ -151,7 +151,7 @@ Finora operates under an uncompromising enterprise design principle:
 
 ### 6. Multi-Rail Bank & Gateway Feed Synchronization
 - **Strict Test-Mode Key Guardrails:** Enforced test-mode identifier masking (`rzp_test_` only, zero live key exposure) across all surfaces.
-- **Multi-Rail Connection Monitoring:** Real-time health metrics for Razorpay Gateway, HDFC Corporate Current, and ICICI Escrow feeds.
+- **Multi-Rail Connection Monitoring:** Real-time health metrics for Razorpay Gateway (`demo_org_1`), Kotak Mahindra Bank (`acct_kotak_bank`), HDFC Corporate Current (`acct_hdfc_bank`), and PayPal International Wallet (`acct_paypal_wallet`).
 - **Rule-Based Sync SLA Anomaly Tripwires:** Deterministically flags feeds breaching expected polling intervals (e.g. HDFC 34h lag vs. 15-minute polling SLA).
 - **Diagnostic Feed Narration:** Explains sync status, webhook health, and credential rotation guidance grounded in live connection logs.
 - **Suspense Decomposition:** Categorical breakdown of trapped funds by exception type.
@@ -346,7 +346,8 @@ Finora/
 │       ├── bank_statement.csv       # Bank statement credit batches
 │       └── finora.db                # SQLite ACID database
 ├── eval/
-│   ├── eval_qa.py                   # Automated 31-question benchmarking engine
+│   ├── eval_qa.py                   # Automated 33-question benchmarking engine
+│   ├── eval_matching.py             # 4-stage matching engine evaluator
 │   ├── test_questions.json          # Benchmark questions & ground-truth assertions
 │   └── results_qa.md                # Quantitative accuracy & verifier audit report
 ├── frontend/
@@ -357,6 +358,8 @@ Finora/
 │   │   │   └── ui/                  # Reusable UI tokens (AmountDisplay, Badges, Buttons)
 │   │   ├── context/
 │   │   │   └── AIContext.tsx        # Global copilot viewport & filter context provider
+│   │   ├── theme/
+│   │   │   └── statusTokens.ts      # Single source-of-truth semantic color tokens
 │   │   ├── layouts/
 │   │   │   └── MainLayout.tsx       # Stationary sidebar & TopBar layout
 │   │   ├── pages/
@@ -368,12 +371,15 @@ Finora/
 │   │   │   ├── MonthEndClose.tsx    # Continuous close readiness & statutory audit package
 │   │   │   ├── RecordDetail.tsx     # 3-way transaction investigation drawer
 │   │   │   ├── AskYourBooks.tsx     # Conversational AI with inspectable reasoning trails
+│   │   │   ├── AboutFinora.tsx      # System architecture & future roadmap note
 │   │   │   └── Settings.tsx         # Segregation of duties & notification triggers
 │   │   ├── App.tsx                  # React Router application entry
 │   │   └── index.css                # Tailwind directives & typography
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── vite.config.ts
+├── DATA_SPEC.md                     # Single-month August 2026 dataset & 4-account spec
+├── UI_UX.md                         # Locked design system & semantic color tokens
 ├── PROJECT_MEMORY.md                # Persistent project engineering memory & changelog
 ├── requirements.txt                 # Backend Python dependencies
 └── README.md
@@ -417,7 +423,7 @@ python backend/scripts/generate_phase0_data.py
 
 ### 4. Run Quantitative Evaluation Suite
 ```bash
-# Run 31-question automated test suite
+# Run 33-question automated test suite
 python eval/eval_qa.py
 ```
 

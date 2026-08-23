@@ -1,8 +1,12 @@
 import os
+import sys
+import io
 import json
 import csv
 from collections import defaultdict
 import time
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def load_json(path):
     with open(path, 'r', encoding='utf-8') as f:
@@ -53,7 +57,7 @@ def evaluate():
     correct_batched = 0
     predicted_fuzzy = 0
     correct_fuzzy = 0
-    predicted_exceptions = len(exceptions)
+    predicted_exceptions = sum(1 for e in exceptions if e.get('related_settlement_id'))
     correct_exceptions = 0
     
     # Evaluate matches

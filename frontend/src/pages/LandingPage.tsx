@@ -92,7 +92,7 @@ export default function LandingPage() {
               </span>
               <h3 className="font-bold text-base text-slate-900 mt-2 mb-1.5">3. Bank Statement</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Actual net cash deposited into your HDFC/ICICI account via UTR settlement batches.
+                Actual net cash deposited into your Kotak/HDFC account via UTR settlement batches.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-1.5 text-xs font-bold text-emerald-700">

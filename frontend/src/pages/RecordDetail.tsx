@@ -212,7 +212,7 @@ export default function RecordDetail() {
                 isResolved 
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
                   : isEscalated
-                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
                     : 'bg-rose-50 text-rose-700 border-rose-200'
               }`}>
                 {record.status || 'OPEN'}
@@ -428,12 +428,12 @@ export default function RecordDetail() {
                   placeholder="State reason for escalation (e.g. Unrecognized bank UTR credit after 10 days)..."
                   value={actionNote}
                   onChange={(e) => setActionNote(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setActionState(null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                <button onClick={handleEscalate} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
+                <button onClick={handleEscalate} className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
               </div>
             </div>
           )}
