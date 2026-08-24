@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   ShieldCheck, 
-  Sparkles, 
   CheckCircle2, 
   HelpCircle, 
   ArrowRight, 
@@ -40,7 +39,7 @@ export default function AppInfoGuide() {
       step: 1,
       title: "Link Your Financial Accounts",
       route: "/accounts",
-      icon: <Building2 className="text-indigo-600" size={20} />,
+      icon: <Building2 className="text-[#1E293B]" size={20} />,
       badge: "Setup & Connections",
       desc: "Connect your payment processors (Razorpay Gateway API key, PayPal Wallet) and your corporate bank accounts (Kotak Mahindra Bank, HDFC Bank). Finora sets up secure feeds and monitors sync SLA health every 15 minutes.",
       tips: "You can click 'Connect Integration' or 'Sync Now' anytime to pull the freshest transaction data."
@@ -49,7 +48,7 @@ export default function AppInfoGuide() {
       step: 2,
       title: "Automated 3-Way Reconciliation Ingestion",
       route: "/dashboard",
-      icon: <Layers className="text-emerald-600" size={20} />,
+      icon: <Layers className="text-[#15803D]" size={20} />,
       badge: "4-Stage Match Engine",
       desc: "Finora automatically pulls and normalizes 3 sets of records: Internal Sales Orders (from your store/ERP), Gateway Settlements (gross charges minus MDR fees and GST), and Bank Statement Credits (bulk UTR deposits).",
       tips: "The matching engine runs Stage 1 Exact, Stage 2 Batched Net, Stage 3 Fee Tolerance, and Stage 4 Exception Triage in under 0.1 seconds."
@@ -58,7 +57,7 @@ export default function AppInfoGuide() {
       step: 3,
       title: "Monitor Health on the Executive Dashboard",
       route: "/dashboard",
-      icon: <TrendingUp className="text-blue-600" size={20} />,
+      icon: <TrendingUp className="text-[#1D4ED8]" size={20} />,
       badge: "Real-time Command Center",
       desc: "Track top-line metrics: Total Gross Volume Processed, Settled Cash in Bank, Value Match Rate (%), and Open Exceptions. Read the AI Daily Briefing for a quick 60-second summary of your financial posture.",
       tips: "Click the 'Why?' button on any KPI to see the exact formula, contributing components, and mathematical explanation."
@@ -67,7 +66,7 @@ export default function AppInfoGuide() {
       step: 4,
       title: "Diagnose & Resolve Exceptions with AI",
       route: "/exceptions",
-      icon: <AlertTriangle className="text-amber-600" size={20} />,
+      icon: <AlertTriangle className="text-[#B45309]" size={20} />,
       badge: "Root-Cause Intelligence",
       desc: "Spot uncredited payments, fee variances, and timing delays ranked by a 100-point composite risk score. Click 'Investigate with AI' on any transaction to run a deterministic 4-step root cause analysis.",
       tips: "The AI checks for customer refunds, fee miscalculations, and expected T+2 bank transit timing to tell you exactly why a discrepancy occurred."
@@ -76,7 +75,7 @@ export default function AppInfoGuide() {
       step: 5,
       title: "Forecast Treasury & Simulate Cash Scenarios",
       route: "/cash-position",
-      icon: <DollarSign className="text-purple-600" size={20} />,
+      icon: <DollarSign className="text-slate-700" size={20} />,
       badge: "Monte Carlo Simulator",
       desc: "View 30-day cash projections and a 5-stage cash conversion waterfall. Use interactive What-If sliders to simulate the cash impact of gateway settlement delays (+N days), recovery rates, or sales volume shifts.",
       tips: "Monte Carlo simulates 1,000 stochastic trials to provide conservative (P10), expected (P50), and optimistic (P90) cash reserves."
@@ -85,7 +84,7 @@ export default function AppInfoGuide() {
       step: 6,
       title: "Execute Continuous Month-End Close",
       route: "/month-end-close",
-      icon: <Lock className="text-rose-600" size={20} />,
+      icon: <Lock className="text-[#B91C1C]" size={20} />,
       badge: "Statutory Compliance",
       desc: "Validate the 5-Pillar Statutory Checklist (Sales, Gateway, Bank, Suspense, and 3-Way Match). Click 'What's needed to clear?' for AI audit guidance, generate an executive closing memo, and apply a cryptographic period lock.",
       tips: "Complies with Indian Accounting Standards (Ind AS 1, 7, 115) and ICAI Internal Financial Controls."
@@ -94,9 +93,9 @@ export default function AppInfoGuide() {
       step: 7,
       title: "Ask Fino (AI Copilot) from Any Screen",
       route: "/ask_your_books",
-      icon: <Sparkles className="text-indigo-600" size={20} />,
+      icon: <div className="w-5 h-5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[10px] font-mono shrink-0">F</div>,
       badge: "Contextual AI Everywhere",
-      desc: "Click the sparkling Fino launcher on the bottom-right of any page. Ask any question in plain English (e.g. 'Why did more money go to Kotak than HDFC?' or 'Show exceptions above ₹10,000').",
+      desc: "Click the Fino launcher on the bottom-right of any page. Ask any question in plain English (e.g. 'Why did more money go to Kotak than HDFC?' or 'Show exceptions above ₹10,000').",
       tips: "Every answer includes inspectable reasoning steps and 100% mathematically verified citations backed by raw SQLite ledger records."
     }
   ];
@@ -128,11 +127,11 @@ export default function AppInfoGuide() {
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Hero Overview Card (Clean, High-Contrast Light Theme) */}
-      <div className="bg-white rounded-2xl border-2 border-indigo-100 p-6 md:p-8 shadow-xs space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-xs font-bold uppercase tracking-wider">
-              <Sparkles size={13} className="text-indigo-600" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded-full text-xs font-bold uppercase tracking-wider">
+              <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
               Platform Guide &amp; User Manual
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
@@ -146,7 +145,7 @@ export default function AppInfoGuide() {
           <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
             <Link
               to="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
             >
               Open Dashboard <ArrowRight size={14} />
             </Link>
@@ -159,18 +158,18 @@ export default function AppInfoGuide() {
             onClick={() => setActiveSection('ai_engines')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeSection === 'ai_engines'
-                ? 'bg-[#5B45F5] text-white shadow-xs'
+                ? 'bg-[#1E293B] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <Sparkles size={13} />
+            <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center font-bold text-[8px] font-mono">F</div>
             Where &amp; How AI Is Used (6 Core Engines)
           </button>
           <button
             onClick={() => setActiveSection('walkthrough')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'walkthrough'
-                ? 'bg-[#5B45F5] text-white shadow-xs'
+                ? 'bg-[#1E293B] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -180,7 +179,7 @@ export default function AppInfoGuide() {
             onClick={() => setActiveSection('benefits')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'benefits'
-                ? 'bg-[#5B45F5] text-white shadow-xs'
+                ? 'bg-[#1E293B] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -190,7 +189,7 @@ export default function AppInfoGuide() {
             onClick={() => setActiveSection('features')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'features'
-                ? 'bg-[#5B45F5] text-white shadow-xs'
+                ? 'bg-[#1E293B] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -200,7 +199,7 @@ export default function AppInfoGuide() {
             onClick={() => setActiveSection('roadmap')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeSection === 'roadmap'
-                ? 'bg-[#5B45F5] text-white shadow-xs'
+                ? 'bg-[#1E293B] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
@@ -215,14 +214,14 @@ export default function AppInfoGuide() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Sparkles size={18} className="text-[#5B45F5]" />
+                <div className="w-5 h-5 rounded-lg bg-[#1E293B] text-white flex items-center justify-center text-[10px] font-mono font-bold">F</div>
                 Where &amp; How AI Is Used in Finora
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Every AI capability is live, grounded in verified ledger data, and verifiable through numbered evidence trails.
               </p>
             </div>
-            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0] self-start sm:self-auto">
+            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] self-start sm:self-auto">
               6 Active AI/ML Engines
             </span>
           </div>
@@ -230,13 +229,13 @@ export default function AppInfoGuide() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             
             {/* Engine 1: Fino Autonomous Copilot */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
+                  <div className="p-2.5 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
                     <Brain size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-[#5B45F5] border border-indigo-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-[#1E293B] border border-slate-200 font-mono">
                     LLM Function Calling
                   </span>
                 </div>
@@ -252,13 +251,13 @@ export default function AppInfoGuide() {
             </div>
 
             {/* Engine 2: 4-Factor Deterministic Root-Cause Investigator */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-[#ECFDF3] text-[#16A34A] rounded-xl border border-[#BBF7D0]">
+                  <div className="p-2.5 bg-[#F0FDF4] text-[#15803D] rounded-xl border border-[#BBF7D0]">
                     <ShieldCheck size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#16A34A] border border-emerald-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-[#15803D] border border-emerald-200 font-mono">
                     Audit Verification
                   </span>
                 </div>
@@ -274,13 +273,13 @@ export default function AppInfoGuide() {
             </div>
 
             {/* Engine 3: Isolation Forest Machine Learning */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-[#FFF7ED] text-[#D97706] rounded-xl border border-[#FED7AA]">
+                  <div className="p-2.5 bg-[#FFFBEB] text-[#B45309] rounded-xl border border-[#FEF3C7]">
                     <Cpu size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-[#D97706] border border-amber-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-[#B45309] border border-amber-200 font-mono">
                     IsolationForest (scikit-learn)
                   </span>
                 </div>
@@ -296,13 +295,13 @@ export default function AppInfoGuide() {
             </div>
 
             {/* Engine 4: Benford's Law Forensic Integrity */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-200">
+                  <div className="p-2.5 bg-[#EFF6FF] text-[#1D4ED8] rounded-xl border border-[#DBEAFE]">
                     <Scale size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-[#1D4ED8] border border-blue-200 font-mono">
                     MAD &lt; 0.012 Target
                   </span>
                 </div>
@@ -318,13 +317,13 @@ export default function AppInfoGuide() {
             </div>
 
             {/* Engine 5: 1,000-Trial Monte Carlo Treasury Forecast */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-purple-50 text-purple-700 rounded-xl border border-purple-200">
+                  <div className="p-2.5 bg-slate-100 text-slate-800 rounded-xl border border-slate-200">
                     <LineChart size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 font-mono">
                     1,000 Stochastic Trials
                   </span>
                 </div>
@@ -340,13 +339,13 @@ export default function AppInfoGuide() {
             </div>
 
             {/* Engine 6: Continuous Accounting Close Memo Drafter */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-[#DDD7FE] transition-colors duration-150 ease-out">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between hover:border-slate-300 transition-colors duration-150 ease-out">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
+                  <div className="p-2.5 bg-[#FEF2F2] text-[#B91C1C] rounded-xl border border-[#FECACA]">
                     <FileText size={18} />
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-[#B91C1C] border border-rose-200 font-mono">
                     Ind AS 1, 7, 115
                   </span>
                 </div>
@@ -379,7 +378,7 @@ export default function AppInfoGuide() {
             {steps.map((s) => (
               <div 
                 key={s.step} 
-                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-indigo-200 transition-all space-y-3"
+                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
@@ -388,7 +387,7 @@ export default function AppInfoGuide() {
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-bold text-slate-900 text-sm">{s.title}</h4>
-                      <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full">
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] rounded-full">
                         {s.badge}
                       </span>
                     </div>
@@ -396,7 +395,7 @@ export default function AppInfoGuide() {
 
                   <Link 
                     to={s.route} 
-                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 self-start sm:self-auto"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#1E293B] hover:text-[#0F172A] self-start sm:self-auto"
                   >
                     Go to Page <ArrowRight size={13} />
                   </Link>
@@ -407,7 +406,7 @@ export default function AppInfoGuide() {
                 </p>
 
                 <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-700 flex items-start gap-2 ml-0 sm:ml-11">
-                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 size={14} className="text-[#15803D] shrink-0 mt-0.5" />
                   <span><strong>Pro Tip:</strong> {s.tips}</span>
                 </div>
               </div>
@@ -423,7 +422,7 @@ export default function AppInfoGuide() {
           {/* Small Business Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">
+              <div className="p-2.5 bg-[#F0FDF4] text-[#15803D] rounded-xl border border-[#BBF7D0]">
                 <Workflow size={20} />
               </div>
               <div>
@@ -434,19 +433,19 @@ export default function AppInfoGuide() {
 
             <ul className="space-y-2.5 text-xs text-slate-700">
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>Stop Hidden Fee Leakage:</strong> Verify that Razorpay fees (2.0% MDR) and GST (18%) are calculated exactly without overcharging.</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Track Your Real Bank Float:</strong> Know immediately how much money is sitting in your bank account versus what is still in transit ($T+2$).</span>
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
+                <span><strong>Track Your Real Bank Float:</strong> Know immediately how much money is sitting in your bank account versus what is still in transit (T+2).</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>No More Excel Spreadsheets:</strong> Automated 3-way matching replaces hours of manual VLOOKUPs between CSV exports.</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>Plain-English Answers:</strong> Ask questions like <em>"Why was my deposit lower today?"</em> and get clear, instant explanations.</span>
               </li>
             </ul>
@@ -455,7 +454,7 @@ export default function AppInfoGuide() {
           {/* Large Enterprise Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
+              <div className="p-2.5 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
                 <Building2 size={20} />
               </div>
               <div>
@@ -466,19 +465,19 @@ export default function AppInfoGuide() {
 
             <ul className="space-y-2.5 text-xs text-slate-700">
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-indigo-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>Multi-Rail Routing Visibility:</strong> Map inflows across multiple gateways (Razorpay, PayPal) and bank operating accounts (Kotak, HDFC).</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-indigo-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>Ind AS &amp; Statutory Audit Compliance:</strong> Generate certified month-end closing memos and freeze accounting periods with cryptographic logs.</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-indigo-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>Segregation of Duties (SoD):</strong> Prevent internal fraud by strictly separating API key custody from exception resolution permissions.</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-indigo-600 shrink-0 mt-0.5" />
+                <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span><strong>1,000-Trial Monte Carlo Modeling:</strong> Stress-test cash liquidity against delayed payouts and historical exception rates.</span>
               </li>
             </ul>
@@ -492,7 +491,7 @@ export default function AppInfoGuide() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in duration-150">
           
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl w-fit">
+            <div className="p-2 bg-[#F0FDF4] text-[#15803D] rounded-xl w-fit">
               <Layers size={18} />
             </div>
             <h4 className="text-xs font-bold text-slate-900">4-Stage Matching Engine</h4>
@@ -502,7 +501,7 @@ export default function AppInfoGuide() {
           </div>
 
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-amber-50 text-amber-700 rounded-xl w-fit">
+            <div className="p-2 bg-[#FFFBEB] text-[#B45309] rounded-xl w-fit">
               <AlertTriangle size={18} />
             </div>
             <h4 className="text-xs font-bold text-slate-900">AI Exception Root-Cause Agent</h4>
@@ -512,7 +511,7 @@ export default function AppInfoGuide() {
           </div>
 
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-purple-50 text-purple-700 rounded-xl w-fit">
+            <div className="p-2 bg-slate-100 text-slate-800 rounded-xl w-fit">
               <DollarSign size={18} />
             </div>
             <h4 className="text-xs font-bold text-slate-900">Monte Carlo Cash Forecasting</h4>
@@ -522,7 +521,7 @@ export default function AppInfoGuide() {
           </div>
 
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl w-fit">
+            <div className="p-2 bg-[#EFF6FF] text-[#1D4ED8] rounded-xl w-fit">
               <Scale size={18} />
             </div>
             <h4 className="text-xs font-bold text-slate-900">Forensic Integrity Forensics</h4>
@@ -532,7 +531,7 @@ export default function AppInfoGuide() {
           </div>
 
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-blue-50 text-blue-700 rounded-xl w-fit">
+            <div className="p-2 bg-[#FEF2F2] text-[#B91C1C] rounded-xl w-fit">
               <Lock size={18} />
             </div>
             <h4 className="text-xs font-bold text-slate-900">Continuous Month-End Close</h4>
@@ -542,8 +541,8 @@ export default function AppInfoGuide() {
           </div>
 
           <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-            <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl w-fit">
-              <Sparkles size={18} />
+            <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl w-fit font-mono font-bold text-xs">
+              F
             </div>
             <h4 className="text-xs font-bold text-slate-900">Fino — AI Copilot</h4>
             <p className="text-[11px] text-slate-600 leading-relaxed">
@@ -558,16 +557,16 @@ export default function AppInfoGuide() {
       {activeSection === 'roadmap' && (
         <div className="space-y-5 animate-in fade-in duration-150">
           
-          {/* Light Theme Roadmap Note (NO DARK BLUE) */}
-          <div className="bg-indigo-50/70 border-2 border-indigo-200 rounded-2xl p-6 shadow-xs space-y-3">
+          {/* Light Theme Roadmap Note */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Compass size={18} className="text-indigo-700" />
-                <h4 className="text-sm font-bold text-indigo-950 uppercase tracking-wider">
+                <Compass size={18} className="text-slate-800" />
+                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Future Direction &amp; Roadmap Note
                 </h4>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-200/70 text-indigo-900 rounded-full">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-200 text-slate-800 rounded-full">
                 Roadmap Note
               </span>
             </div>

@@ -15,13 +15,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     switch (variant) {
       case 'primary':
-        variantStyles = 'bg-[#5B45F5] text-white hover:bg-[#4C35E8] shadow-xs';
+        variantStyles = 'bg-[#1E293B] text-white hover:bg-[#0F172A] shadow-xs';
         break;
       case 'secondary':
         variantStyles = 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-xs';
         break;
       case 'danger':
-        variantStyles = 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] hover:bg-[#FEE2E2] shadow-xs';
+        variantStyles = 'bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] hover:bg-[#FEE2E2] shadow-xs';
         break;
       case 'ghost':
         variantStyles = 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100';
@@ -47,7 +47,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-150 ease-out active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variantStyles} ${sizeStyles} ${className}`}
+        className={`inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-150 ease-out active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#1E293B]/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variantStyles} ${sizeStyles} ${className}`}
         {...props}
       >
         {children}

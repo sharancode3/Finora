@@ -6,7 +6,6 @@ import {
   Lock, 
   ShieldCheck, 
   FileText, 
-  Sparkles, 
   AlertCircle, 
   AlertTriangle,
   ArrowRight, 
@@ -25,7 +24,10 @@ import {
   Check,
   X,
   FileEdit,
-  Download
+  Download,
+  Play,
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
@@ -33,6 +35,8 @@ import { AIInsightCard } from '../components/ui/AIInsightCard';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useAI } from '../context/AIContext';
+import { useTheme } from '../context/ThemeContext';
+import { AskableMetric } from '../components/ui/AskableMetric';
 
 interface Step {
   id: number;
@@ -45,6 +49,7 @@ interface Step {
 
 export default function MonthEndClose() {
   const { setPageContext, setIsReconciliationModalOpen, setReconciliationTargetScope } = useAI();
+  const { isDark, colors, chartColors } = useTheme();
   const [targetMonth, setTargetMonth] = useState('2026-08');
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<any>(null);
@@ -252,16 +257,16 @@ export default function MonthEndClose() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Continuous Accounting & Close
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
+              Continuous Accounting &amp; Close
             </span>
             {isLocked && (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                <Lock size={12} /> Period Locked & Closed
+                <Lock size={12} /> Period Locked &amp; Closed
               </span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-2">Month-End Close & Continuous Audit</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-2">Month-End Close &amp; Continuous Audit</h1>
           <p className="text-slate-600 mt-1 max-w-2xl text-sm">
             Daily close readiness tracking, grounded period-over-period AI comparison, and pre-lock statutory controls under Ind AS requirements.
           </p>
@@ -271,9 +276,9 @@ export default function MonthEndClose() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleDraftClosingMemo}
-            className="inline-flex items-center gap-1.5 bg-[#5B45F5] hover:bg-[#4C35E8] text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-[#1E293B] hover:bg-[#0F172A] text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-colors cursor-pointer"
           >
-            <Sparkles size={14} /> Draft Closing Memo
+            <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div> Draft Closing Memo
           </button>
 
           <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-1.5 shadow-xs">
@@ -298,7 +303,7 @@ export default function MonthEndClose() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-slate-900">Daily Close-Readiness Progression</h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#ECFDF3] text-[#16A34A] rounded-md border border-[#BBF7D0]">
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]">
                 Continuous Accounting
               </span>
             </div>
@@ -309,7 +314,7 @@ export default function MonthEndClose() {
 
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 self-start sm:self-auto">
             <span className="text-xs font-bold text-slate-500">Readiness Score:</span>
-            <span className="text-base font-mono font-extrabold text-[#16A34A]">{readinessScore}%</span>
+            <span className="text-base font-mono font-extrabold text-[#15803D]">{readinessScore}%</span>
             <span className="text-[11px] text-slate-400">({readyDays}/{totalDays} days &gt;95% SLA)</span>
           </div>
         </div>
@@ -318,15 +323,21 @@ export default function MonthEndClose() {
         <div className="h-44 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyReadiness} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="date" tickFormatter={(v) => v.split('-')[2]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-              <YAxis domain={[75, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v) => `${v}%`} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#262D38" : "#f1f5f9"} />
+              <XAxis dataKey="date" tickFormatter={(v) => v.split('-')[2]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} />
+              <YAxis domain={[75, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#94a3b8' }} tickFormatter={(v) => `${v}%`} />
               <Tooltip 
                 formatter={(val: any) => [`${val}%`, 'Cumulative MTD Close Readiness']}
                 labelFormatter={(label) => `Date: ${label}`}
-                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ 
+                  backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                  borderRadius: '12px', 
+                  border: `1px solid ${isDark ? '#262D38' : '#e2e8f0'}`, 
+                  color: isDark ? '#F3F4F6' : '#111827',
+                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                }}
               />
-              <Area type="monotone" dataKey="match_rate" stroke="#16A34A" strokeWidth={2} fill="#16A34A" fillOpacity={0.15} />
+              <Area type="monotone" dataKey="match_rate" stroke={isDark ? "#4ADE80" : "#15803D"} strokeWidth={2} fill={isDark ? "#4ADE80" : "#15803D"} fillOpacity={isDark ? 0.25 : 0.15} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -336,13 +347,13 @@ export default function MonthEndClose() {
       <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xs border border-slate-200 space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
-              <Sparkles size={20} />
+            <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-white flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-xs">
+              F
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-slate-900">Grounded Period Close Intelligence</h3>
-                <span className="text-[10px] font-bold text-[#16A34A] bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                <span className="text-[10px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
                   Confidence: {metrics?.confidence || 'HIGH'} ({metrics?.confidence_score || 0.98})
                 </span>
               </div>
@@ -368,7 +379,9 @@ export default function MonthEndClose() {
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Volume</p>
               <p className="text-xl font-bold text-slate-900 mt-1">
-                <AmountDisplay amount={current.volume || 0} animated={true} />
+                <AskableMetric label="Gross Processed Volume" value={current.volume || 0} context={`close period ${targetMonth}`}>
+                  <AmountDisplay amount={current.volume || 0} animated={true} />
+                </AskableMetric>
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 {prev?.has_data || (prev?.volume > 0) ? `vs ₹${(prev.volume || 0).toLocaleString('en-IN')} prior` : 'No prior period data loaded'}
@@ -379,15 +392,17 @@ export default function MonthEndClose() {
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Exceptions</p>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-xl font-bold text-slate-900 font-mono">
-                  <AnimatedNumber value={current.exceptions_total || 0} duration={600} />
+                  <AskableMetric label="Total Open Exceptions" value={current.exceptions_total || 0} context={`close period ${targetMonth}`}>
+                    <AnimatedNumber value={current.exceptions_total || 0} duration={600} />
+                  </AskableMetric>
                 </span>
                 {prev?.has_data || (prev?.exceptions_total > 0) ? (
                   (current.exceptions_total || 0) <= (prev.exceptions_total || 0) ? (
-                    <span className="text-xs text-[#16A34A] font-bold flex items-center">
+                    <span className="text-xs text-[#15803D] font-bold flex items-center">
                       <TrendingDown size={14} className="mr-0.5" /> {(prev.exceptions_total || 0) - (current.exceptions_total || 0)} fewer
                     </span>
                   ) : (
-                    <span className="text-xs text-[#DC2626] font-bold flex items-center">
+                    <span className="text-xs text-[#B91C1C] font-bold flex items-center">
                       <TrendingUp size={14} className="mr-0.5" /> {(current.exceptions_total || 0) - (prev.exceptions_total || 0)} more
                     </span>
                   )
@@ -402,9 +417,11 @@ export default function MonthEndClose() {
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Resolution Speed</p>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-xl font-bold text-slate-900 font-mono">
-                  <AnimatedNumber value={current.avg_resolution_days || 2.1} format={v => `${v.toFixed(1)}d`} duration={600} />
+                  <AskableMetric label="Average Resolution Speed" value={`${current.avg_resolution_days || 2.1} days`} context={`close period ${targetMonth}`}>
+                    <AnimatedNumber value={current.avg_resolution_days || 2.1} format={v => `${v.toFixed(1)}d`} duration={600} />
+                  </AskableMetric>
                 </span>
-                <span className="text-xs text-[#16A34A] font-bold flex items-center">
+                <span className="text-xs text-[#15803D] font-bold flex items-center">
                   <Clock size={13} className="mr-0.5" /> Historical avg
                 </span>
               </div>
@@ -415,8 +432,10 @@ export default function MonthEndClose() {
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory Match Rate</p>
-              <p className="text-xl font-bold text-[#16A34A] mt-1 font-mono">
-                <AnimatedNumber value={current.match_rate || 97.7} format={v => `${v.toFixed(1)}%`} duration={600} />
+              <p className="text-xl font-bold text-[#15803D] mt-1 font-mono">
+                <AskableMetric label="Statutory Value Match Rate" value={`${(current.match_rate || 97.7).toFixed(1)}%`} context={`close period ${targetMonth}`}>
+                  <AnimatedNumber value={current.match_rate || 97.7} format={v => `${v.toFixed(1)}%`} duration={600} />
+                </AskableMetric>
               </p>
               <p className="text-xs text-slate-500 mt-1">Statutory Format: Ind AS–aligned</p>
             </div>
@@ -487,18 +506,18 @@ export default function MonthEndClose() {
                               setReconciliationTargetScope(targetMonth);
                               setIsReconciliationModalOpen(true);
                             }}
-                            className="text-[11px] font-bold text-[#5B45F5] hover:text-[#4C35E8] flex items-center gap-1 cursor-pointer"
+                            className="text-[11px] font-bold text-[#1E293B] hover:text-[#0F172A] flex items-center gap-1 cursor-pointer"
                           >
-                            <Sparkles size={12} /> Execute Reconciliation Run
+                            <Play size={12} fill="currentColor" /> Execute Reconciliation Run
                           </button>
                         )}
 
                         {step.id === 4 && (
                           <button
                             onClick={handleDraftClosingMemo}
-                            className="text-[11px] font-bold text-[#5B45F5] hover:text-[#4C35E8] flex items-center gap-1 cursor-pointer"
+                            className="text-[11px] font-bold text-[#1E293B] hover:text-[#0F172A] flex items-center gap-1 cursor-pointer"
                           >
-                            <Sparkles size={12} /> Draft Closing Memo
+                            <FileEdit size={12} /> Draft Closing Memo
                           </button>
                         )}
                       </div>
@@ -542,9 +561,9 @@ export default function MonthEndClose() {
                       <span className="font-bold text-slate-800 text-[11px]">{chk.title}</span>
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
                         isPass || isSigned 
-                          ? 'bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]' 
+                          ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' 
                           : isActionReq
-                            ? 'bg-[#FFF7ED] text-[#D97706] border border-[#FED7AA]'
+                            ? 'bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]'
                             : 'bg-[#F1F5F9] text-[#64748B]'
                       }`}>
                         {isPass || isSigned ? 'PASS' : isActionReq ? 'ACTION REQUIRED' : 'PENDING'}
@@ -560,22 +579,22 @@ export default function MonthEndClose() {
                       {!isPass && (
                         <button
                           onClick={() => handleChecklistAssistance(chk.id)}
-                          className="text-indigo-600 hover:text-indigo-800 font-sans font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                          className="text-slate-700 hover:text-slate-900 font-sans font-bold text-[11px] flex items-center gap-1 cursor-pointer"
                         >
-                          <Sparkles size={11} /> {detail ? 'Hide Guidance' : "What's needed?"}
+                          <HelpCircle size={12} /> {detail ? 'Hide Guidance' : "What's needed?"}
                         </button>
                       )}
                     </div>
 
                     {/* What's Needed AI Inline Expansion */}
                     {detail && (
-                      <div className="p-3.5 bg-indigo-50/70 text-slate-900 border border-indigo-200 rounded-xl space-y-2.5 animate-in fade-in duration-150 shadow-xs">
-                        <div className="flex items-center justify-between text-xs text-indigo-950 font-bold">
+                      <div className="p-3.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl space-y-2.5 animate-in fade-in duration-150 shadow-xs">
+                        <div className="flex items-center justify-between text-xs text-slate-900 font-bold">
                           <span className="flex items-center gap-1.5">
-                            <Sparkles size={14} className="text-indigo-600" />
-                            Grounded Checklist Audit Guidance
+                            <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
+                            Checklist Audit Guidance
                           </span>
-                          <span className="text-[10px] font-mono bg-white text-indigo-900 px-2 py-0.5 rounded border border-indigo-200 font-bold">
+                          <span className="text-[10px] font-mono bg-white text-slate-800 px-2 py-0.5 rounded border border-slate-200 font-bold">
                             {detail.blocking_items?.length || 0} Blocking Items
                           </span>
                         </div>
@@ -585,7 +604,7 @@ export default function MonthEndClose() {
                         </p>
 
                         {detail.blocking_items && detail.blocking_items.length > 0 && (
-                          <div className="space-y-1.5 pt-1.5 border-t border-indigo-200/80">
+                          <div className="space-y-1.5 pt-1.5 border-t border-slate-200">
                             <div className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">
                               Specific Exception Records:
                             </div>
@@ -593,7 +612,7 @@ export default function MonthEndClose() {
                               {detail.blocking_items.map((item: any) => (
                                 <div key={item.exception_id} className="p-2 bg-white rounded border border-slate-200 flex items-center justify-between text-xs shadow-xs">
                                   <div>
-                                    <span className="font-mono font-bold text-indigo-900">{item.exception_id}</span>
+                                    <span className="font-mono font-bold text-slate-900">{item.exception_id}</span>
                                     <span className="text-slate-500 ml-1.5">({item.reason_label})</span>
                                   </div>
                                   <span className="font-mono font-bold text-slate-900">₹{item.amount.toLocaleString('en-IN')}</span>
@@ -613,7 +632,7 @@ export default function MonthEndClose() {
           {/* Human Review & Sign-Off Gate */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
             <div className="flex items-center gap-2 text-slate-900 font-bold mb-3">
-              <UserCheck size={18} className="text-indigo-600" />
+              <UserCheck size={18} className="text-[#1E293B]" />
               <h3 className="text-sm">Controller Sign-Off</h3>
             </div>
             
@@ -629,12 +648,12 @@ export default function MonthEndClose() {
                     placeholder="e.g. Rahul Sharma, Chartered Accountant"
                     value={signerName}
                     onChange={e => setSignerName(e.target.value)}
-                    className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-[#1E293B] hover:bg-[#0F172A] text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <UserCheck size={14} /> Authorize & Sign Off
                 </button>
@@ -682,26 +701,26 @@ export default function MonthEndClose() {
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-900 font-bold">
-                <FileText size={18} className="text-indigo-600" />
+                <FileText size={18} className="text-[#1E293B]" />
                 <h3 className="text-sm">Close Audit Package</h3>
               </div>
               <button
                 onClick={handleDraftClosingMemo}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[#1E293B] hover:text-[#0F172A] flex items-center gap-1.5 cursor-pointer"
               >
-                <Sparkles size={13} /> Draft Memo
+                <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div> Draft Memo
               </button>
             </div>
             
             <p className="text-xs text-slate-500 leading-relaxed">
-              Export verified journal vouchers, Ind AS exception audit logs, and drafted closing memorandum.
+              Export verified journal vouchers, statutory exception audit logs, and drafted closing memorandum.
             </p>
 
             <button 
               disabled={!isLocked}
               className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all border ${
                 isLocked
-                  ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-600 shadow-xs cursor-pointer'
+                  ? 'bg-[#1E293B] hover:bg-[#0F172A] text-white border-[#1E293B] shadow-xs cursor-pointer'
                   : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
               }`}
             >
@@ -721,18 +740,18 @@ export default function MonthEndClose() {
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-[#5B45F5] text-white rounded-xl shadow-xs">
+                <div className="p-2 bg-[#1E293B] text-white rounded-xl shadow-xs">
                   <FileEdit size={18} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-slate-900">AI-Drafted Statutory Closing Memorandum</h3>
+                    <h3 className="text-sm font-bold text-slate-900">Statutory Closing Memorandum</h3>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
                       memoData?.period_status?.includes('READY TO LOCK')
-                        ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]'
+                        ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
                         : memoData?.period_status?.includes('PARTIALLY')
-                        ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]'
-                        : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                        ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]'
+                        : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
                     }`}>
                       {memoData?.period_status || 'DRAFT — FOR CONTROLLER REVIEW'}
                     </span>
@@ -767,27 +786,27 @@ export default function MonthEndClose() {
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Value Match Rate</span>
-                    <span className="font-mono font-bold text-[#5B45F5] text-xs">{memoData.raw_figures.match_rate}%</span>
+                    <span className="font-mono font-bold text-slate-900 text-xs">{memoData.raw_figures.match_rate}%</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Open Blockers</span>
-                    <span className="font-mono font-bold text-[#DC2626] text-xs">
+                    <span className="font-mono font-bold text-[#B91C1C] text-xs">
                       {memoData.raw_figures.open_exceptions_count} items (₹{memoData.raw_figures.open_exceptions_volume?.toLocaleString('en-IN')})
                     </span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Close Readiness</span>
-                    <span className="font-mono font-bold text-[#16A34A] text-xs">{memoData.raw_figures.readiness_score?.toFixed(0)}%</span>
+                    <span className="font-mono font-bold text-[#15803D] text-xs">{memoData.raw_figures.readiness_score?.toFixed(0)}%</span>
                   </div>
                 </div>
               )}
 
               {/* Controller Recommendation Banner */}
               {memoData?.controller_recommendation && (
-                <div className="p-3 bg-[#EEEBFF]/60 border border-[#DDD7FE] rounded-xl flex items-start gap-2.5">
-                  <ShieldCheck size={16} className="text-[#5B45F5] shrink-0 mt-0.5" />
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2.5">
+                  <ShieldCheck size={16} className="text-[#15803D] shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-[#5B45F5] block text-[11px] uppercase tracking-wider">Controller Recommendation:</span>
+                    <span className="font-bold text-[#15803D] block text-[11px] uppercase tracking-wider">Controller Recommendation:</span>
                     <p className="text-slate-800 font-medium leading-relaxed mt-0.5">{memoData.controller_recommendation}</p>
                   </div>
                 </div>
@@ -798,7 +817,7 @@ export default function MonthEndClose() {
                 <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                      <AlertTriangle size={13} className="text-[#D97706]" />
+                      <AlertTriangle size={13} className="text-[#B45309]" />
                       Unresolved Discrepancies Requiring Clearance ({memoData.unresolved_blockers.length} Items)
                     </span>
                     <span className="text-[10px] text-slate-400 font-medium">Must be cleared or authorized prior to freeze</span>
@@ -811,7 +830,7 @@ export default function MonthEndClose() {
                           <span className="font-mono font-bold text-slate-800 block">{b.transaction_id !== 'N/A' ? b.transaction_id : b.exception_id}</span>
                           <span className="text-[10px] text-slate-500">{b.reason}</span>
                         </div>
-                        <span className="font-mono font-bold text-[#DC2626]">
+                        <span className="font-mono font-bold text-[#B91C1C]">
                           ₹{b.amount?.toLocaleString('en-IN')}
                         </span>
                       </div>
@@ -832,7 +851,7 @@ export default function MonthEndClose() {
                 </div>
                 {loadingMemo ? (
                   <div className="p-10 flex flex-col items-center justify-center text-slate-400 gap-2">
-                    <Sparkles size={20} className="text-[#5B45F5] animate-spin" />
+                    <Loader2 size={20} className="text-[#1E293B] animate-spin" />
                     <span>Synthesizing verified ledger numbers into formal closing memorandum...</span>
                   </div>
                 ) : (
@@ -840,7 +859,7 @@ export default function MonthEndClose() {
                     rows={12}
                     value={memoText}
                     onChange={(e) => setMemoText(e.target.value)}
-                    className="w-full p-4 bg-slate-50 text-slate-900 font-mono text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#5B45F5] leading-relaxed selection:bg-indigo-100"
+                    className="w-full p-4 bg-slate-50 text-slate-900 font-mono text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1E293B] leading-relaxed selection:bg-slate-200"
                   />
                 )}
               </div>
@@ -854,7 +873,7 @@ export default function MonthEndClose() {
                   <div className="space-y-1 text-[11px]">
                     {memoData.evidence_trail.map((st: any, sIdx: number) => (
                       <div key={sIdx} className="flex items-start gap-2 text-slate-600">
-                        <span className="font-mono font-bold text-[#5B45F5]">[{st.step_number || (sIdx + 1)}] {st.tool}:</span>
+                        <span className="font-mono font-bold text-[#1E293B]">[{st.step_number || (sIdx + 1)}] {st.tool}:</span>
                         <span>{st.observation}</span>
                       </div>
                     ))}
@@ -874,7 +893,7 @@ export default function MonthEndClose() {
                   onClick={handleCopyMemo}
                   className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
                 >
-                  {copiedMemo ? <Check size={14} className="text-[#16A34A]" /> : <Copy size={14} />}
+                  {copiedMemo ? <Check size={14} className="text-[#15803D]" /> : <Copy size={14} />}
                   {copiedMemo ? 'Copied to Clipboard' : 'Copy Memo'}
                 </button>
 
@@ -894,7 +913,7 @@ export default function MonthEndClose() {
 
                 <button
                   onClick={() => setShowMemoModal(false)}
-                  className="px-4 py-2 bg-[#5B45F5] hover:bg-[#4C35E8] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
+                  className="px-4 py-2 bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
                 >
                   Save Draft &amp; Return
                 </button>

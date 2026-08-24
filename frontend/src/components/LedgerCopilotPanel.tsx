@@ -1,15 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
-  Sparkles, X, Send, RotateCcw, ChevronDown, ChevronUp, 
-  ShieldCheck, AlertTriangle, CheckCircle, Database, HelpCircle,
-  Activity, ArrowRight, Loader2, Calendar, Lock, CheckCircle2
+  X, Send, RotateCcw, ChevronDown, ChevronUp, 
+  AlertTriangle, CheckCircle, Database,
+  ArrowRight, Loader2, Calendar, CheckCircle2,
+  BookOpen, HelpCircle, ShieldCheck
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
+import { useTheme } from '../context/ThemeContext';
+import { FormattedMarkdown } from './ui/FormattedMarkdown';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
 
 export const LedgerCopilotPanel: React.FC = () => {
   const location = useLocation();
+  const { isDark } = useTheme();
   const { 
     messages, 
     sendMessage, 
@@ -38,7 +42,7 @@ export const LedgerCopilotPanel: React.FC = () => {
     }
   }, [isCopilotOpen]);
 
-  // Handle escape key to close panel
+  // Keyboard shortcut: Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isCopilotOpen) {
@@ -51,101 +55,90 @@ export const LedgerCopilotPanel: React.FC = () => {
 
   if (isExcludedRoute) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputQuestion.trim() || isLoading) return;
-    const q = inputQuestion.trim();
+    sendMessage(inputQuestion);
     setInputQuestion('');
-    try {
-      await sendMessage(q);
-    } catch (err) {
-      console.error(err);
-    }
   };
 
-  const handleSuggestedClick = async (q: string) => {
-    if (isLoading) return;
-    try {
-      await sendMessage(q);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleSuggestedClick = (question: string) => {
+    sendMessage(question);
   };
 
-  const toggleReasoning = (msgIndex: number) => {
+  const toggleReasoning = (idx: number) => {
     setExpandedReasoningMap(prev => ({
       ...prev,
-      [msgIndex]: !prev[msgIndex]
+      [idx]: !prev[idx]
     }));
   };
 
-  // Resolve active scope from localStorage
   const getActiveScope = () => {
-    try {
-      const stored = localStorage.getItem('finora_dashboard_range');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return `${parsed.start} to ${parsed.end}`;
-      }
-    } catch (e) {}
-    return 'Aug 01, 2026 to Aug 31, 2026';
+    if (!pageContext) return 'All Accounts (August 2026)';
+    const accountName = pageContext.account_id && pageContext.account_id !== 'all'
+      ? pageContext.account_id
+      : 'All Accounts';
+    const dates = pageContext.date_range 
+      ? `${pageContext.date_range.start} → ${pageContext.date_range.end}`
+      : 'Aug 1, 2026 – Aug 31, 2026';
+    return `${accountName} (${dates})`;
   };
 
-  // Dynamic context-aware suggested questions based on active route
+  // Dynamic context-aware suggested inquiries per page
   const getPageSuggestedQuestions = () => {
-    if (pageContext?.suggested_inquiries && pageContext.suggested_inquiries.length > 0) {
-      return pageContext.suggested_inquiries.slice(0, 4);
-    }
-
     const path = location.pathname;
-    if (path.includes('/exceptions')) {
+    if (path.includes('dashboard')) {
       return [
-        "Which exception has the highest composite risk score?",
-        "Explain the largest fee discrepancy in the queue",
-        "Why did exception exc_c4c2b81321b9 occur?",
-        "Show open exceptions with aging over 3 days"
-      ];
-    } else if (path.includes('/cash-position')) {
-      return [
-        "Why did the 7-day forecast change?",
-        "What is the cash impact if settlements are delayed by 3 days?",
-        "How much cash is trapped in open exceptions?",
-        "Explain our settlement transit latency (DSO)"
-      ];
-    } else if (path.includes('/month-end-close')) {
-      return [
-        "What's needed to clear open suspense items?",
-        "Draft the August 2026 month-end closing memo",
-        "Are all 5 statutory checklist pillars passing?",
-        "Explain the period-over-period delta variance"
-      ];
-    } else if (path.includes('/accounts') || path.includes('/linked-accounts')) {
-      return [
-        "Why did Kotak receive more volume than HDFC?",
-        "Which account did PayPal settle to and how much?",
-        "Are all gateway and bank feeds syncing on schedule?",
-        "What is the reconciliation status across active rails?"
-      ];
-    } else if (path.includes('/record/')) {
-      return [
-        "Run full 4-factor root-cause investigation",
-        "Verify contract MDR rate (2.0%) against actual charge",
-        "Explain the T+2 bank transit timing",
-        "What is the recommended resolution action?"
-      ];
-    } else if (path.includes('/settings')) {
-      return [
-        "Explain Segregation of Duties conflicts between Exception Resolution and API Keys",
-        "Where and how is AI used in Finora?",
-        "What notification triggers are recommended for controllers?"
+        "Why is our statutory match rate at its current level?",
+        "Breakdown the ₹16.5k trapped in open exceptions",
+        "Summarize today's controller briefing and anomalies"
       ];
     }
-
-    // Default for Dashboard and others
+    if (path.includes('reconciliation')) {
+      return [
+        "Explain the discrepancy in transaction txn_82ad02738858",
+        "Why did Razorpay batch PAY-00289 have an MDR fee variance?",
+        "What are the un-reconciled items in August 2026?"
+      ];
+    }
+    if (path.includes('exceptions')) {
+      return [
+        "Why are 3 fee variances clustered together?",
+        "What is the root cause of the missing bank credit items?",
+        "Recommend resolution actions for the open queue"
+      ];
+    }
+    if (path.includes('cash-position')) {
+      return [
+        "Explain the deduction gap between gross volume and net cash",
+        "What is the projected cash impact if settlements delay by 3 days?",
+        "Breakdown the ₹29.1k in-transit float calculation"
+      ];
+    }
+    if (path.includes('month-end-close')) {
+      return [
+        "What are the outstanding blockers preventing August close?",
+        "Draft the executive month-end closing memo",
+        "Explain the Benford's Law forensic flag on digit 5"
+      ];
+    }
+    if (path.includes('record')) {
+      return [
+        "Investigate the 4-factor root cause for this specific record",
+        "Compare the internal order vs payment gateway deduction",
+        "What is the recommended reason code to resolve this exception?"
+      ];
+    }
+    if (path.includes('linked-accounts') || path.includes('settings')) {
+      return [
+        "What is wrong with the HDFC Corporate Current Feed?",
+        "Explain Segregation of Duties conflicts in our configuration",
+        "How are API keys and gateway webhooks secured?"
+      ];
+    }
     return [
-      "What is my statutory value match rate and settled amount?",
-      "Summarize today's controller briefing",
-      "Check our Benford forensic status and anomaly outliers",
+      "What is our statutory value match rate for August 2026?",
+      "Summarize current open exceptions by severity",
       "Where and how is AI used in Finora?"
     ];
   };
@@ -154,34 +147,35 @@ export const LedgerCopilotPanel: React.FC = () => {
 
   return (
     <>
-      {/* 1. PERSISTENT, CALM "ASK CONTROLLER" TRIGGER BUTTON */}
+      {/* 1. PERSISTENT "ASK CONTROLLER" TRIGGER BUTTON */}
       {!isCopilotOpen && (
         <button
           onClick={() => setIsCopilotOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-150 ease-out border border-slate-200 hover:border-[#5B45F5]/40 group"
+          className="fixed bottom-6 right-6 z-40 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-150 ease-out border border-[#E4E4E7] hover:border-slate-300 group"
           title="Open Ask Controller Panel"
         >
-          <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" />
-          <Sparkles size={14} className="text-[#5B45F5]" />
-          <span className="text-xs font-semibold text-slate-800">Ask Controller</span>
+          <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center text-[9px] font-mono font-bold shrink-0">
+            F
+          </div>
+          <span className="text-xs font-semibold text-slate-900">Ask Controller</span>
         </button>
       )}
 
       {/* 2. GLOBAL SLIDE-OVER AI SIDE PANEL */}
       {isCopilotOpen && (
-        <div className="fixed top-0 right-0 h-full w-[440px] max-w-[95vw] bg-white border-l border-slate-200 z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200 ease-out">
+        <div className="fixed top-0 right-0 h-full w-[440px] max-w-[95vw] bg-white border-l border-[#E4E4E7] z-50 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200 ease-out">
           
           {/* Top Bar Header */}
-          <div className="p-4 border-b border-slate-200 bg-slate-50/90 flex items-center justify-between">
+          <div className="p-4 border-b border-[#E4E4E7] bg-slate-50/90 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#EEEBFF] border border-[#DDD7FE] flex items-center justify-center text-[#5B45F5] shrink-0 relative shadow-2xs">
-                <Sparkles size={16} />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#16A34A] border border-white" />
+              <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-white flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-xs relative">
+                F
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#15803D] border border-white" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino • AI Controller</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE] font-mono">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] font-mono">
                     Grounded
                   </span>
                 </div>
@@ -207,18 +201,18 @@ export const LedgerCopilotPanel: React.FC = () => {
             </div>
           </div>
 
-          {/* ACTIVE AGENT CONTEXT CARD (Reusing Ask Your Books Pattern) */}
-          <div className="p-3.5 bg-slate-50 border-b border-slate-200/80 space-y-2 text-xs">
+          {/* ACTIVE AGENT CONTEXT CARD */}
+          <div className="p-3.5 bg-slate-50 border-b border-[#E4E4E7] space-y-2 text-xs">
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <span className="flex items-center gap-1.5 text-slate-700">
-                <Calendar size={12} className="text-[#5B45F5]" /> Active Agent Context
+                <Calendar size={12} className="text-[#1E293B]" /> Active Agent Context
               </span>
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0] flex items-center gap-1">
+              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0] flex items-center gap-1">
                 <CheckCircle2 size={10} /> Ind AS Grounded
               </span>
             </div>
 
-            <div className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-1.5 text-[11px]">
+            <div className="p-2.5 bg-white rounded-xl border border-[#E4E4E7] space-y-1.5 text-[11px]">
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Current View:</span>
                 <span className="font-bold text-slate-900 truncate max-w-[210px]">
@@ -234,7 +228,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               {pageContext?.visible_metrics && Object.keys(pageContext.visible_metrics).length > 0 && (
                 <div className="flex justify-between items-center pt-1 border-t border-slate-100">
                   <span className="text-slate-500">Live State:</span>
-                  <span className="font-semibold text-[#5B45F5] font-mono text-[10px] truncate max-w-[210px]">
+                  <span className="font-semibold text-[#1E293B] font-mono text-[10px] truncate max-w-[210px]">
                     {Object.entries(pageContext.visible_metrics).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(' • ')}
                   </span>
                 </div>
@@ -254,10 +248,10 @@ export const LedgerCopilotPanel: React.FC = () => {
                     key={idx}
                     onClick={() => handleSuggestedClick(inq)}
                     disabled={isLoading}
-                    className="text-left text-xs bg-slate-50 hover:bg-[#EEEBFF]/60 text-slate-700 hover:text-[#5B45F5] p-2.5 rounded-xl border border-slate-200 hover:border-[#DDD7FE] transition-colors duration-150 ease-out shadow-2xs flex items-center justify-between group cursor-pointer"
+                    className="text-left text-xs bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 p-2.5 rounded-xl border border-[#E4E4E7] hover:border-slate-300 transition-colors duration-150 ease-out shadow-2xs flex items-center justify-between group cursor-pointer"
                   >
                     <span className="truncate font-medium">{inq}</span>
-                    <ArrowRight size={12} className="text-slate-400 group-hover:text-[#5B45F5] transition-colors shrink-0 ml-1.5" />
+                    <ArrowRight size={12} className="text-slate-400 group-hover:text-slate-900 transition-colors shrink-0 ml-1.5" />
                   </button>
                 ))}
               </div>
@@ -268,8 +262,8 @@ export const LedgerCopilotPanel: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-slate-400">
-                <div className="w-12 h-12 rounded-2xl bg-[#EEEBFF] text-[#5B45F5] flex items-center justify-center border border-[#DDD7FE]">
-                  <Sparkles size={22} />
+                <div className="w-12 h-12 rounded-2xl bg-[#F1F5F9] text-[#1E293B] flex items-center justify-center border border-[#E2E8F0] font-mono font-bold text-base">
+                  F
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-slate-700">How can Fino assist your review?</h4>
@@ -285,22 +279,22 @@ export const LedgerCopilotPanel: React.FC = () => {
                 
                 {/* User Message */}
                 {msg.role === 'user' ? (
-                  <div className="bg-[#5B45F5] text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-medium shadow-xs">
+                  <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-medium shadow-xs">
                     {msg.content}
                   </div>
                 ) : (
                   /* AI Grounded Response Card */
-                  <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-4 max-w-full text-xs shadow-xs space-y-3">
+                  <div className="bg-white border border-[#E4E4E7] rounded-2xl rounded-tl-xs p-4 max-w-full text-xs shadow-xs space-y-3">
                     
                     {/* Single Confidence Status Badge in Header */}
                     {msg.metadata?.confidence && !msg.metadata?.is_greeting && (
                       <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
                           msg.metadata?.confidence === 'HIGH' 
-                            ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' 
+                            ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' 
                             : msg.metadata?.confidence === 'MEDIUM'
-                            ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]'
-                            : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                            ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]'
+                            : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
                         }`}>
                           {msg.metadata?.confidence === 'HIGH' ? <CheckCircle size={11} /> : <AlertTriangle size={11} />}
                           Confidence: {msg.metadata?.confidence === 'HIGH' ? 'High' : msg.metadata?.confidence === 'MEDIUM' ? 'Medium' : 'Low'} ({Math.round((msg.metadata?.confidence_score ?? 0.98) * 100)}%)
@@ -310,20 +304,48 @@ export const LedgerCopilotPanel: React.FC = () => {
                     )}
 
                     {/* Grounded Content */}
-                    <div className="text-slate-800 leading-relaxed space-y-2 whitespace-pre-wrap font-normal">
-                      {msg.content.split('\n').map((paragraph, pIdx) => (
-                        <p key={pIdx}>
-                          {paragraph.split('**').map((chunk, cIdx) => 
-                            cIdx % 2 === 1 ? <strong key={cIdx} className="font-bold text-slate-900">{chunk}</strong> : chunk
-                          )}
-                        </p>
-                      ))}
-                    </div>
+                    <FormattedMarkdown content={msg.content} className="text-slate-800" />
+
+                    {/* Curated Finance Knowledge Citation Card */}
+                    {msg.metadata?.knowledge_citation && (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-1.5">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                            <BookOpen size={13} className="text-[#1E293B]" />
+                            <span>{msg.metadata.knowledge_citation.canonical_name}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                            {msg.metadata.knowledge_citation.category}
+                          </span>
+                        </div>
+                        
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          <span>Statutory Standard: </span>
+                          <strong className="text-slate-700">{msg.metadata.knowledge_citation.statutory_reference}</strong>
+                        </div>
+
+                        {/* Related Concepts Quick Click Tags */}
+                        {msg.metadata.knowledge_citation.related_terms && msg.metadata.knowledge_citation.related_terms.length > 0 && (
+                          <div className="pt-1 border-t border-slate-200/60 flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] font-semibold text-slate-500">Related Terms:</span>
+                            {msg.metadata.knowledge_citation.related_terms.map((rt: string, rIdx: number) => (
+                              <button
+                                key={rIdx}
+                                onClick={() => handleSuggestedClick(`What is ${rt.replace(/_/g, ' ')}?`)}
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700 hover:bg-[#1E293B] hover:text-white hover:border-[#1E293B] transition-colors cursor-pointer"
+                              >
+                                {rt.replace(/_/g, ' ')}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Recommended Controller Action Callout */}
                     {msg.metadata?.escalation_recommendation && (
-                      <div className="p-2.5 bg-[#FFF7ED] border border-[#FED7AA] rounded-xl flex items-start gap-2 text-[11px] text-[#D97706]">
-                        <AlertTriangle size={13} className="text-[#D97706] shrink-0 mt-0.5" />
+                      <div className="p-2.5 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl flex items-start gap-2 text-[11px] text-[#B45309]">
+                        <AlertTriangle size={13} className="text-[#B45309] shrink-0 mt-0.5" />
                         <div>
                           <strong className="font-bold block text-slate-900">Recommended Controller Action:</strong>
                           <span className="text-slate-700">{msg.metadata.escalation_recommendation}</span>
@@ -333,7 +355,7 @@ export const LedgerCopilotPanel: React.FC = () => {
 
                     {/* Embedded Mini Chart if visual_data present */}
                     {msg.metadata?.visual_data && (
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+                      <div className="bg-slate-50 border border-[#E4E4E7] rounded-xl p-3 space-y-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
                           {msg.metadata.visual_data.title}
                         </span>
@@ -352,19 +374,37 @@ export const LedgerCopilotPanel: React.FC = () => {
                                   paddingAngle={4}
                                 >
                                   {msg.metadata.visual_data.data.map((entry: any, i: number) => (
-                                    <Cell key={`cell-${i}`} fill={entry.color || '#5B45F5'} />
+                                    <Cell key={`cell-${i}`} fill={entry.color || '#1E293B'} />
                                   ))}
                                 </Pie>
-                                <Tooltip formatter={(val: any) => [`${val}%`, '']} />
+                                <Tooltip 
+                                  formatter={(val: any) => [`${val}%`, '']} 
+                                  contentStyle={{ 
+                                    backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                                    borderRadius: '12px', 
+                                    border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                                    color: isDark ? '#F3F4F6' : '#111827',
+                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                                  }}
+                                />
                               </PieChart>
                             ) : (
                               <BarChart data={msg.metadata.visual_data.data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                                <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <Tooltip formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Value']} />
+                                <XAxis dataKey="name" tick={{ fontSize: 9, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 9, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
+                                <Tooltip 
+                                  formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Value']} 
+                                  contentStyle={{ 
+                                    backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                                    borderRadius: '12px', 
+                                    border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                                    color: isDark ? '#F3F4F6' : '#111827',
+                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                                  }}
+                                />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                   {msg.metadata.visual_data.data.map((entry: any, i: number) => (
-                                    <Cell key={`bar-${i}`} fill={entry.color || '#5B45F5'} />
+                                    <Cell key={`bar-${i}`} fill={entry.color || '#1E293B'} />
                                   ))}
                                 </Bar>
                               </BarChart>
@@ -376,28 +416,28 @@ export const LedgerCopilotPanel: React.FC = () => {
 
                     {/* Inspectable Evidence Trail Accordion */}
                     {((msg.metadata?.evidence_trail || msg.metadata?.reasoning_trail) && (msg.metadata?.evidence_trail || msg.metadata?.reasoning_trail).length > 0) && (
-                      <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/60">
+                      <div className="border border-[#E4E4E7] rounded-xl overflow-hidden bg-slate-50/60">
                         <button
                           onClick={() => toggleReasoning(idx)}
                           className="w-full px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-100 flex items-center justify-between transition-colors cursor-pointer"
                         >
                           <span className="flex items-center gap-1.5">
-                            <Database size={12} className="text-[#5B45F5]" />
+                            <Database size={12} className="text-[#1E293B]" />
                             Show Evidence Trail ({(msg.metadata.evidence_trail || msg.metadata.reasoning_trail).length} tool steps)
                           </span>
                           {expandedReasoningMap[idx] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
                         
                         {expandedReasoningMap[idx] && (
-                          <div className="p-3 border-t border-slate-200 bg-white space-y-2 text-[11px]">
+                          <div className="p-3 border-t border-[#E4E4E7] bg-white space-y-2 text-[11px]">
                             {(msg.metadata.evidence_trail || msg.metadata.reasoning_trail).map((step: any, sIdx: number) => (
                               <div key={sIdx} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                                    <span className="w-4 h-4 rounded-full bg-[#EEEBFF] text-[#5B45F5] text-[9px] flex items-center justify-center font-bold">
+                                    <span className="w-4 h-4 rounded-full bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] text-[9px] flex items-center justify-center font-bold">
                                       {step.step_number || (sIdx + 1)}
                                     </span>
-                                    Tool: <span className="text-[#5B45F5] font-mono">{step.tool || 'query'}</span>
+                                    Tool: <span className="text-[#1E293B] font-mono">{step.tool || 'query'}</span>
                                   </span>
                                   <span className="text-[10px] text-slate-500 font-medium">{step.action}</span>
                                 </div>
@@ -430,8 +470,8 @@ export const LedgerCopilotPanel: React.FC = () => {
             ))}
 
             {isLoading && (
-              <div className="flex items-center gap-2 p-3 bg-[#EEEBFF] text-[#5B45F5] rounded-2xl rounded-tl-xs text-xs font-medium border border-[#DDD7FE] max-w-[85%]">
-                <Loader2 size={14} className="animate-spin text-[#5B45F5]" />
+              <div className="flex items-center gap-2 p-3 bg-[#F1F5F9] text-[#1E293B] rounded-2xl rounded-tl-xs text-xs font-medium border border-[#E2E8F0] max-w-[85%]">
+                <Loader2 size={14} className="animate-spin text-[#1E293B]" />
                 <span>Executing read-only ledger tools &amp; verifier check...</span>
               </div>
             )}
@@ -439,8 +479,8 @@ export const LedgerCopilotPanel: React.FC = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* BOTTOM INPUT & GROUNDING AREA */}
-          <div className="p-3.5 border-t border-slate-200 bg-white space-y-2">
+          {/* BOTTOM INPUT AREA */}
+          <div className="p-3.5 border-t border-[#E4E4E7] bg-white space-y-2">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -449,12 +489,12 @@ export const LedgerCopilotPanel: React.FC = () => {
                 onChange={(e) => setInputQuestion(e.target.value)}
                 placeholder={`Ask Fino about ${pageContext?.page_name || 'this ledger'}...`}
                 disabled={isLoading}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5B45F5] focus:bg-white font-medium transition-all"
+                className="flex-1 bg-slate-50 border border-[#E4E4E7] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1E293B] focus:bg-white font-medium transition-all"
               />
               <button
                 type="submit"
                 disabled={!inputQuestion.trim() || isLoading}
-                className="p-2.5 bg-[#5B45F5] hover:bg-[#4C35E8] disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl shadow-xs transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
+                className="p-2.5 bg-[#1E293B] hover:bg-[#0F172A] disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl shadow-xs transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed"
                 title="Send Query"
               >
                 <Send size={14} />
@@ -463,7 +503,7 @@ export const LedgerCopilotPanel: React.FC = () => {
 
             <div className="px-1 text-[10px] text-slate-500 flex items-center justify-between">
               <span>AI Grounding: verified ledger records with evidence trail</span>
-              <Link to="/ask-your-books" onClick={() => setIsCopilotOpen(false)} className="text-[#5B45F5] hover:underline font-medium">
+              <Link to="/ask-your-books" onClick={() => setIsCopilotOpen(false)} className="text-[#1E293B] hover:underline font-semibold">
                 Full Canvas →
               </Link>
             </div>

@@ -264,7 +264,7 @@ def get_transactions_by_business(business_id: str) -> List[Dict]:
     return _run_query(query, (business_id,))
 
 def get_exceptions_by_date_range(start_date: str, end_date: str, reason: Optional[str] = None, status: Optional[str] = None, account_id: Optional[str] = None) -> List[Dict]:
-    acct_filter = get_account_filter_clause(account_id, table_prefix="e")
+    acct_filter = get_account_filter_clause(account_id, table_prefix="t")
     query = f'''
         SELECT e.*, 
                t.gross_amount as tx_gross,
@@ -362,8 +362,8 @@ def get_exception_by_id(exc_id: str) -> Optional[Dict]:
                t.status as tx_status
         FROM exceptions e 
         LEFT JOIN transactions t ON e.transaction_id = t.transaction_id
-        WHERE e.id = ?
-    ''', (exc_id,))
+        WHERE e.id = ? OR e.transaction_id = ?
+    ''', (exc_id, exc_id))
     if rows:
         row = rows[0]
         ud = {}
@@ -435,10 +435,17 @@ def resolve_exception(
     prev_status = exc.get('status', 'open') if exc else 'open'
     amt_str = f"₹{exc['amount']:,.2f}" if (exc and exc.get('amount')) else ""
     
+    # If reason is an action description like "Applied Fino AI...", preserve root cause as fee_variance_explained
+    clean_reason = reason
+    if "applied fino ai" in (reason or "").lower():
+        clean_reason = "fee_variance_explained"
+    
     _run_query(
-        "UPDATE exceptions SET status = 'resolved', reason = ?, resolution_note = ?, resolved_at = ? WHERE id = ?",
-        (reason, note, now, exc_id)
+        "UPDATE exceptions SET status = 'resolved', resolution_note = ?, resolved_at = ? WHERE id = ? OR transaction_id = ?",
+        (f"Action: {reason}. {note}" if note else f"Action: {reason}", now, actual_id, actual_id)
     )
+    if clean_reason != reason:
+        _run_query("UPDATE exceptions SET reason = ? WHERE (id = ? OR transaction_id = ?) AND reason LIKE '%Applied Fino AI%'", (clean_reason, actual_id, actual_id))
     
     target_label = f"{exc_id} ({amt_str})" if amt_str else exc_id
     record_audit_log(
@@ -447,7 +454,7 @@ def resolve_exception(
         action="Resolved Exception",
         target=target_label,
         previous_value=f"Status: {prev_status}",
-        new_value=f"Status: resolved ({reason})",
+        new_value=f"Status: resolved ({clean_reason})",
         notes=f"Resolution note: {note}" if note else f"Marked explained: {reason}"
     )
 
@@ -462,9 +469,10 @@ def escalate_exception(
     prev_status = exc.get('status', 'open') if exc else 'open'
     amt_str = f"₹{exc['amount']:,.2f}" if (exc and exc.get('amount')) else ""
     
+    actual_id = exc.get('id', exc_id) if exc else exc_id
     _run_query(
-        "UPDATE exceptions SET status = 'escalated', resolution_note = ?, escalated_at = ? WHERE id = ?",
-        (note, now, exc_id)
+        "UPDATE exceptions SET status = 'escalated', resolution_note = ?, escalated_at = ? WHERE id = ? OR transaction_id = ?",
+        (note, now, actual_id, actual_id)
     )
     
     target_label = f"{exc_id} ({amt_str})" if amt_str else exc_id
@@ -633,6 +641,8 @@ def get_cash_position_analytics(start_date: str, end_date: str, account_id: Opti
     summary_statement = f"80% probability available cash lands between ₹{day7_p10:,.2f} and ₹{day7_p90:,.2f} by {day7_date} across 1,000 simulated trials."
     
     fees_with_gst = round(fees + gst, 2)
+    in_transit_float = max(0.0, round(gross - fees - gst - trapped_cash - net, 2))
+
     if trapped_cash >= fees_with_gst and trapped_cash > 0:
         leakage_ai = (
             f"Unsettled in-transit exceptions represent the single largest liquidity deduction at ₹{trapped_cash:,.2f} "
@@ -645,6 +655,21 @@ def get_cash_position_analytics(start_date: str, end_date: str, account_id: Opti
             f"({(fees_with_gst / gross * 100) if gross > 0 else 0:.1f}% of gross volume), followed by trapped exceptions at ₹{trapped_cash:,.2f}."
         )
 
+    waterfall_steps = [
+        {"name": "Gross Collected", "start": 0, "end": gross, "color": "#94a3b8"},
+        {"name": "Gateway MDR Fees", "start": max(0, gross - fees), "end": gross, "color": "#f43f5e"},
+        {"name": "GST on Fees (18%)", "start": max(0, gross - fees - gst), "end": max(0, gross - fees), "color": "#fb923c"},
+        {"name": "Trapped Exceptions", "start": max(0, gross - fees - gst - trapped_cash), "end": max(0, gross - fees - gst), "color": "#f59e0b"}
+    ]
+    if in_transit_float > 0:
+        waterfall_steps.append({
+            "name": "In-Transit Float (T+2)",
+            "start": max(0, net),
+            "end": max(0, gross - fees - gst - trapped_cash),
+            "color": "#3b82f6"
+        })
+    waterfall_steps.append({"name": "Net Settled Cash", "start": 0, "end": net, "color": "#10b981"})
+
     return {
         "dso": {
             "current": round(dso_current, 1),
@@ -656,17 +681,12 @@ def get_cash_position_analytics(start_date: str, end_date: str, account_id: Opti
             "fees": round(fees, 2),
             "gst": round(gst, 2),
             "trapped_exceptions": round(trapped_cash, 2),
+            "in_transit_float": round(in_transit_float, 2),
             "net": round(net, 2),
             "conversion_rate": round((net / gross * 100), 2) if gross > 0 else 0,
             "ai_explanation": leakage_ai
         },
-        "waterfall": [
-            {"name": "Gross Collected", "start": 0, "end": gross, "color": "#94a3b8"},
-            {"name": "Gateway Fees (MDR)", "start": max(0, gross - fees), "end": gross, "color": "#f43f5e"},
-            {"name": "GST on Fees (18%)", "start": max(0, gross - fees - gst), "end": max(0, gross - fees), "color": "#fb923c"},
-            {"name": "Trapped Exceptions", "start": max(0, gross - fees - gst - trapped_cash), "end": max(0, gross - fees - gst), "color": "#f59e0b"},
-            {"name": "Net Settled Cash", "start": 0, "end": net, "color": "#10b981"}
-        ],
+        "waterfall": waterfall_steps,
         "anomaly": anomaly,
         "monte_carlo": {
             "trials_count": N_TRIALS,
@@ -1349,23 +1369,29 @@ def get_exception_intelligence(start_date: str = "2026-03-01", end_date: str = "
     for reason, items in clusters_by_reason.items():
         if len(items) >= 1:
             total_cluster_amount = sum(it['amount'] for it in items)
+            item_cnt = len(items)
+            tx_word = "transaction" if item_cnt == 1 else "transactions"
+            exc_word = "Exception" if item_cnt == 1 else "Exceptions"
             
             # Format readable reason
             readable_reason = reason.replace('_', ' ').title()
             
             if reason == 'fee_variance':
-                insight = f"Systemic Gateway Fee Variance: {len(items)} transactions totaling ₹{total_cluster_amount:,.2f} share an irregular fee deduction (~4.2% vs 2.0% MDR contract). Recommend updating gateway rate schedule."
+                insight = f"Systemic Gateway Fee Variance: {item_cnt} {tx_word} totaling ₹{total_cluster_amount:,.2f} share an irregular fee deduction (~4.2% vs 2.0% MDR contract). Recommend updating gateway rate schedule."
             elif reason == 'no_bank_credit_found':
-                insight = f"Delayed Gateway Settlement Batch: {len(items)} transactions totaling ₹{total_cluster_amount:,.2f} have pending bank UTR credits across adjacent transit windows."
+                has_have = "has a pending bank UTR credit" if item_cnt == 1 else "have pending bank UTR credits"
+                insight = f"Delayed Gateway Settlement Batch: {item_cnt} {tx_word} totaling ₹{total_cluster_amount:,.2f} {has_have} across adjacent transit windows."
             elif reason == 'amount_mismatch':
-                insight = f"Value Discrepancies: {len(items)} transactions totaling ₹{total_cluster_amount:,.2f} show cart currency or rounding divergence."
+                shows_show = "shows" if item_cnt == 1 else "show"
+                insight = f"Value Discrepancies: {item_cnt} {tx_word} totaling ₹{total_cluster_amount:,.2f} {shows_show} cart currency or rounding divergence."
             else:
-                insight = f"Pattern Cluster: {len(items)} open {readable_reason} exceptions totaling ₹{total_cluster_amount:,.2f} detected within the active period."
+                exc_singular = "exception" if item_cnt == 1 else "exceptions"
+                insight = f"Pattern Cluster: {item_cnt} open {readable_reason} {exc_singular} totaling ₹{total_cluster_amount:,.2f} detected within the active period."
 
             pattern_clusters.append({
                 "reason": reason,
-                "title": f"{len(items)} {readable_reason} Exceptions",
-                "count": len(items),
+                "title": f"{item_cnt} {readable_reason} {exc_word}",
+                "count": item_cnt,
                 "total_amount": round(total_cluster_amount, 2),
                 "insight": insight,
                 "item_ids": [it['id'] for it in items]
@@ -1460,6 +1486,18 @@ def get_kpi_why_breakdown(metric_key: str, start_date: str = "2026-08-01", end_d
     match_rate = round((settled_net / total_gross * 100), 1) if total_gross > 0 else 0.0
 
     if metric_key == "total_processed":
+        amt_settled = round(settled_net, 2)
+        amt_fees = round(total_fees + gst_fees, 2)
+        amt_trapped = round(total_gross - amt_settled - amt_fees, 2)
+        if amt_trapped < 0:
+            amt_trapped = 0.0
+
+        p_settled = round(amt_settled / total_gross * 100, 1) if total_gross > 0 else 0.0
+        p_fees = round(amt_fees / total_gross * 100, 1) if total_gross > 0 else 0.0
+        p_trapped = round(100.0 - p_settled - p_fees, 1) if total_gross > 0 else 0.0
+        if p_trapped < 0:
+            p_trapped = 0.0
+
         return {
             "metric": "total_processed",
             "title": "Gross Processed Volume Breakdown",
@@ -1467,9 +1505,9 @@ def get_kpi_why_breakdown(metric_key: str, start_date: str = "2026-08-01", end_d
             "ai_sentence": f"₹{total_gross:,.2f} represents total transaction payments ingested across payment gateways before MDR fees and holdbacks.",
             "formula_label": "Settled Net + Gateway MDR/GST + Trapped in Exceptions",
             "components": [
-                {"name": "Bank Settled Net", "amount": round(settled_net, 2), "percentage": round(settled_net/total_gross*100, 1) if total_gross > 0 else 0, "status": "settled"},
-                {"name": "Gateway MDR Fees & GST", "amount": round(total_fees + gst_fees, 2), "percentage": round((total_fees+gst_fees)/total_gross*100, 1) if total_gross > 0 else 0, "status": "fees"},
-                {"name": "Trapped in Open Exceptions", "amount": round(trapped_cash, 2), "percentage": round(trapped_cash/total_gross*100, 1) if total_gross > 0 else 0, "status": "exceptions"}
+                {"name": "Bank Settled Net", "amount": amt_settled, "percentage": p_settled, "status": "settled"},
+                {"name": "Gateway MDR Fees & GST", "amount": amt_fees, "percentage": p_fees, "status": "fees"},
+                {"name": "Trapped in Open Exceptions", "amount": amt_trapped, "percentage": p_trapped, "status": "exceptions"}
             ]
         }
     elif metric_key == "settled_amount":
@@ -1489,11 +1527,13 @@ def get_kpi_why_breakdown(metric_key: str, start_date: str = "2026-08-01", end_d
         }
     elif metric_key == "unreconciled_amount":
         comps = [{"name": k, "amount": round(v, 2), "count": len([e for e in open_excs if e['reason'].replace('_', ' ').title() == k])} for k, v in reason_breakdown.items()]
+        exc_count = len(open_excs)
+        exc_word = "exception" if exc_count == 1 else "exceptions"
         return {
             "metric": "unreconciled_amount",
             "title": "Exceptions Trapped Volume Breakdown",
             "value": round(trapped_cash, 2),
-            "ai_sentence": f"₹{trapped_cash:,.2f} is currently trapped across {len(open_excs)} open exceptions requiring controller resolution or gateway credit.",
+            "ai_sentence": f"₹{trapped_cash:,.2f} is currently trapped across {exc_count} open {exc_word} requiring controller resolution or gateway credit.",
             "formula_label": "Sum of Unresolved Discrepancies by Reason",
             "components": comps or [{"name": "Amount Mismatch", "amount": round(trapped_cash, 2), "count": len(open_excs)}]
         }
@@ -1528,16 +1568,25 @@ def get_forensic_narration(start_date: str = "2026-08-01", end_date: str = "2026
     linked_count = sum(1 for a in ml_anomalies if a['transaction_id'] in open_exc_tx_ids)
     new_signals_count = max(0, len(ml_anomalies) - linked_count)
     
-    benford_sentence = (
-        f"Evaluated {benford['total_evaluated']} ledger transactions across leading digits 1–9. "
-        f"The Mean Absolute Deviation (MAD) is {benford['mad']}, confirming authentic transaction distribution under Ind AS audit guidelines."
-        if benford['is_compliant'] else
-        f"Evaluated {benford['total_evaluated']} transactions. Mean Absolute Deviation (MAD) of {benford['mad']} indicates minor clustering near digit {benford.get('max_anomaly_digit', 5)}."
-    )
+    tx_word = "transaction" if benford['total_evaluated'] == 1 else "transactions"
+    if benford['is_compliant']:
+        benford_sentence = (
+            f"Evaluated {benford['total_evaluated']} ledger {tx_word} across leading digits 1–9. "
+            f"The Mean Absolute Deviation (MAD) is {benford['mad']}, confirming authentic transaction distribution within normal tolerance."
+        )
+    else:
+        benford_sentence = (
+            f"Evaluated {benford['total_evaluated']} {tx_word}. Elevated Mean Absolute Deviation (MAD) of {benford['mad']} "
+            f"indicates anomalous digit clustering near digit {benford.get('max_anomaly_digit', 5)} flagged for forensic review."
+        )
     
+    anom_count = len(ml_anomalies)
+    flagged_word = "transaction was" if anom_count == 1 else "transactions were"
+    linked_word = "1 is" if linked_count == 1 else f"{linked_count} are"
+    signal_word = "1 is a new signal" if new_signals_count == 1 else f"{new_signals_count} are new signals"
     isolation_sentence = (
-        f"{len(ml_anomalies)} transactions were flagged by the Isolation Forest model as statistically unusual based on fee-to-gross ratio and transit duration — "
-        f"{linked_count} are already linked to open exceptions and {new_signals_count} are new signals recommended for review."
+        f"{anom_count} {flagged_word} flagged by the Isolation Forest model as statistically unusual based on fee-to-gross ratio and transit duration — "
+        f"{linked_word} already linked to open exceptions and {signal_word} recommended for review."
     )
     
     return {
@@ -1608,11 +1657,19 @@ def get_daily_briefing_data(reference_date: Optional[str] = None, account_id: Op
         day_new_excs = 1
         day_exc_val = 4200.00
         
+    tx_word = "transaction" if day_cnt == 1 else "transactions"
+    if day_new_excs == 1:
+        exc_opened_phrase = f"1 new exception opened totaling ₹{day_exc_val:,.2f}"
+    elif day_new_excs == 0:
+        exc_opened_phrase = "0 new exceptions opened"
+    else:
+        exc_opened_phrase = f"{day_new_excs} new exceptions opened totaling ₹{day_exc_val:,.2f}"
+
     ai_sentence = (
-        f"₹{day_settled/1000:.1f}k settled yesterday across {day_cnt} transactions. "
+        f"₹{day_settled/1000:.1f}k settled yesterday across {day_cnt} {tx_word}. "
         f"Value reconciliation match rate held at 84.9%. "
-        f"{day_new_excs} new exception opened totaling ₹{day_exc_val:,.2f}. "
-        f"Forensic integrity status remains Conforming with zero anomalous spike."
+        f"{exc_opened_phrase}. "
+        f"Forensic integrity status remains Conforming with zero anomalous spikes."
     )
     
     return {
@@ -1668,23 +1725,38 @@ def get_predictive_risk_basis(start_date: str = "2026-08-01", end_date: str = "2
 def run_ai_exception_investigation(exception_id: str) -> Dict[str, Any]:
     conn = get_connection()
     c = conn.cursor()
-    c.execute('SELECT * FROM exceptions WHERE id = ?', (exception_id,))
+    c.execute('SELECT * FROM exceptions WHERE id = ? OR transaction_id = ?', (exception_id, exception_id))
     exc_row = c.fetchone()
     if not exc_row:
-        conn.close()
-        return {"error": f"Exception {exception_id} not found."}
-    
-    exc = dict(exc_row)
-    ud = exc.get('underlying_data') or {}
-    if isinstance(ud, str):
-        try:
-            ud = json.loads(ud)
-        except Exception:
-            ud = {}
-            
-    c.execute('SELECT * FROM transactions WHERE transaction_id = ?', (exc['transaction_id'],))
-    tx_row = c.fetchone()
-    tx = dict(tx_row) if tx_row else {}
+        # Check if it's a direct transaction_id
+        c.execute('SELECT * FROM transactions WHERE transaction_id = ?', (exception_id,))
+        tx_row_direct = c.fetchone()
+        if not tx_row_direct:
+            conn.close()
+            return {"error": f"Record {exception_id} not found."}
+        tx_direct = dict(tx_row_direct)
+        exc = {
+            'id': f"exc_{exception_id}",
+            'transaction_id': exception_id,
+            'reason': 'fee_variance' if tx_direct.get('status') != 'settled' else 'settlement_delay',
+            'status': 'open',
+            'amount': tx_direct.get('gross_amount', 0.0),
+            'underlying_data': {}
+        }
+        tx = tx_direct
+        ud = {}
+    else:
+        exc = dict(exc_row)
+        ud = exc.get('underlying_data') or {}
+        if isinstance(ud, str):
+            try:
+                ud = json.loads(ud)
+            except Exception:
+                ud = {}
+                
+        c.execute('SELECT * FROM transactions WHERE transaction_id = ?', (exc['transaction_id'],))
+        tx_row = c.fetchone()
+        tx = dict(tx_row) if tx_row else {}
     
     # Determine initial variance amount
     initial_variance = abs(
@@ -1856,10 +1928,10 @@ def get_exception_investigations(exception_id: str) -> List[Dict[str, Any]]:
     conn = get_connection()
     c = conn.cursor()
     c.execute('''
-        SELECT * FROM exception_investigations
-        WHERE exception_id = ?
+        SELECT * FROM exception_investigations 
+        WHERE exception_id = ? OR exception_id = ?
         ORDER BY created_at DESC
-    ''', (exception_id,))
+    ''', (exception_id, f"exc_{exception_id}"))
     rows = c.fetchall()
     conn.close()
     
@@ -1895,25 +1967,49 @@ def get_cluster_why_summary(cluster_key: str, start_date: str = "2026-03-01", en
     tot_amt = target.get('total_amount', 0.0)
     
     if "fee_variance" in cluster_key:
-        ai_thread = (
-            f"All {count} fee variance exceptions show a deduction rate between 3.0% and 6.4% against a contracted 2.0% MDR — "
-            f"this pattern is consistent with a single gateway rate-table misconfiguration rather than {count} unrelated errors."
-        )
+        if count == 1:
+            ai_thread = (
+                "This fee variance exception shows a deduction rate between 3.0% and 6.4% against a contracted 2.0% MDR — "
+                "this pattern is consistent with a gateway rate-table misconfiguration rather than an isolated operational error."
+            )
+        else:
+            ai_thread = (
+                f"All {count} fee variance exceptions show a deduction rate between 3.0% and 6.4% against a contracted 2.0% MDR — "
+                f"this pattern is consistent with a single gateway rate-table misconfiguration rather than {count} unrelated errors."
+            )
     elif "no_bank_credit" in cluster_key:
-        ai_thread = (
-            f"All {count} transactions share confirmed gateway authorizations with settlement batches delayed beyond the standard T+2 banking window, "
-            f"trapping ₹{tot_amt:,.2f} in pending bank UTR generation."
-        )
+        if count == 1:
+            ai_thread = (
+                f"This transaction has confirmed gateway authorization with settlement delayed beyond the standard T+2 banking window, "
+                f"trapping ₹{tot_amt:,.2f} in pending bank UTR generation."
+            )
+        else:
+            ai_thread = (
+                f"All {count} transactions share confirmed gateway authorizations with settlement batches delayed beyond the standard T+2 banking window, "
+                f"trapping ₹{tot_amt:,.2f} in pending bank UTR generation."
+            )
     elif "duplicate" in cluster_key:
-        ai_thread = (
-            f"All {count} duplicate exceptions share identical payment signatures and timestamps with prior reconciled orders, "
-            f"indicating double-submission webhook retries."
-        )
+        if count == 1:
+            ai_thread = (
+                "This duplicate exception shares an identical payment signature and timestamp with a prior reconciled order, "
+                "indicating a double-submission webhook retry."
+            )
+        else:
+            ai_thread = (
+                f"All {count} duplicate exceptions share identical payment signatures and timestamps with prior reconciled orders, "
+                f"indicating double-submission webhook retries."
+            )
     else:
-        ai_thread = (
-            f"All {count} exceptions in this cluster exhibit structured amount deltas totaling ₹{tot_amt:,.2f}, "
-            f"driven by unrecorded rounding tolerances or fee adjustments."
-        )
+        if count == 1:
+            ai_thread = (
+                f"This exception exhibits a structured amount delta totaling ₹{tot_amt:,.2f}, "
+                f"driven by unrecorded rounding tolerance or fee adjustment."
+            )
+        else:
+            ai_thread = (
+                f"All {count} exceptions in this cluster exhibit structured amount deltas totaling ₹{tot_amt:,.2f}, "
+                f"driven by unrecorded rounding tolerances or fee adjustments."
+            )
         
     return {
         "cluster_key": cluster_key,
@@ -2281,8 +2377,9 @@ def get_checklist_item_assistance(check_id: str, target_month: str = "2026-08") 
             
         ids_formatted = ", ".join([f"`{it['exception_id']}` (₹{it['amount']:,.2f})" for it in items])
         
+        discrepancy_word = "discrepancy" if len(items) == 1 else "discrepancies"
         explanation = (
-            f"Pre-lock audit requires resolving all {len(items)} open discrepancies totaling ₹{total_open_vol:,.2f} before ledger freezing. "
+            f"Pre-lock audit requires resolving all {len(items)} open {discrepancy_word} totaling ₹{total_open_vol:,.2f} before ledger freezing. "
             f"Blocking exception IDs: {ids_formatted}. "
             f"Action: Review and apply either 'Mark Explained' or 'Escalate to Gateway Ops' in the Exceptions Queue."
         )
@@ -2404,15 +2501,21 @@ def draft_month_end_closing_memo(target_month: str = "2026-08") -> Dict[str, Any
         
     # Evaluate pre-lock checklist state
     open_count = len(unresolved_blockers)
+    item_word = "item" if open_count == 1 else "items"
+    is_are = "is" if open_count == 1 else "are"
+    rec_word = "record" if open_count == 1 else "records"
     if open_count == 0 and readiness_score >= 95:
         period_status = "READY TO LOCK"
         recommendation = f"All pre-lock integrity checks satisfied (100.0% cleared). Proceed with final ledger lock and executive sign-off for {cur['month']}."
     elif open_count <= 4 and readiness_score >= 70:
         period_status = "PARTIALLY READY — ACTION REQUIRED"
-        recommendation = f"Do not lock {cur['month']} books until the {open_count} unresolved discrepancy items below (₹{total_unresolved_vol:,.2f}) are cleared or explicitly written off."
+        recommendation = f"Do not lock {cur['month']} books until the {open_count} unresolved discrepancy {item_word} below (₹{total_unresolved_vol:,.2f}) {is_are} cleared or explicitly written off."
     else:
         period_status = "NOT READY"
-        recommendation = f"Multiple critical closing barriers detected ({open_count} open suspense records). Complete automated reconciliation and exception resolution before attempting lock."
+        recommendation = f"Multiple critical closing barriers detected ({open_count} open suspense {rec_word}). Complete automated reconciliation and exception resolution before attempting lock."
+
+    tx_cnt_word = "transaction" if cur['transaction_count'] == 1 else "transactions"
+    open_exc_phrase = "1 exception remains" if open_count == 1 else f"{open_count} exceptions remain"
 
     # Format structured controller closing memo
     memo_text = f"""MEMORANDUM FOR RECORD
@@ -2424,13 +2527,13 @@ SUBJECT:    Statutory Month-End Ledger Close & Reconciliation Summary — {cur['
 STATUS:     {period_status} ({readiness_score:.0f}% Continuous Close Readiness)
 
 1. EXECUTIVE RECONCILIATION SUMMARY:
-   Gross processed volume for {cur['month']} reached ₹{gross_vol:,.2f} across {cur['transaction_count']} transactions, {mom_str}. Net bank-settled cash transferred via verified UTR batches totaled ₹{cur['settled_volume']:,.2f}, yielding a statutory value match rate of {cur['match_rate']}%.
+   Gross processed volume for {cur['month']} reached ₹{gross_vol:,.2f} across {cur['transaction_count']} {tx_cnt_word}, {mom_str}. Net bank-settled cash transferred via verified UTR batches totaled ₹{cur['settled_volume']:,.2f}, yielding a statutory value match rate of {cur['match_rate']}%.
 
 2. STATUTORY DEDUCTIONS & TAX CREDITS:
    Total gateway MDR interchange fees incurred: ₹{total_fees:,.2f}. Input Tax Credit (GST at 18% on processing fees) totaled ₹{total_gst:,.2f}. All fee schedules comply with contractual merchant gateway agreements under Ind AS requirements.
 
 3. UNRESOLVED SUSPENSE & EXCEPTIONS BLOCKERS:
-   A total of {open_count} exceptions remain open in suspense totaling ₹{total_unresolved_vol:,.2f}:
+   A total of {open_exc_phrase} open in suspense totaling ₹{total_unresolved_vol:,.2f}:
    {open_str}
 
 4. STATUTORY SLA & COMPLIANCE ASSESSMENT:
@@ -2748,6 +2851,7 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
     conn.close()
 
     # Define the 7 Real Pipeline Stages with Grounded Outputs
+    matched_total = exact_count + batched_count + fuzzy_count
     stages = [
         {
             "stage_id": "ingestion",
@@ -2755,8 +2859,8 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
             "title": "Gateway & Bank Statement Feed Ingestion",
             "status": "completed",
             "duration_ms": 450,
-            "details": f"Ingested {total_records} raw transactions across 4 linked feeds: Razorpay Gateway, Kotak Mahindra Bank, HDFC Bank, and PayPal Wallet.",
-            "output_metric": f"{total_records} records loaded",
+            "details": f"Ingested {total_records} raw {'transaction' if total_records == 1 else 'transactions'} across 4 linked feeds: Razorpay Gateway, Kotak Mahindra Bank, HDFC Bank, and PayPal Wallet.",
+            "output_metric": f"{total_records} {'record' if total_records == 1 else 'records'} loaded",
             "output_value": f"₹{total_gross:,.2f} Gross",
             "confidence": 1.0,
             "trust_badge": "VERIFIED"
@@ -2767,8 +2871,8 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
             "title": "Tier 1: 1:1 Exact UTR & Reference Matching",
             "status": "completed",
             "duration_ms": 650,
-            "details": f"Matched {exact_count} transactions with identical Bank UTR references, net settlement amounts, and timestamps.",
-            "output_metric": f"{exact_count} exact matches",
+            "details": f"Matched {exact_count} {'transaction' if exact_count == 1 else 'transactions'} with identical Bank UTR references, net settlement amounts, and timestamps.",
+            "output_metric": f"{exact_count} exact {'match' if exact_count == 1 else 'matches'}",
             "output_value": f"₹{exact_amount:,.2f}",
             "confidence": 1.0,
             "trust_badge": "VERIFIED"
@@ -2779,8 +2883,8 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
             "title": "Tier 2: Batched Settlement Group Matching",
             "status": "completed",
             "duration_ms": 600,
-            "details": f"Aggregated {batched_count} transactions across domestic payout batches and PayPal multi-order international disbursements.",
-            "output_metric": f"{batched_count} batched items",
+            "details": f"Aggregated {batched_count} {'transaction' if batched_count == 1 else 'transactions'} across domestic payout batches and PayPal multi-order international disbursements.",
+            "output_metric": f"{batched_count} batched {'item' if batched_count == 1 else 'items'}",
             "output_value": f"₹{batched_amount:,.2f}",
             "confidence": 0.95,
             "trust_badge": "VERIFIED"
@@ -2791,8 +2895,8 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
             "title": "Tier 3: Fuzzy / Timing Window Matching",
             "status": "completed",
             "duration_ms": 700,
-            "details": f"Matched {fuzzy_count} transactions within ±2 business day transit drift and contractual MDR tolerance.",
-            "output_metric": f"{fuzzy_count} probable matches",
+            "details": f"Matched {fuzzy_count} {'transaction' if fuzzy_count == 1 else 'transactions'} within ±2 business day transit drift and contractual MDR tolerance.",
+            "output_metric": f"{fuzzy_count} probable {'match' if fuzzy_count == 1 else 'matches'}",
             "output_value": f"₹{fuzzy_amount:,.2f}",
             "confidence": 0.91,
             "trust_badge": "PROBABLE"
@@ -2803,8 +2907,8 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
             "title": "Exception Classification & Root-Cause Extraction",
             "status": "completed",
             "duration_ms": 550,
-            "details": f"Identified and classified {exc_count} open discrepancies into fee variance, timing drift, possible duplicate, and bank-only items.",
-            "output_metric": f"{exc_count} exceptions flagged",
+            "details": f"Identified and classified {exc_count} open {'discrepancy' if exc_count == 1 else 'discrepancies'} into fee variance, timing drift, possible duplicate, and bank-only items.",
+            "output_metric": f"{exc_count} {'exception' if exc_count == 1 else 'exceptions'} flagged",
             "output_value": f"₹{exc_unresolved_val:,.2f} trapped",
             "confidence": 0.98,
             "trust_badge": "ATTENTION REQUIRED"
@@ -2841,10 +2945,10 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
         user=user,
         trigger_type="AI Recommendation Applied",
         action="Executed 3-Way Reconciliation Run",
-        target=f"{scope_title} ({total_records} records)",
+        target=f"{scope_title} ({total_records} {'record' if total_records == 1 else 'records'})",
         previous_value="Status: Unreconciled Feed State",
         new_value=f"Status: Reconciled & Audited ({value_match_rate}% Value Match Rate)",
-        notes=f"Processed {total_records} records totaling ₹{total_gross:,.2f}. Matched {exact_count + batched_count + fuzzy_count} items ({count_match_rate}% count rate). Flagged {exc_count} exceptions.",
+        notes=f"Processed {total_records} {'record' if total_records == 1 else 'records'} totaling ₹{total_gross:,.2f}. Matched {matched_total} {'item' if matched_total == 1 else 'items'} ({count_match_rate}% count rate). Flagged {exc_count} {'exception' if exc_count == 1 else 'exceptions'}.",
         ip="127.0.0.1 (Local Verified)"
     )
 

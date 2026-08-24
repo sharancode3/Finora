@@ -37,7 +37,7 @@ export default function DataSources() {
       type: 'Ledger (CSV)',
       status: 'connected',
       lastSync,
-      icon: <Database size={24} className="text-indigo-500" />
+      icon: <Database size={24} className="text-[#1E293B]" />
     },
     {
       id: 'stripe_1',

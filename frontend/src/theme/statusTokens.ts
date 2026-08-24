@@ -1,112 +1,112 @@
 /**
- * Finora Design Token System: Single Source of Truth for Status & Brand Colors
+ * Finora Design Token System: Single Source of Truth for Status & Primary Ink Colors
  * 
- * EXACT LOCKED DESIGN SYSTEM PALETTE:
- * - Page Background:     #F7F8FC
+ * EXACT LOCKED PHASE 2 MONOCHROME-PLUS-SEMANTIC PALETTE:
+ * - Page Background:     #FAFAFA
  * - Surface (Cards):      #FFFFFF
- * - Primary Text:          #0F172A
- * - Secondary Text:        #64748B
- * - Muted Text:            #94A3B8
- * - Border:                #E5E7EB
- * - Primary (Brand/AI):    #5B45F5 (Hover: #4C35E8, Soft BG: #EEEBFF)
- * - Success:               #16A34A (BG: #ECFDF3, Border: #BBF7D0)
- * - Warning:               #D97706 (BG: #FFF7ED, Border: #FED7AA)
- * - Danger:                #DC2626 (BG: #FEF2F2, Border: #FECACA)
- * - Info:                  #2563EB (BG: #EFF6FF, Border: #BFDBFE)
+ * - Primary Text:          #111827
+ * - Secondary Text:        #6B7280
+ * - Muted Text:            #9CA3AF
+ * - Border:                #E4E4E7
+ * - Primary/Ink Action:    #1E293B (Hover: #0F172A, Soft Tint: #F1F5F9, Border: #E2E8F0)
+ * - Success:               #15803D (BG: #F0FDF4, Border: #BBF7D0)
+ * - Warning:               #B45309 (BG: #FFFBEB, Border: #FEF3C7)
+ * - Danger:                #B91C1C (BG: #FEF2F2, Border: #FECACA)
+ * - Info:                  #1D4ED8 (BG: #EFF6FF, Border: #DBEAFE)
  */
 
 export const PALETTE_HEX = {
-  bgPage: '#F7F8FC',
+  bgPage: '#FAFAFA',
   surface: '#FFFFFF',
-  textPrimary: '#0F172A',
-  textSecondary: '#64748B',
-  textMuted: '#94A3B8',
-  border: '#E5E7EB',
-  primaryBrand: '#5B45F5',
-  primaryBrandHover: '#4C35E8',
-  primaryBrandSoft: '#EEEBFF',
-  success: '#16A34A',
-  successBg: '#ECFDF3',
-  warning: '#D97706',
-  warningBg: '#FFF7ED',
-  danger: '#DC2626',
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  textMuted: '#9CA3AF',
+  border: '#E4E4E7',
+  primaryInk: '#1E293B',
+  primaryInkHover: '#0F172A',
+  primaryInkSoft: '#F1F5F9',
+  primaryInkBorder: '#E2E8F0',
+  success: '#15803D',
+  successBg: '#F0FDF4',
+  warning: '#B45309',
+  warningBg: '#FFFBEB',
+  danger: '#B91C1C',
   dangerBg: '#FEF2F2',
-  info: '#2563EB',
+  info: '#1D4ED8',
   infoBg: '#EFF6FF',
 } as const;
 
 export const STATUS_COLORS = {
-  // 1. SUCCESS (Green #16A34A / #ECFDF3): Verified / Healthy / Pass / Settled / Reconciled
+  // 1. SUCCESS (#15803D / #F0FDF4): Verified / Healthy / Pass / Settled / Reconciled
   verified: {
-    hex: '#16A34A',
-    bgHex: '#ECFDF3',
-    bg: 'bg-[#ECFDF3]',
-    text: 'text-[#16A34A]',
+    hex: '#15803D',
+    bgHex: '#F0FDF4',
+    bg: 'bg-[#F0FDF4]',
+    text: 'text-[#15803D]',
     border: 'border-[#BBF7D0]',
-    badge: 'bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]',
-    dot: 'bg-[#16A34A]',
-    solid: 'bg-[#16A34A] text-white'
+    badge: 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]',
+    dot: 'bg-[#15803D]',
+    solid: 'bg-[#15803D] text-white'
   },
   
-  // 2. WARNING (Amber #D97706 / #FFF7ED): Probable / Pending / Needs Review / Stale / Warning / Medium
+  // 2. WARNING (#B45309 / #FFFBEB): Probable / Pending / Needs Review / Stale / Warning / Medium
   pending: {
-    hex: '#D97706',
-    bgHex: '#FFF7ED',
-    bg: 'bg-[#FFF7ED]',
-    text: 'text-[#D97706]',
-    border: 'border-[#FED7AA]',
-    badge: 'bg-[#FFF7ED] text-[#D97706] border border-[#FED7AA]',
-    dot: 'bg-[#D97706]',
-    solid: 'bg-[#D97706] text-white'
+    hex: '#B45309',
+    bgHex: '#FFFBEB',
+    bg: 'bg-[#FFFBEB]',
+    text: 'text-[#B45309]',
+    border: 'border-[#FEF3C7]',
+    badge: 'bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]',
+    dot: 'bg-[#B45309]',
+    solid: 'bg-[#B45309] text-white'
   },
   
-  // 3. DANGER (Red #DC2626 / #FEF2F2): Exception / Critical / Failed / High Risk / Unresolved / Error / Open
+  // 3. DANGER (#B91C1C / #FEF2F2): Exception / Critical / Failed / High Risk / Unresolved / Error / Open
   exception: {
-    hex: '#DC2626',
+    hex: '#B91C1C',
     bgHex: '#FEF2F2',
     bg: 'bg-[#FEF2F2]',
-    text: 'text-[#DC2626]',
+    text: 'text-[#B91C1C]',
     border: 'border-[#FECACA]',
-    badge: 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]',
-    dot: 'bg-[#DC2626]',
-    solid: 'bg-[#DC2626] text-white'
+    badge: 'bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]',
+    dot: 'bg-[#B91C1C]',
+    solid: 'bg-[#B91C1C] text-white'
   },
 
-  // 4. INFO (Blue #2563EB / #EFF6FF): Informational / Feeds / Sync status
+  // 4. INFO (#1D4ED8 / #EFF6FF): Informational / Feeds / Sync status
   info: {
-    hex: '#2563EB',
+    hex: '#1D4ED8',
     bgHex: '#EFF6FF',
     bg: 'bg-[#EFF6FF]',
-    text: 'text-[#2563EB]',
-    border: 'border-[#BFDBFE]',
-    badge: 'bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]',
-    dot: 'bg-[#2563EB]',
-    solid: 'bg-[#2563EB] text-white'
+    text: 'text-[#1D4ED8]',
+    border: 'border-[#DBEAFE]',
+    badge: 'bg-[#EFF6FF] text-[#1D4ED8] border border-[#DBEAFE]',
+    dot: 'bg-[#1D4ED8]',
+    solid: 'bg-[#1D4ED8] text-white'
   },
 
-  // 5. BRAND / AI (Violet #5B45F5 / #EEEBFF): Reserved EXCLUSIVELY for Fino AI intelligence & Copilot
+  // 5. INK / PRIMARY ACTION (#1E293B / #F1F5F9): Primary Actions & Finora Intelligence
   ai: {
-    hex: '#5B45F5',
-    bgHex: '#EEEBFF',
-    bg: 'bg-[#EEEBFF]',
-    text: 'text-[#5B45F5]',
-    border: 'border-[#DDD7FE]',
-    badge: 'bg-[#EEEBFF] text-[#5B45F5] border border-[#DDD7FE]',
-    dot: 'bg-[#5B45F5]',
-    solid: 'bg-[#5B45F5] hover:bg-[#4C35E8] text-white',
-    sparkle: 'text-[#5B45F5]'
-  },
-
-  // 6. NEUTRAL (Slate #64748B / #F1F5F9): Muted metadata / Structure / Low Risk
-  neutral: {
-    hex: '#64748B',
+    hex: '#1E293B',
     bgHex: '#F1F5F9',
     bg: 'bg-[#F1F5F9]',
-    text: 'text-[#64748B]',
-    border: 'border-[#E5E7EB]',
-    badge: 'bg-[#F1F5F9] text-[#64748B] border border-[#E5E7EB]',
-    dot: 'bg-[#94A3B8]',
-    solid: 'bg-[#64748B] text-white'
+    text: 'text-[#1E293B]',
+    border: 'border-[#E2E8F0]',
+    badge: 'bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0]',
+    dot: 'bg-[#1E293B]',
+    solid: 'bg-[#1E293B] hover:bg-[#0F172A] text-white',
+  },
+
+  // 6. NEUTRAL (#6B7280 / #F1F5F9): Muted metadata / Structure
+  neutral: {
+    hex: '#6B7280',
+    bgHex: '#F1F5F9',
+    bg: 'bg-[#F1F5F9]',
+    text: 'text-[#6B7280]',
+    border: 'border-[#E4E4E7]',
+    badge: 'bg-[#F1F5F9] text-[#6B7280] border border-[#E4E4E7]',
+    dot: 'bg-[#9CA3AF]',
+    solid: 'bg-[#1E293B] text-white'
   }
 } as const;
 

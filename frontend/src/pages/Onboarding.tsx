@@ -49,8 +49,8 @@ export default function Onboarding() {
         <div className="p-8 flex-1">
           {step === 1 && (
             <div className="text-center flex flex-col items-center justify-center h-full space-y-6">
-              <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-2">
-                <ShieldCheck className="text-primary-accent" size={40} />
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-2 border border-slate-200">
+                <ShieldCheck className="text-slate-800" size={40} />
               </div>
               <h2 className="text-2xl font-bold text-slate-900">Reconcile your payment, settlement, and bank records automatically</h2>
               <p className="text-slate-500 max-w-lg">Finora compares Razorpay settlements, bank credits, and your internal ledger to find every rupee and identify discrepancies instantly.</p>

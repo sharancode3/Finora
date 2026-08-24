@@ -51,8 +51,11 @@ export interface PageContext {
 interface AIContextType {
   messages: ChatMessage[];
   sendMessage: (msg: string) => Promise<ChatResponse>;
+  askAI: (question: string) => Promise<void>;
+  askAboutElement: (question: string) => Promise<void>;
   isLoading: boolean;
   bannerMessage: string | null;
+  setBannerMessage: (msg: string | null) => void;
   highlightedRecordId: string | null;
   clearBanner: () => void;
   clearHighlight: () => void;
@@ -216,12 +219,20 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }
   };
 
+  const askAI = async (question: string) => {
+    setIsCopilotOpen(true);
+    await sendMessage(question);
+  };
+
   return (
     <AIContext.Provider value={{
       messages,
       sendMessage,
+      askAI,
+      askAboutElement: askAI,
       isLoading,
       bannerMessage,
+      setBannerMessage,
       highlightedRecordId,
       clearBanner: () => setBannerMessage(null),
       clearHighlight: () => setHighlightedRecordId(null),

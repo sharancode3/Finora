@@ -17,7 +17,6 @@ import {
   UserCheck,
   Flame,
   Clock,
-  Sparkles,
   RotateCcw,
   Minus,
   AlertTriangle,
@@ -29,6 +28,7 @@ import { AIInsightCard } from '../components/ui/AIInsightCard';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
 import { useAI } from '../context/AIContext';
+import { AskableMetric } from '../components/ui/AskableMetric';
 
 export default function RecordDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -48,10 +48,11 @@ export default function RecordDetail() {
   const [investigationHistory, setInvestigationHistory] = useState<any[]>([]);
   const [investigating, setInvestigating] = useState(false);
 
-  const fetchInvestigations = async () => {
-    if (type === 'exception' && id) {
+  const fetchInvestigations = async (targetId?: string) => {
+    const lookupId = targetId || id;
+    if (lookupId) {
       try {
-        const res = await api.get(`/exceptions/${id}/investigations`);
+        const res = await api.get(`/exceptions/${lookupId}/investigations`);
         setInvestigationHistory(res.data || []);
         if (res.data && res.data.length > 0) {
           setAiInvestigation(res.data[0]);
@@ -61,12 +62,12 @@ export default function RecordDetail() {
   };
 
   const handleRunAiInvestigation = async () => {
-    if (type === 'exception' && id) {
+    if (id) {
       setInvestigating(true);
       try {
-        const res = await api.post(`/exceptions/${id}/investigate-ai`);
+        const res = await api.post(`/exceptions/${record?.id || id}/investigate-ai`);
         setAiInvestigation(res.data);
-        await fetchInvestigations();
+        await fetchInvestigations(record?.id || id);
       } catch (err) {
         console.error(err);
       } finally {
@@ -84,10 +85,46 @@ export default function RecordDetail() {
         setRecord(exceptionData);
         
         if (exceptionData.transaction_id) {
-          const txRes = await api.get(`/transactions/${exceptionData.transaction_id}`);
-          setTx(txRes.data);
+          try {
+            const txRes = await api.get(`/transactions/${exceptionData.transaction_id}`);
+            setTx(txRes.data);
+          } catch (e) {}
         }
-        await fetchInvestigations();
+        await fetchInvestigations(exceptionData.id);
+      } else if (type === 'transaction') {
+        const txRes = await api.get(`/transactions/${id}`);
+        const txData = txRes.data;
+        setTx(txData);
+        
+        try {
+          const excRes = await api.get(`/exceptions/${id}`);
+          if (excRes.data) {
+            setRecord(excRes.data);
+            await fetchInvestigations(excRes.data.id);
+          } else {
+            setRecord({
+              id: `exc_${txData.transaction_id}`,
+              transaction_id: txData.transaction_id,
+              reason: txData.status === 'settled' ? 'reconciled_settled' : 'fee_variance',
+              status: txData.status === 'settled' ? 'resolved' : 'open',
+              amount: txData.gross_amount,
+              gross_amount: txData.gross_amount,
+              transaction_date: txData.transaction_date,
+              underlying_data: txData
+            });
+          }
+        } catch (e) {
+          setRecord({
+            id: `exc_${txData.transaction_id}`,
+            transaction_id: txData.transaction_id,
+            reason: txData.status === 'settled' ? 'reconciled_settled' : 'fee_variance',
+            status: txData.status === 'settled' ? 'resolved' : 'open',
+            amount: txData.gross_amount,
+            gross_amount: txData.gross_amount,
+            transaction_date: txData.transaction_date,
+            underlying_data: txData
+          });
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -184,7 +221,7 @@ export default function RecordDetail() {
         <AlertCircle size={48} className="mx-auto text-rose-500 mb-4" />
         <h2 className="text-xl font-bold text-slate-900">Record Not Found</h2>
         <p className="mt-2 text-xs text-slate-500">{error || 'The requested exception or transaction record does not exist in the ledger.'}</p>
-        <Link to="/exceptions" className="mt-5 inline-block text-xs font-bold text-indigo-600 hover:underline bg-indigo-50 px-4 py-2 rounded-xl">
+        <Link to="/exceptions" className="mt-5 inline-block text-xs font-bold text-[#1E293B] hover:underline bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl border border-slate-200">
           &larr; Return to Exceptions Queue
         </Link>
       </div>
@@ -209,10 +246,10 @@ export default function RecordDetail() {
               <h1 className="text-xl font-extrabold text-slate-900 font-mono tracking-tight">{id}</h1>
               <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
                 isResolved 
-                  ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' 
+                  ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' 
                   : isEscalated 
-                  ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]' 
-                  : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+                  ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' 
+                  : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
               }`}>
                 {record.status?.toUpperCase()}
               </span>
@@ -230,7 +267,7 @@ export default function RecordDetail() {
                 onClick={() => setActionState(actionState === 'escalate' ? null : 'escalate')}
                 className="gap-1.5"
               >
-                <AlertTriangle size={13} className="text-[#D97706]" /> Escalate to Gateway Ops
+                <AlertTriangle size={13} className="text-[#B45309]" /> Escalate to Gateway Ops
               </Button>
               <Button 
                 variant="primary" 
@@ -246,7 +283,7 @@ export default function RecordDetail() {
       </div>
 
       {actionSuccess && (
-        <div className="p-4 bg-[#ECFDF3] text-[#16A34A] rounded-2xl border border-[#BBF7D0] text-xs font-semibold flex items-center gap-2 shadow-xs animate-in fade-in duration-150 ease-out">
+        <div className="p-4 bg-[#F0FDF4] text-[#15803D] rounded-2xl border border-[#BBF7D0] text-xs font-semibold flex items-center gap-2 shadow-xs animate-in fade-in duration-150 ease-out">
           <CheckCircle2 size={16} /> {actionSuccess}
         </div>
       )}
@@ -268,20 +305,20 @@ export default function RecordDetail() {
           })) || []}
           metrics={[
             { label: 'Total Discrepancy', value: `₹${aiInvestigation.initial_variance?.toLocaleString('en-IN')}` },
-            { label: 'Explained Variance', value: `₹${aiInvestigation.explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#16A34A]' },
-            { label: 'Unexplained', value: `₹${aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}`, color: aiInvestigation.unexplained_amount > 1 ? 'text-[#DC2626]' : 'text-[#16A34A]' }
+            { label: 'Explained Variance', value: `₹${aiInvestigation.explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#15803D]' },
+            { label: 'Unexplained', value: `₹${aiInvestigation.unexplained_amount?.toLocaleString('en-IN')}`, color: aiInvestigation.unexplained_amount > 1 ? 'text-[#B91C1C]' : 'text-[#15803D]' }
           ]}
         >
           {/* Quick Apply Resolution Button inside AI Card */}
           {!isResolved && (
             <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
-                <ShieldCheck size={13} className="text-[#16A34A]" />
+                <ShieldCheck size={13} className="text-[#15803D]" />
                 Audit record: {aiInvestigation.investigation_id} • Status: {aiInvestigation.verifier_status}
               </div>
               <button
                 onClick={() => handleResolve(aiInvestigation.recommended_action, 'Applied Fino AI recommended adjustment from Root-Cause Investigation', 'AI Recommendation Applied')}
-                className="px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
+                className="px-3.5 py-1.5 bg-[#15803D] hover:bg-[#166534] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
               >
                 <CheckCircle size={13} /> Apply Recommended Resolution
               </button>
@@ -290,14 +327,14 @@ export default function RecordDetail() {
         </AIInsightCard>
       )}
 
-      {/* Interactive Resolution Drawer */}
+      {/* Action Drawer */}
       {actionState && (
-        <div className="bg-white text-slate-900 p-5 rounded-2xl border border-indigo-200 shadow-sm space-y-4 animate-in fade-in duration-150">
+        <div className="bg-white text-slate-900 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 animate-in fade-in duration-150">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               {actionState === 'resolve' ? 'Accounting Adjustment & Resolution Sign-Off' : 'Escalate to Senior Controller'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Ind AS Audit Trail Enabled</span>
+            <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Statutory Audit Trail Enabled</span>
           </div>
 
           {actionState === 'resolve' ? (
@@ -307,7 +344,7 @@ export default function RecordDetail() {
                 <select
                   value={actionReason}
                   onChange={(e) => setActionReason(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#15803D]"
                 >
                   <option value="Gateway Fee Adjustment">Gateway Fee Adjustment (MDR Variance)</option>
                   <option value="Timing Difference (T+3 Bank Float)">Timing Difference (T+3 Bank Float)</option>
@@ -322,12 +359,12 @@ export default function RecordDetail() {
                   placeholder="Explain why this variance is approved (e.g. Contractual negotiated fee rate applied)..."
                   value={actionNote}
                   onChange={(e) => setActionNote(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#15803D]"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setActionState(null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                <button onClick={() => handleResolve()} className="px-4 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold cursor-pointer">Confirm Resolution</button>
+                <button onClick={() => handleResolve()} className="px-4 py-1.5 bg-[#15803D] hover:bg-[#166534] text-white rounded-xl text-xs font-bold cursor-pointer">Confirm Resolution</button>
               </div>
             </div>
           ) : (
@@ -339,12 +376,12 @@ export default function RecordDetail() {
                   placeholder="State reason for escalation (e.g. Unrecognized bank UTR credit after 10 days)..."
                   value={actionNote}
                   onChange={(e) => setActionNote(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B45309]"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setActionState(null)} className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer">Cancel</button>
-                <button onClick={() => handleEscalate()} className="px-4 py-1.5 bg-[#D97706] hover:bg-[#B45309] text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
+                <button onClick={() => handleEscalate()} className="px-4 py-1.5 bg-[#B45309] hover:bg-[#92400E] text-white rounded-xl text-xs font-bold cursor-pointer">Submit Escalation</button>
               </div>
             </div>
           )}
@@ -358,17 +395,17 @@ export default function RecordDetail() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-5 flex items-center gap-2">
-              <LinkIcon size={15} className="text-indigo-600" /> 3-Way Reconciliation Audit Nodes
+              <LinkIcon size={15} className="text-[#1E293B]" /> 3-Way Reconciliation Audit Nodes
             </h3>
 
             {/* Visual Flow nodes */}
             <div className="space-y-4">
               
               {/* 1. Ledger Node */}
-              <div className="p-4 rounded-xl border-2 border-indigo-100 bg-indigo-50/30">
+              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <BookOpen size={14} className="text-indigo-600" /> 1. Internal Order Ledger
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen size={14} className="text-slate-700" /> 1. Internal Order Ledger
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Captured</span>
                 </div>
@@ -381,10 +418,10 @@ export default function RecordDetail() {
               </div>
 
               {/* 2. Gateway Settlement Node */}
-              <div className="p-4 rounded-xl border-2 border-blue-100 bg-blue-50/30">
+              <div className="p-4 rounded-xl border border-slate-200 bg-[#EFF6FF]">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <CreditCard size={14} className="text-blue-600" /> 2. Payment Gateway Settlement Feed
+                  <span className="text-xs font-bold text-[#1D4ED8] uppercase tracking-wider flex items-center gap-1.5">
+                    <CreditCard size={14} className="text-[#1D4ED8]" /> 2. Payment Gateway Settlement Feed
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Ingested</span>
                 </div>
@@ -397,25 +434,25 @@ export default function RecordDetail() {
                 {ud.actual_fee && (
                   <div className="flex justify-between items-baseline mt-1 text-xs text-slate-600">
                     <span>Deducted MDR Fee:</span>
-                    <span className="font-mono text-rose-600 font-bold">-₹{ud.actual_fee}</span>
+                    <span className="font-mono text-[#B91C1C] font-bold">-₹{ud.actual_fee}</span>
                   </div>
                 )}
               </div>
 
               {/* 3. Bank Statement Node */}
-              <div className={`p-4 rounded-xl border-2 ${
+              <div className={`p-4 rounded-xl border ${
                 record.reason === 'no_bank_credit_found' 
-                  ? 'border-rose-200 bg-rose-50/40' 
-                  : 'border-emerald-100 bg-emerald-50/30'
+                  ? 'border-[#FECACA] bg-[#FEF2F2]' 
+                  : 'border-[#BBF7D0] bg-[#F0FDF4]'
               }`}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 size={14} className="text-emerald-600" /> 3. Bank Account Statement
+                    <Building2 size={14} className="text-[#15803D]" /> 3. Bank Account Statement
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     record.reason === 'no_bank_credit_found' 
-                      ? 'bg-rose-50 text-rose-700 border-rose-200' 
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      ? 'bg-rose-50 text-[#B91C1C] border-rose-200' 
+                      : 'bg-emerald-50 text-[#15803D] border-emerald-200'
                   }`}>
                     {record.reason === 'no_bank_credit_found' ? 'Credit Missing' : 'Batch Matched'}
                   </span>
@@ -434,7 +471,7 @@ export default function RecordDetail() {
           {/* Root-Cause Intelligence Notes */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-              <Search size={15} className="text-indigo-600" /> Root-Cause Analysis
+              <Search size={15} className="text-slate-800" /> Root-Cause Analysis
             </h3>
             
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
@@ -454,10 +491,10 @@ export default function RecordDetail() {
         <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-auto overflow-hidden">
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-[#5B45F5]" />
+              <ShieldCheck size={16} className="text-[#15803D]" />
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Verified Audit Attributes</h3>
             </div>
-            <span className="text-[10px] text-[#16A34A] bg-[#ECFDF3] px-2.5 py-0.5 rounded-full border border-[#BBF7D0] font-bold">
+            <span className="text-[10px] text-[#15803D] bg-[#F0FDF4] px-2.5 py-0.5 rounded-full border border-[#BBF7D0] font-bold">
               Immutable Ledger Record
             </span>
           </div>
@@ -466,11 +503,21 @@ export default function RecordDetail() {
             <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-100">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Exception ID</span>
-                <span className="font-mono font-bold text-slate-900">{record.id}</span>
+                <span className="font-mono font-bold text-slate-900">
+                  <AskableMetric question={`Audit exception record ${record.id}: explain reason '${record.reason}' and provide full ledger lineage.`}>
+                    {record.id}
+                  </AskableMetric>
+                </span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Transaction Ref</span>
-                <span className="font-mono font-bold text-slate-900">{record.transaction_id || 'N/A'}</span>
+                <span className="font-mono font-bold text-slate-900">
+                  {record.transaction_id ? (
+                    <AskableMetric question={`Trace transaction ${record.transaction_id} across checkout, gateway settlement, and bank credit.`}>
+                      {record.transaction_id}
+                    </AskableMetric>
+                  ) : 'N/A'}
+                </span>
               </div>
             </div>
 
@@ -493,28 +540,36 @@ export default function RecordDetail() {
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Gross Transaction Value</span>
                 <span className="font-mono font-bold text-slate-900">
-                  ₹{(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Explain gross customer payment value of ₹${(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')} on record ${id}.`}>
+                    ₹{(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')}
+                  </AskableMetric>
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Contractual MDR Fee</span>
                 <span className="font-mono font-semibold text-slate-800">
-                  ₹{(tx?.fee_amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Verify MDR fee rate and ₹${(tx?.fee_amount || 0).toLocaleString('en-IN')} deduction on record ${id}.`}>
+                    ₹{(tx?.fee_amount || 0).toLocaleString('en-IN')}
+                  </AskableMetric>
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">GST on Fee (18%)</span>
                 <span className="font-mono font-semibold text-slate-800">
-                  ₹{(tx?.tax_amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Verify 18% GST tax rate of ₹${(tx?.tax_amount || 0).toLocaleString('en-IN')} on gateway fees for record ${id}.`}>
+                    ₹{(tx?.tax_amount || 0).toLocaleString('en-IN')}
+                  </AskableMetric>
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Calculated Net Bank Deposit</span>
-                <span className="font-mono font-bold text-[#16A34A]">
-                  ₹{(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')}
+                <span className="font-mono font-bold text-[#15803D]">
+                  <AskableMetric question={`Trace net settled bank credit of ₹${(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')} for record ${id}.`}>
+                    ₹{(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')}
+                  </AskableMetric>
                 </span>
               </div>
 
@@ -524,13 +579,13 @@ export default function RecordDetail() {
               </div>
 
               <div className="flex items-center justify-between py-1.5">
-                <span className="text-slate-500 font-medium">Risk Score & Tier</span>
-                <span className="font-bold text-[#DC2626]">{record.risk_score || 25} • {record.risk_tier || 'MEDIUM'}</span>
+                <span className="text-slate-500 font-medium">Risk Score &amp; Tier</span>
+                <span className="font-bold text-[#B91C1C]">{record.risk_score || 25} • {record.risk_tier || 'MEDIUM'}</span>
               </div>
             </div>
 
-            <div className="p-3 bg-[#EFF6FF] rounded-xl border border-[#BFDBFE] text-slate-700 text-[11px] flex items-center gap-2">
-              <CheckCircle2 size={15} className="text-[#2563EB] shrink-0" />
+            <div className="p-3 bg-[#EFF6FF] rounded-xl border border-[#DBEAFE] text-slate-700 text-[11px] flex items-center gap-2">
+              <CheckCircle2 size={15} className="text-[#1D4ED8] shrink-0" />
               <span>Full deterministic audit trail verified against statutory Ind AS accounting rules.</span>
             </div>
           </div>

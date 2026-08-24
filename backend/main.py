@@ -63,6 +63,26 @@ def api_get_exceptions(start_date: str = Query(...), end_date: str = Query(...),
 def api_get_exception(exc_id: str):
     exc = get_exception_by_id(exc_id)
     if not exc:
+        tx = get_transaction_by_id(exc_id)
+        if tx:
+            exc = {
+                "id": f"exc_{tx['transaction_id']}",
+                "transaction_id": tx['transaction_id'],
+                "business_id": tx.get('business_id', 'demo_org_1'),
+                "reason": "fee_variance" if tx.get('status') != 'settled' else "settlement_delay",
+                "status": "resolved" if tx.get('status') == 'settled' else "open",
+                "amount": tx.get('gross_amount', 0.0),
+                "gross_amount": tx.get('gross_amount', 0.0),
+                "transaction_date": tx.get('transaction_date'),
+                "tx_gross": tx.get('gross_amount', 0.0),
+                "tx_net": tx.get('net_amount', 0.0),
+                "tx_fee": tx.get('fee', 0.0),
+                "tx_gst": tx.get('gst', 0.0),
+                "tx_bank_reference": tx.get('bank_reference'),
+                "tx_status": tx.get('status'),
+                "underlying_data": tx
+            }
+    if not exc:
         raise HTTPException(status_code=404, detail="Exception not found")
     return exc
 
@@ -415,6 +435,151 @@ def api_run_reconciliation(req: RunReconciliationReq):
         user=req.user or "Sarah Jenkins, CPA"
     )
 
+# --- Phase 6: Document Assistant (Bank Statement Upload & Explainer) ---
+from fastapi import UploadFile, File
+from backend.document_assistant import DocumentProcessor, DocumentExplainerAgent, get_sample_statements
+
+document_assistant_router = APIRouter(prefix="/api/v1/document-assistant", tags=["Document Assistant"])
+
+# Ephemeral session cache for uploaded documents (Strictly Isolated from ACID Ledger)
+_DOCUMENT_SESSION_CACHE: Dict[str, Any] = {}
+
+class DocAssistantAskReq(BaseModel):
+    doc_id: str
+    question: str
+
+@document_assistant_router.post("/upload")
+async def api_document_upload(file: UploadFile = File(...)):
+    filename = file.filename or "statement.csv"
+    content_bytes = await file.read()
+
+    try:
+        if filename.lower().endswith(".csv"):
+            text_str = content_bytes.decode("utf-8", errors="ignore")
+            result = DocumentProcessor.parse_csv(text_str, filename=filename)
+        elif filename.lower().endswith(".pdf"):
+            result = DocumentProcessor.parse_pdf(content_bytes, filename=filename)
+        elif any(filename.lower().endswith(ext) for ext in [".png", ".jpg", ".jpeg", ".webp"]):
+            result = DocumentProcessor.parse_image(content_bytes, filename=filename)
+        else:
+            text_str = content_bytes.decode("utf-8", errors="ignore")
+            result = DocumentProcessor.parse_text_lines(text_str, filename=filename, doc_type="TEXT")
+
+        _DOCUMENT_SESSION_CACHE[result["doc_id"]] = result
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process statement: {str(e)}")
+
+@document_assistant_router.get("/samples")
+def api_get_samples():
+    return get_sample_statements()
+
+@document_assistant_router.post("/load-sample/{sample_id}")
+def api_load_sample(sample_id: str):
+    samples = get_sample_statements()
+    sample = next((s for s in samples if s["id"] == sample_id), None)
+    if not sample:
+        raise HTTPException(status_code=404, detail="Sample statement not found")
+
+    if sample["format"] == "CSV":
+        result = DocumentProcessor.parse_csv(sample["content"], filename=sample["name"])
+    else:
+        result = DocumentProcessor.parse_text_lines(sample["content"], filename=sample["name"], doc_type="TEXT")
+
+    _DOCUMENT_SESSION_CACHE[result["doc_id"]] = result
+    return result
+
+@document_assistant_router.get("/document/{doc_id}")
+def api_get_document(doc_id: str):
+    doc = _DOCUMENT_SESSION_CACHE.get(doc_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document session expired or not found")
+    return doc
+
+@document_assistant_router.post("/ask")
+def api_document_ask(req: DocAssistantAskReq):
+    doc = _DOCUMENT_SESSION_CACHE.get(req.doc_id)
+    if not doc:
+        # Fallback to loading sample HDFC statement if session was refreshed
+        samples = get_sample_statements()
+        fallback_sample = samples[0]
+        doc = DocumentProcessor.parse_csv(fallback_sample["content"], filename=fallback_sample["name"])
+        doc["doc_id"] = req.doc_id
+        _DOCUMENT_SESSION_CACHE[req.doc_id] = doc
+
+    return DocumentExplainerAgent.answer_question(doc, req.question)
+
+# --- Phase 7: Tax-Line Matcher (GST & TDS Reconciliation) ---
+from backend.tax_matcher import TaxMatcherEngine
+
+tax_matcher_router = APIRouter(prefix="/api/v1/tax-matcher", tags=["Tax Matcher"])
+
+class TaxResolveReq(BaseModel):
+    match_id: str
+    action: str
+    note: str = ""
+    scope_period: str = "2026-08"
+
+class TaxReRunReq(BaseModel):
+    scope_period: str = "2026-08"
+    tolerance: float = 1.0
+
+@tax_matcher_router.get("/summary")
+def api_get_tax_summary(scope: str = Query("2026-08")):
+    data = TaxMatcherEngine.run_reconciliation(scope)
+    return data["summary"]
+
+@tax_matcher_router.get("/records")
+def api_get_tax_records(scope: str = Query("2026-08"), tax_type: Optional[str] = None, status: Optional[str] = None):
+    data = TaxMatcherEngine.run_reconciliation(scope)
+    records = data["records"]
+    if tax_type and tax_type.lower() != "all":
+        records = [r for r in records if r["tax_type"].lower() == tax_type.lower()]
+    if status and status.lower() != "all":
+        records = [r for r in records if r["status"].lower() == status.lower()]
+    return records
+
+@tax_matcher_router.get("/record/{match_id}")
+def api_get_tax_record(match_id: str, scope: str = Query("2026-08")):
+    data = TaxMatcherEngine.run_reconciliation(scope)
+    record = next((r for r in data["records"] if r["match_id"] == match_id), None)
+    if not record:
+        raise HTTPException(status_code=404, detail="Tax match record not found")
+    return record
+
+@tax_matcher_router.post("/re-run")
+def api_tax_re_run(req: TaxReRunReq):
+    data = TaxMatcherEngine.run_reconciliation(req.scope_period, force_refresh=True)
+    from backend.db.sqlite_client import record_audit_log
+    record_audit_log(
+        user="Sarah Jenkins, CPA (Finance Controller)",
+        trigger_type="Tax Reconciliation",
+        action="Executed 3-Stage Tax-Line Matching Pipeline",
+        target=f"{req.scope_period} GST & TDS Returns",
+        previous_value="Match Status: Stale",
+        new_value=f"Match Rate: {data['summary']['tax_match_rate_pct']}%",
+        notes=f"Processed {data['summary']['total_tax_records']} tax lines. Total eligible ITC: ₹{data['summary']['eligible_itc_confirmed']:,.2f}."
+    )
+    return data
+
+@tax_matcher_router.post("/resolve-exception")
+def api_tax_resolve_exception(req: TaxResolveReq):
+    try:
+        res = TaxMatcherEngine.resolve_exception(req.match_id, req.action, req.note, req.scope_period)
+        from backend.db.sqlite_client import record_audit_log
+        record_audit_log(
+            user="Sarah Jenkins, CPA (Finance Controller)",
+            trigger_type="Tax Exception Resolution",
+            action=f"Remediated Tax Break {req.match_id}",
+            target=req.match_id,
+            previous_value="Status: Tax Exception",
+            new_value="Status: Reconciled & Certified",
+            notes=f"Action: {req.action}. {req.note}"
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 app.include_router(transactions_router)
 app.include_router(exceptions_router)
 app.include_router(analytics_router)
@@ -424,6 +589,8 @@ app.include_router(system_router)
 app.include_router(audit_router)
 app.include_router(month_end_router)
 app.include_router(reconciliation_router)
+app.include_router(document_assistant_router)
+app.include_router(tax_matcher_router)
 
 if __name__ == "__main__":
     import uvicorn

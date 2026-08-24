@@ -3,12 +3,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutGrid, AlertTriangle, MessageSquare, Wallet, 
   Link as LinkIcon, CalendarCheck, Settings as SettingsIcon, 
-  Bell, ChevronLeft, ChevronRight, CheckCircle2, Info, Sparkles,
-  Layers, Play
+  Bell, ChevronLeft, ChevronRight, CheckCircle2, Info,
+  Layers, Play, Sun, Moon, FileText, Receipt
 } from 'lucide-react';
 import { Banner } from '../components/ui/Banner';
 import { ToastContainer } from '../components/ui/Toast';
 import { useAI } from '../context/AIContext';
+import { useTheme } from '../context/ThemeContext';
 import { LedgerCopilotPanel } from '../components/LedgerCopilotPanel';
 import { ReconciliationRunModal } from '../components/ReconciliationRunModal';
 
@@ -37,6 +38,8 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Treasury & Finance Ops',
     items: [
       { to: '/cash-position', icon: Wallet, label: 'Cash Position' },
+      { to: '/tax-matcher', icon: Receipt, label: 'Tax-Line Matcher' },
+      { to: '/document-assistant', icon: FileText, label: 'Document Assistant' },
       { to: '/month-end-close', icon: CalendarCheck, label: 'Month-End Close' },
     ]
   },
@@ -51,6 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { bannerMessage, clearBanner, setIsCopilotOpen, setIsReconciliationModalOpen } = useAI();
+  const { theme, toggleTheme, isDark } = useTheme();
   const location = useLocation();
   
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -59,13 +63,49 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   });
   
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'notif_1',
+      title: 'New Exceptions Detected',
+      message: '3 fee variances identified in August batch.',
+      time: '10 mins ago',
+      type: 'critical',
+      read: false
+    },
+    {
+      id: 'notif_2',
+      title: 'Settlement Batch Synced',
+      message: 'Razorpay batch PAY-00293 settled into HDFC.',
+      time: '2 hours ago',
+      type: 'success',
+      read: false
+    },
+    {
+      id: 'notif_3',
+      title: 'Month-End Close Ready',
+      message: 'August 2026 books ready for controller review.',
+      time: 'Today, 10:00 AM',
+      type: 'info',
+      read: false
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleMarkAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   useEffect(() => {
     localStorage.setItem('finora_sidebar_collapsed', isCollapsed.toString());
   }, [isCollapsed]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#F7F8FC] font-sans antialiased text-slate-800">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAFAFA] font-sans antialiased text-slate-900">
       <ToastContainer />
       
       {bannerMessage && (
@@ -73,15 +113,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       )}
       
       {/* Top Bar (Fixed Modern White Header) */}
-      <header className="bg-white text-slate-900 h-14 shrink-0 relative z-50 flex items-center justify-between px-5 border-b border-slate-200/90 shadow-xs">
+      <header className="bg-white text-slate-900 h-14 shrink-0 relative z-50 flex items-center justify-between px-5 border-b border-[#E4E4E7] shadow-xs">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-[#5B45F5] flex items-center justify-center text-white font-extrabold text-base shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-[#1E293B] flex items-center justify-center text-white font-extrabold text-base shadow-xs">
               F
             </div>
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight leading-none text-slate-900">Finora</span>
-              <span className="text-[10px] font-bold text-[#5B45F5] uppercase tracking-wider mt-0.5">AI Financial Controller</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Financial Controller</span>
             </div>
           </Link>
         </div>
@@ -90,7 +130,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {/* Run Reconciliation Engine Global Action Button */}
           <button
             onClick={() => setIsReconciliationModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#5B45F5] hover:bg-[#4C35E8] text-white text-xs font-bold transition-all duration-150 ease-out cursor-pointer shadow-xs active:scale-98"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-xs font-bold transition-all duration-150 ease-out cursor-pointer shadow-xs active:scale-98"
             title="Execute 3-Way Reconciliation Batch"
           >
             <Play size={13} fill="currentColor" />
@@ -101,14 +141,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {location.pathname !== '/ask-your-books' && (
             <button
               onClick={() => setIsCopilotOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-[#DDD7FE] bg-slate-50 hover:bg-[#EEEBFF]/50 text-slate-700 hover:text-[#5B45F5] text-xs font-semibold transition-all duration-150 ease-out cursor-pointer shadow-2xs"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E4E4E7] hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-all duration-150 ease-out cursor-pointer shadow-2xs"
               title="Open Global Ask Controller Panel"
             >
-              <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" />
-              <Sparkles size={13} className="text-[#5B45F5]" />
+              <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center text-[9px] font-mono font-bold shrink-0">
+                F
+              </div>
               <span>Ask Controller</span>
             </button>
           )}
+
+          {/* Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-500 hover:text-slate-900 transition-colors rounded-xl hover:bg-slate-100 focus:outline-none cursor-pointer"
+            title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
+            aria-label="Toggle Light/Dark Theme"
+          >
+            {isDark ? <Sun size={18} className="text-[#FBBF24]" /> : <Moon size={18} />}
+          </button>
 
           {/* Notifications Dropdown */}
           <div className="relative">
@@ -118,40 +169,56 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               title="Notifications"
             >
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#DC2626] rounded-full ring-2 ring-white"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B91C1C] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#B91C1C] ring-2 ring-white dark:ring-[#151B24]"></span>
+                </span>
+              )}
             </button>
             
             {showNotifications && (
-              <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-[60] overflow-hidden text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute top-12 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-[#E4E4E7] z-[60] overflow-hidden text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
                 <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                  <span className="font-bold text-xs uppercase tracking-wider text-slate-700">Recent Notifications</span>
-                  <button onClick={() => setShowNotifications(false)} className="text-[11px] font-bold text-[#5B45F5] hover:underline cursor-pointer">Mark all read</button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs uppercase tracking-wider text-slate-700">Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] text-[10px] font-bold">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={handleMarkAllRead} 
+                      className="text-[11px] font-bold text-[#1E293B] hover:underline cursor-pointer"
+                    >
+                      Mark all read
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 text-xs">
-                  <div className="p-3.5 hover:bg-slate-50 cursor-pointer transition-colors">
-                    <div className="flex items-center gap-1.5 text-[#DC2626] font-semibold mb-0.5">
-                      <AlertTriangle size={13} />
-                      <span>New Exceptions Detected</span>
+                  {notifications.map((n) => (
+                    <div 
+                      key={n.id} 
+                      onClick={() => handleMarkAsRead(n.id)}
+                      className={`p-3.5 hover:bg-slate-50 cursor-pointer transition-colors ${n.read ? 'opacity-60 bg-white' : 'bg-slate-50/50'}`}
+                    >
+                      <div className="flex items-center justify-between mb-0.5">
+                        <div className={`flex items-center gap-1.5 font-semibold ${
+                          n.type === 'critical' ? 'text-[#B91C1C]' : n.type === 'success' ? 'text-[#15803D]' : 'text-[#1D4ED8]'
+                        }`}>
+                          {n.type === 'critical' ? <AlertTriangle size={13} /> : n.type === 'success' ? <CheckCircle2 size={13} /> : <CalendarCheck size={13} />}
+                          <span>{n.title}</span>
+                        </div>
+                        {!n.read && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#1E293B]"></span>
+                        )}
+                      </div>
+                      <p className="text-slate-600">{n.message}</p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">{n.time}</span>
                     </div>
-                    <p className="text-slate-600">3 fee variances identified in August batch.</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">10 mins ago</span>
-                  </div>
-                  <div className="p-3.5 hover:bg-slate-50 cursor-pointer transition-colors">
-                    <div className="flex items-center gap-1.5 text-[#16A34A] font-semibold mb-0.5">
-                      <CheckCircle2 size={13} />
-                      <span>Settlement Batch Synced</span>
-                    </div>
-                    <p className="text-slate-600">Razorpay batch PAY-00293 settled into HDFC.</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">2 hours ago</span>
-                  </div>
-                  <div className="p-3.5 hover:bg-slate-50 cursor-pointer transition-colors">
-                    <div className="flex items-center gap-1.5 text-[#5B45F5] font-semibold mb-0.5">
-                      <CalendarCheck size={13} />
-                      <span>Month-End Close Ready</span>
-                    </div>
-                    <p className="text-slate-600">August 2026 books ready for controller review.</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">Today, 10:00 AM</span>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -165,7 +232,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <div className="text-xs font-bold text-slate-900 leading-tight">Razorpay Corp</div>
               <div className="text-[10px] font-semibold text-slate-400 leading-tight">Finance Admin</div>
             </div>
-            <div className="w-8 h-8 rounded-xl bg-[#5B45F5] border border-[#DDD7FE] flex items-center justify-center text-xs font-bold text-white shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-[#1E293B] border border-slate-300 flex items-center justify-center text-xs font-bold text-white shadow-xs">
               RA
             </div>
           </Link>
@@ -177,7 +244,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         
         {/* Collapsible Left Sidebar (Locked in Viewport) */}
         <aside 
-          className={`bg-white border-r border-slate-200/90 h-full flex flex-col justify-between shrink-0 select-none transition-all duration-200 z-30 shadow-xs relative ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
+          className={`bg-white border-r border-[#E4E4E7] h-full flex flex-col justify-between shrink-0 select-none transition-all duration-200 z-30 shadow-xs relative ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
         >
           {/* Collapse/Expand Toggle Button */}
           <button 
@@ -205,18 +272,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                       to={link.to}
                       className={`flex items-center h-9 rounded-xl transition-all font-medium text-xs group relative
                         ${isActive 
-                          ? 'bg-[#EEEBFF] text-[#5B45F5] font-bold shadow-xs' 
+                          ? 'bg-[#F1F5F9] text-[#1E293B] font-bold border border-[#E2E8F0] shadow-2xs' 
                           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}
                         ${isCollapsed ? 'justify-center px-0' : 'px-3 gap-3'}
                       `}
                       title={isCollapsed ? link.label : undefined}
                     >
-                      <Icon size={17} className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-[#5B45F5]' : 'text-slate-400'}`} />
+                      <Icon size={17} className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-[#1E293B]' : 'text-slate-400'}`} />
                       {!isCollapsed && (
                         <span className="truncate">{link.label}</span>
                       )}
                       {isActive && !isCollapsed && (
-                        <span className="ml-auto w-1.5 h-3.5 bg-[#5B45F5] rounded-full"></span>
+                        <span className="ml-auto w-1.5 h-3.5 bg-[#1E293B] rounded-full"></span>
                       )}
                     </Link>
                   );
@@ -231,7 +298,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
                     Audit-Ready
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">Ind AS</span>
@@ -242,7 +309,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </div>
             ) : (
               <div className="flex justify-center">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" title="Audit-Ready Local Engine"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" title="Audit-Ready Local Engine"></span>
               </div>
             )}
           </div>
@@ -250,7 +317,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </aside>
 
         {/* Main Content Viewport (Only this scrolls) */}
-        <main className="flex-1 h-full overflow-y-auto bg-[#F7F8FC] relative z-10">
+        <main className="flex-1 h-full overflow-y-auto bg-[#FAFAFA] relative z-10">
           <div 
             key={location.pathname} 
             className="max-w-7xl mx-auto p-6 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out"

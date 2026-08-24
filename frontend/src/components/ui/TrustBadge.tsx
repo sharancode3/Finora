@@ -1,6 +1,7 @@
 import React from 'react';
-import { CheckCircle2, AlertCircle, HelpCircle, Sparkles, Clock, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, HelpCircle, Clock, AlertTriangle } from 'lucide-react';
 import { STATUS_COLORS } from '../../theme/statusTokens';
+import { FinoIcon } from './FinoIcon';
 
 export type TrustState = 
   | 'VERIFIED' 
@@ -20,7 +21,8 @@ interface TrustBadgeProps {
 
 export const TrustBadge: React.FC<TrustBadgeProps> = ({ state, className = '' }) => {
   let styleClasses = '';
-  let Icon = AlertCircle;
+  let Icon: any = AlertCircle;
+  let isFino = false;
 
   const upper = state.toUpperCase();
 
@@ -47,7 +49,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({ state, className = '' })
     case 'AI_GENERATED':
     case 'COPILOT':
       styleClasses = STATUS_COLORS.ai.badge;
-      Icon = Sparkles;
+      isFino = true;
       break;
 
     case 'UNRESOLVED':
@@ -63,7 +65,7 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({ state, className = '' })
 
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${styleClasses} ${className}`}>
-      <Icon size={12} strokeWidth={2.5} />
+      {isFino ? <FinoIcon size="xs" /> : <Icon size={12} strokeWidth={2.5} />}
       {state}
     </span>
   );

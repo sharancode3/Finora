@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, ShieldCheck, Database, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, ShieldCheck, Database, CheckCircle2 } from 'lucide-react';
 
 export interface EvidenceStep {
   step_number?: number;
@@ -31,9 +31,8 @@ export interface AIInsightCardProps {
 }
 
 /**
- * Standardized AI Output Component (Phase 4 Spec)
- * Fixed structure: Fino indicator + still ready dot, Insight narration, Confidence label (e.g. "Confidence: High (98%)"),
- * and expandable Evidence Trail numbered list.
+ * Standardized AI Output Component (Phase 2 Monochrome-Plus-Semantic Spec)
+ * Monogram "F" badge, monochrome ink action highlights, and semantic status tokens.
  */
 export const AIInsightCard: React.FC<AIInsightCardProps> = ({
   title = "Fino Controller Insight",
@@ -46,7 +45,6 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
   metrics = [],
   asOfTimestamp,
   children,
-  variant = 'card',
   className = ''
 }) => {
   const [showEvidence, setShowEvidence] = useState(false);
@@ -62,20 +60,20 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
 
   const getConfidenceBadgeStyle = () => {
     const tier = (confidence || 'HIGH').toUpperCase();
-    if (tier === 'HIGH') return 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]';
-    if (tier === 'MEDIUM') return 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]';
-    return 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]';
+    if (tier === 'HIGH') return 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]';
+    if (tier === 'MEDIUM') return 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]';
+    return 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]';
   };
 
   return (
-    <div className={`bg-white text-slate-900 rounded-2xl border border-[#DDD7FE] shadow-xs overflow-hidden transition-colors duration-150 ease-out ${className}`}>
+    <div className={`bg-white text-slate-900 rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden transition-colors duration-150 ease-out ${className}`}>
       
       {/* Header */}
-      <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-[#EEEBFF]/30 to-transparent">
+      <div className="p-5 border-b border-[#E4E4E7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
         <div className="flex items-center gap-3">
-          <div className="relative p-2.5 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE] shadow-xs shrink-0">
-            <Sparkles size={18} />
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#16A34A] ring-2 ring-white" title="Fino Grounded Engine Ready" />
+          <div className="relative w-8 h-8 rounded-xl bg-[#1E293B] text-white flex items-center justify-center text-xs font-bold font-mono shadow-xs shrink-0">
+            F
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#15803D] ring-2 ring-white dark:ring-[#151B24]" title="Fino Grounded Engine Ready" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -103,7 +101,7 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
         {evidenceTrail && evidenceTrail.length > 0 && (
           <button
             onClick={() => setShowEvidence(!showEvidence)}
-            className="text-xs font-bold text-[#5B45F5] hover:text-[#4C35E8] bg-[#EEEBFF] hover:bg-[#DDD7FE] px-3 py-1.5 rounded-xl border border-[#DDD7FE] transition-colors duration-150 ease-out flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+            className="text-xs font-bold text-[#1E293B] hover:text-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] px-3 py-1.5 rounded-xl border border-[#E2E8F0] transition-colors duration-150 ease-out flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
           >
             <Database size={13} />
             <span>{showEvidence ? 'Hide Evidence Trail' : `Show Evidence Trail (${evidenceTrail.length} steps)`}</span>
@@ -122,7 +120,7 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
         {metrics && metrics.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
             {metrics.map((m, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-[#E4E4E7]">
                 <span className="text-[10px] text-slate-500 font-bold uppercase block">{m.label}</span>
                 <span className={`text-sm font-bold font-mono ${m.color || 'text-slate-900'}`}>
                   {m.value}
@@ -134,12 +132,12 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
 
         {/* Optional Recommended Action */}
         {recommendedAction && (
-          <div className="p-3 bg-[#ECFDF3] rounded-xl border border-[#BBF7D0] flex items-center justify-between text-xs">
+          <div className="p-3 bg-[#F0FDF4] rounded-xl border border-[#BBF7D0] flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-              <CheckCircle2 size={15} className="text-[#16A34A] shrink-0" />
+              <CheckCircle2 size={15} className="text-[#15803D] shrink-0" />
               Recommended Controller Action:
             </span>
-            <span className="font-bold text-[#16A34A]">{recommendedAction}</span>
+            <span className="font-bold text-[#15803D]">{recommendedAction}</span>
           </div>
         )}
 
@@ -147,10 +145,10 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
 
         {/* Expandable Evidence Trail Numbered List */}
         {showEvidence && evidenceTrail.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200/80 space-y-3 animate-in fade-in duration-200 ease-out">
+          <div className="mt-4 pt-4 border-t border-[#E4E4E7] space-y-3 animate-in fade-in duration-200 ease-out">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-[#16A34A]" /> Numbered Ledger Evidence Trail
+                <ShieldCheck size={14} className="text-[#15803D]" /> Numbered Ledger Evidence Trail
               </span>
               <span className="text-[10px] text-slate-400 font-mono">
                 {evidenceTrail.length} Deterministic Tool Executions
@@ -166,13 +164,13 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
                   : (step.result_summary || JSON.stringify(step.observation || {}));
                 
                 return (
-                  <div key={sIdx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                  <div key={sIdx} className="p-3 bg-slate-50 rounded-xl border border-[#E4E4E7] text-xs space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-slate-900 flex items-center gap-1.5">
-                        <span className="w-4 h-4 rounded-full bg-[#EEEBFF] text-[#5B45F5] text-[10px] flex items-center justify-center font-bold">
+                        <span className="w-4 h-4 rounded-full bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] text-[10px] flex items-center justify-center font-bold">
                           {stepNum}
                         </span>
-                        Tool: <span className="text-[#5B45F5]">{toolName}</span>
+                        Tool: <span className="text-[#1E293B]">{toolName}</span>
                       </span>
                       {step.input && (
                         <span className="text-[10px] text-slate-400 font-mono">
@@ -191,15 +189,14 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
         )}
       </div>
 
-      {/* Grounding Footer (Softened Enterprise Guarantee) */}
-      <div className="px-5 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-        <span className="flex items-center gap-1.5">
-          <ShieldCheck size={13} className="text-[#16A34A]" />
-          <span>AI Grounding: Responses are generated from verified ledger records with a linked evidence trail.</span>
+      {/* Grounding Footer */}
+      <div className="px-5 py-2.5 bg-slate-50/70 border-t border-[#E4E4E7] flex items-center justify-between text-[11px] text-slate-500">
+        <span className="flex items-center gap-1.5 font-medium">
+          <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+          Deterministic Double-Entry Execution
         </span>
-        <span className="font-mono text-[10px] text-slate-400">Ind AS Audit-Ready</span>
+        <span className="font-mono text-[10px] text-slate-400">Grounded in local SQLite ledger</span>
       </div>
-
     </div>
   );
 };

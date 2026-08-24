@@ -18,7 +18,6 @@ import {
   Flame,
   Clock,
   Layers,
-  Sparkles,
   Zap,
   TrendingUp,
   RotateCcw,
@@ -37,6 +36,7 @@ import { TableSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
+import { AskableMetric } from '../components/ui/AskableMetric';
 
 export default function Exceptions() {
   const [exceptions, setExceptions] = useState<any[]>([]);
@@ -135,9 +135,9 @@ export default function Exceptions() {
         },
         selected_record_id: expandedId,
         suggested_inquiries: [
-          `Explain the ${openCount} open exceptions requiring resolution`,
-          `What is the root cause for the ${patternClusters.length} systemic pattern clusters?`,
-          `Recommend the next action for ${highRiskCount} high-risk exceptions`
+          `Explain the ${openCount} open ${openCount === 1 ? 'exception' : 'exceptions'} requiring resolution`,
+          `What is the root cause for the ${patternClusters.length} systemic pattern ${patternClusters.length === 1 ? 'cluster' : 'clusters'}?`,
+          `Recommend the next action for ${highRiskCount} high-risk ${highRiskCount === 1 ? 'exception' : 'exceptions'}`
         ]
       });
     }
@@ -340,16 +340,16 @@ export default function Exceptions() {
 
       {/* Systemic Pattern Clustering Alert */}
       {patternClusters.length > 0 && activeFilter === 'Open' && (
-        <div className="bg-white text-slate-900 rounded-2xl p-5 border border-indigo-200 shadow-xs space-y-4">
+        <div className="bg-white text-slate-900 rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-200">
+              <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
                 <Layers size={18} />
               </div>
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-700">Systemic Root-Cause Intelligence</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Systemic Root-Cause Intelligence</h3>
                 <p className="text-sm font-bold text-slate-900 mt-0.5">
-                  {patternClusters.length} Systemic Exception Clusters Detected • Click any card for AI Root-Cause Analysis
+                  {patternClusters.length} Systemic Exception {patternClusters.length === 1 ? 'Cluster' : 'Clusters'} Detected • Click any card for Root-Cause Analysis
                 </p>
               </div>
             </div>
@@ -357,7 +357,7 @@ export default function Exceptions() {
             {selectedClusterReason && (
               <button 
                 onClick={() => { setSelectedClusterReason(null); setSelectedClusterKey(null); }}
-                className="text-xs font-bold px-3 py-1 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 transition-colors border border-indigo-200 cursor-pointer flex items-center gap-1"
+                className="text-xs font-bold px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-800 transition-colors border border-slate-200 cursor-pointer flex items-center gap-1"
               >
                 <X size={12} /> Clear Cluster Filter
               </button>
@@ -372,8 +372,8 @@ export default function Exceptions() {
                   key={i} 
                   className={`p-4 rounded-xl border transition-all cursor-pointer ${
                     isSelected 
-                      ? 'bg-indigo-50/90 border-indigo-500 shadow-xs ring-2 ring-indigo-500' 
-                      : 'bg-slate-50/70 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30'
+                      ? 'bg-slate-100/90 border-[#1E293B] shadow-xs ring-2 ring-[#1E293B]' 
+                      : 'bg-slate-50/70 border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
                   }`}
                   onClick={() => handleClusterClick(cl)}
                 >
@@ -381,16 +381,18 @@ export default function Exceptions() {
                     <span className="text-slate-900 flex items-center gap-1.5 font-bold">
                       <Flame size={14} className="text-amber-500 shrink-0" /> {cl.title}
                     </span>
-                    <span className="text-indigo-700 font-mono font-bold text-xs">
+                    <span className="text-slate-900 font-mono font-bold text-xs">
                       ₹{cl.total_amount.toLocaleString('en-IN')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed mt-1">
                     {cl.insight}
                   </p>
-                  <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-indigo-600 font-bold">
-                    <span className="flex items-center gap-1"><Sparkles size={11} /> Why this cluster?</span>
-                    <span className="text-slate-400 font-normal">{cl.count} exceptions</span>
+                  <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-700 font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div> Why this cluster?
+                    </span>
+                    <span className="text-slate-400 font-normal">{cl.count} {cl.count === 1 ? 'exception' : 'exceptions'}</span>
                   </div>
                 </div>
               );
@@ -407,7 +409,13 @@ export default function Exceptions() {
               confidenceScore={0.92}
               recommendedAction={clusterWhyData[selectedClusterKey].recommended_action}
               evidenceTrail={[
-                { step_number: 1, tool: 'sqlite_cluster_aggregator', observation: `Aggregated ${clusterWhyData[selectedClusterKey].member_count} items across identical variance signatures.` },
+                { 
+                  step_number: 1, 
+                  tool: 'sqlite_cluster_aggregator', 
+                  observation: clusterWhyData[selectedClusterKey].member_count === 1 
+                    ? 'Aggregated 1 item across identical variance signature.' 
+                    : `Aggregated ${clusterWhyData[selectedClusterKey].member_count} items across identical variance signatures.` 
+                },
                 { step_number: 2, tool: 'deterministic_pattern_matcher', observation: `Verified recurring root-cause: ${clusterWhyData[selectedClusterKey].title}.` }
               ]}
             />
@@ -447,21 +455,21 @@ export default function Exceptions() {
               placeholder="Search or ask: 'high severity fee issues open > 30 days'..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1E293B] focus:bg-white transition-all"
             />
           </div>
         </div>
 
         {/* Natural Language Filter Badge */}
         {nlFilter && nlFilter.is_natural_language && (
-          <div className="flex items-center justify-between p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-xs">
-            <div className="flex items-center gap-2 text-indigo-900 font-medium">
-              <Sparkles size={14} className="text-indigo-600" />
-              <span><strong>AI Filter Applied:</strong> {nlFilter.filter_description}</span>
+          <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            <div className="flex items-center gap-2 text-slate-900 font-medium">
+              <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
+              <span><strong>Filter Applied:</strong> {nlFilter.filter_description}</span>
             </div>
             <button
               onClick={() => { setSearch(''); setNlFilter(null); }}
-              className="text-indigo-700 hover:text-indigo-950 text-xs font-bold flex items-center gap-1 cursor-pointer"
+              className="text-slate-600 hover:text-slate-900 text-xs font-bold flex items-center gap-1 cursor-pointer"
             >
               <X size={12} /> Clear Filter
             </button>
@@ -504,11 +512,11 @@ export default function Exceptions() {
                   const riskTier = ex.risk_tier || 'MEDIUM';
                   const breakdown = ex.risk_breakdown || { amount_pts: 10, ml_pts: 10, age_pts: 5 };
 
-                  let riskBadgeClass = 'bg-[#F1F5F9] text-[#64748B] border-[#E5E7EB]';
+                  let riskBadgeClass = 'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]';
                   if (riskTier === 'CRITICAL' || riskTier === 'HIGH') {
-                    riskBadgeClass = 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]';
+                    riskBadgeClass = 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]';
                   } else if (riskTier === 'MEDIUM') {
-                    riskBadgeClass = 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]';
+                    riskBadgeClass = 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]';
                   }
 
                   return (
@@ -528,27 +536,33 @@ export default function Exceptions() {
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${riskBadgeClass}`}
                               title={`Amount: ${breakdown.amount_pts}pts | ML Outlier: ${breakdown.ml_pts}pts | Aging: ${breakdown.age_pts}pts`}
                             >
-                              <Flame size={11} className={riskTier === 'CRITICAL' || riskTier === 'HIGH' ? 'text-[#DC2626]' : 'text-[#D97706]'} />
+                              <Flame size={11} className={riskTier === 'CRITICAL' || riskTier === 'HIGH' ? 'text-[#B91C1C]' : 'text-[#B45309]'} />
                               {riskScore} • {riskTier}
                             </span>
                           </div>
                         </td>
 
                         <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                          {ex.id}
+                          <AskableMetric question={`Investigate exception ${ex.id} (${ex.reason?.replace(/_/g, ' ')} for ₹${amount?.toLocaleString('en-IN')}): explain the underlying discrepancy and recommend automated or manual resolution.`}>
+                            {ex.id}
+                          </AskableMetric>
                         </td>
                         
                         <td className="py-3.5 px-4">
-                          <span className="font-semibold text-slate-800 capitalize">
-                            {ex.reason.replace(/_/g, ' ')}
-                          </span>
+                          <AskableMetric question={`Explain the root cause behind exception reason '${ex.reason?.replace(/_/g, ' ')}' for record ${ex.id} (amount: ₹${amount?.toLocaleString('en-IN')}).`}>
+                            <span className="font-semibold text-slate-800 capitalize">
+                              {ex.reason.replace(/_/g, ' ')}
+                            </span>
+                          </AskableMetric>
                           {ex.ml_explanation && (
                             <p className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5">{ex.ml_explanation}</p>
                           )}
                         </td>
 
                         <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                          <AmountDisplay amount={amount} />
+                          <AskableMetric question={`Trace the ledger calculation for ₹${amount?.toLocaleString('en-IN')} on exception ${ex.id} and show which rail or account holds the variance.`}>
+                            <AmountDisplay amount={amount} />
+                          </AskableMetric>
                         </td>
 
                         <td className="py-3.5 px-4 text-slate-600 font-mono">
@@ -559,14 +573,14 @@ export default function Exceptions() {
                           <div className="flex items-center justify-end gap-2">
                             <button 
                               onClick={(e) => handleInvestigateAI(ex.id, e)}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B45F5] bg-[#EEEBFF] hover:bg-[#DDD7FE] border border-[#DDD7FE] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E293B] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#E2E8F0] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
                             >
                               {investigatingId === ex.id ? (
-                                <Loader2 size={13} className="text-[#5B45F5] animate-spin" />
+                                <Loader2 size={13} className="text-[#1E293B] animate-spin" />
                               ) : (
-                                <Sparkles size={13} className="text-[#5B45F5]" />
+                                <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
                               )}
-                              {investigatingId === ex.id ? 'Investigating...' : 'Investigate with AI'}
+                              {investigatingId === ex.id ? 'Investigating...' : 'Investigate'}
                             </button>
                             <Link 
                               to={`/record/exception/${ex.id}`}
@@ -585,19 +599,19 @@ export default function Exceptions() {
                             <div className="p-6 bg-slate-50 border-y border-slate-200 text-slate-800 space-y-5 animate-in fade-in duration-200 ease-out">
                               
                               {/* STRUCTURED AI ROOT-CAUSE INVESTIGATION PANEL */}
-                              <div className="bg-[#EEEBFF]/40 text-slate-900 rounded-2xl p-5 shadow-xs border border-[#DDD7FE] space-y-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-3">
+                              <div className="bg-white text-slate-900 rounded-2xl p-5 shadow-xs border border-slate-200 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                                   <div className="flex items-center gap-2.5">
-                                    <div className="relative p-2 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
-                                      <Sparkles size={16} />
-                                      <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#16A34A] ring-1 ring-white" title="Ready"></span>
+                                    <div className="relative p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0] font-mono font-bold text-xs">
+                                      F
+                                      <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#15803D] ring-1 ring-white dark:ring-[#151B24]" title="Ready"></span>
                                     </div>
                                     <div>
-                                      <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
-                                        Deterministic AI Root-Cause Investigation
+                                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                                        Deterministic Root-Cause Investigation
                                       </h4>
                                       <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                                        Sequential 4-factor audit verification for <span className="font-mono font-bold text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">{ex.id}</span>
+                                        Sequential 4-factor audit verification for <span className="font-mono font-bold text-slate-900 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">{ex.id}</span>
                                       </p>
                                     </div>
                                   </div>
@@ -606,10 +620,10 @@ export default function Exceptions() {
                                     <button
                                       onClick={(e) => handleInvestigateAI(ex.id, e)}
                                       disabled={investigatingId === ex.id}
-                                      className="text-xs font-bold px-3.5 py-1.5 bg-[#5B45F5] hover:bg-[#4C35E8] text-white rounded-xl shadow-xs transition-colors duration-150 ease-out flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                      className="text-xs font-bold px-3.5 py-1.5 bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-xl shadow-xs transition-colors duration-150 ease-out flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                                     >
                                       <RotateCcw size={12} className={investigatingId === ex.id ? "animate-spin" : ""} />
-                                      {investigatingId === ex.id ? 'Running 4 Checks...' : investigationResults[ex.id] ? 'Re-run Investigation' : 'Run AI Investigation'}
+                                      {investigatingId === ex.id ? 'Running 4 Checks...' : investigationResults[ex.id] ? 'Re-run Investigation' : 'Run Investigation'}
                                     </button>
                                   </div>
                                 </div>
@@ -626,13 +640,13 @@ export default function Exceptions() {
                                       </div>
                                       <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
                                         <span className="text-[10px] uppercase font-bold text-slate-500 block">Explained Variance</span>
-                                        <span className="text-sm font-bold font-mono text-emerald-700">
+                                        <span className="text-sm font-bold font-mono text-[#15803D]">
                                           ₹{investigationResults[ex.id].explained_amount?.toLocaleString('en-IN')}
                                         </span>
                                       </div>
                                       <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
                                         <span className="text-[10px] uppercase font-bold text-slate-500 block">Unexplained Discrepancy</span>
-                                        <span className={`text-sm font-bold font-mono ${investigationResults[ex.id].unexplained_amount > 1 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                                        <span className={`text-sm font-bold font-mono ${investigationResults[ex.id].unexplained_amount > 1 ? 'text-[#B91C1C]' : 'text-[#15803D]'}`}>
                                           ₹{investigationResults[ex.id].unexplained_amount?.toLocaleString('en-IN')}
                                         </span>
                                       </div>
@@ -645,9 +659,9 @@ export default function Exceptions() {
                                         <div key={sIdx} className="p-3 rounded-xl bg-white border border-slate-200 flex items-start gap-3 shadow-xs">
                                           <div className="mt-0.5">
                                             {st.status === 'APPLIED' ? (
-                                              <span className="inline-block p-1 bg-emerald-100 text-emerald-700 rounded-md"><CheckCircle2 size={13} /></span>
+                                              <span className="inline-block p-1 bg-[#F0FDF4] text-[#15803D] rounded-md"><CheckCircle2 size={13} /></span>
                                             ) : st.status === 'LATENCY_FACTOR' ? (
-                                              <span className="inline-block p-1 bg-amber-100 text-amber-700 rounded-md"><Clock size={13} /></span>
+                                              <span className="inline-block p-1 bg-[#FFFBEB] text-[#B45309] rounded-md"><Clock size={13} /></span>
                                             ) : (
                                               <span className="inline-block p-1 bg-slate-100 text-slate-500 rounded-md"><Minus size={13} /></span>
                                             )}
@@ -656,8 +670,8 @@ export default function Exceptions() {
                                             <div className="flex items-center justify-between">
                                               <span className="font-bold text-slate-900">Check {st.step}: {st.check}</span>
                                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono border ${
-                                                st.status === 'APPLIED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                                st.status === 'LATENCY_FACTOR' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+                                                st.status === 'APPLIED' ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' :
+                                                st.status === 'LATENCY_FACTOR' ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' : 'bg-slate-50 text-slate-600 border-slate-200'
                                               }`}>
                                                 {st.status.replace(/_/g, ' ')}
                                               </span>
@@ -670,7 +684,7 @@ export default function Exceptions() {
 
                                     {/* Phase 4 Standardized AI Insight Card with Grounded Evidence Trail */}
                                     <AIInsightCard
-                                      title="Fino Root-Cause Investigation Conclusion"
+                                      title="Root-Cause Investigation Conclusion"
                                       subtitle={`Deterministic 4-step reconciliation verification for ${ex.id}`}
                                       narration={investigationResults[ex.id].conclusion}
                                       confidence={investigationResults[ex.id].confidence_badge === 'HIGH' ? 'HIGH' : investigationResults[ex.id].confidence_badge === 'MEDIUM' ? 'MEDIUM' : 'LOW'}
@@ -678,9 +692,9 @@ export default function Exceptions() {
                                       recommendedAction={investigationResults[ex.id].recommended_action}
                                       metrics={[
                                         { label: 'Initial Variance', value: `₹${investigationResults[ex.id].initial_variance?.toLocaleString('en-IN')}` },
-                                        { label: 'Explained Amount', value: `₹${investigationResults[ex.id].explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#16A34A]' },
-                                        { label: 'Unexplained Variance', value: `₹${investigationResults[ex.id].unexplained_amount?.toLocaleString('en-IN')}`, color: investigationResults[ex.id].unexplained_amount > 1 ? 'text-[#DC2626]' : 'text-[#16A34A]' },
-                                        { label: 'Action Recommendation', value: investigationResults[ex.id].recommended_action, color: 'text-[#5B45F5]' }
+                                        { label: 'Explained Amount', value: `₹${investigationResults[ex.id].explained_amount?.toLocaleString('en-IN')}`, color: 'text-[#15803D]' },
+                                        { label: 'Unexplained Variance', value: `₹${investigationResults[ex.id].unexplained_amount?.toLocaleString('en-IN')}`, color: investigationResults[ex.id].unexplained_amount > 1 ? 'text-[#B91C1C]' : 'text-[#15803D]' },
+                                        { label: 'Action Recommendation', value: investigationResults[ex.id].recommended_action, color: 'text-slate-900' }
                                       ]}
                                       evidenceTrail={investigationResults[ex.id].steps_checked?.map((st: any) => ({
                                         step_number: st.step,
@@ -691,12 +705,12 @@ export default function Exceptions() {
                                       {/* Quick Apply Action CTA inside AI Card */}
                                       <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                                         <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
-                                          <ShieldCheck size={13} className="text-[#16A34A]" />
+                                          <ShieldCheck size={13} className="text-[#15803D]" />
                                           Stored audit record: {investigationResults[ex.id].investigation_id} • Status: {investigationResults[ex.id].verifier_status}
                                         </div>
                                         <button
-                                          onClick={() => handleResolve(ex.id, investigationResults[ex.id].recommended_action, 'Applied Fino AI root-cause recommended resolution', 'AI Recommendation Applied')}
-                                          className="px-3.5 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
+                                          onClick={() => handleResolve(ex.id, investigationResults[ex.id].recommended_action, 'Applied root-cause recommended resolution', 'Recommendation Applied')}
+                                          className="px-3.5 py-1.5 bg-[#15803D] hover:bg-[#166534] text-white rounded-xl text-xs font-bold shadow-xs transition-colors duration-150 ease-out flex items-center gap-1 cursor-pointer"
                                         >
                                           <CheckCircle size={13} /> Apply Recommended Resolution
                                         </button>
@@ -719,12 +733,12 @@ export default function Exceptions() {
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
                                       Composite Risk Score Breakdown ({riskScore}/100)
                                     </h4>
-                                    <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-bold border border-slate-200">
                                       Deterministic Audit Logic
                                     </span>
                                   </div>
                                   <p className="text-xs text-slate-600 mt-0.5">
-                                    Computed from transaction value, Isolation Forest ML anomaly rating, and {ex.aging_days} days unresolved aging.
+                                    Computed from transaction value, ML anomaly rating, and {ex.aging_days} days unresolved aging.
                                   </p>
                                 </div>
                               </div>
@@ -738,7 +752,7 @@ export default function Exceptions() {
                                   
                                   {/* 1. Ledger Record */}
                                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-700 mb-2">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-2">
                                       <BookOpen size={14} /> Internal Ledger Record
                                     </div>
                                     <p className="text-xs text-slate-500 mb-1">Transaction Ref: <span className="font-mono font-bold text-slate-900">{ex.transaction_id || 'None'}</span></p>
@@ -747,7 +761,7 @@ export default function Exceptions() {
 
                                   {/* 2. Gateway Settlement */}
                                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-blue-700 mb-2">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-[#1D4ED8] mb-2">
                                       <CreditCard size={14} /> Gateway Feeds
                                     </div>
                                     <p className="text-xs text-slate-500 mb-1">Expected Net (Post 2%+GST):</p>
@@ -756,11 +770,11 @@ export default function Exceptions() {
 
                                   {/* 3. Bank Statement */}
                                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 mb-2">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-[#15803D] mb-2">
                                       <Building2 size={14} /> Bank Account Feed
                                     </div>
                                     <p className="text-xs text-slate-500 mb-1">Matched Credit Batch:</p>
-                                    <div className="text-base font-bold text-rose-600">
+                                    <div className="text-base font-bold text-[#B91C1C]">
                                       {ex.reason === 'no_bank_credit_found' ? 'No Bank Credit Found' : `₹${amount.toLocaleString('en-IN')}`}
                                     </div>
                                   </div>
@@ -773,13 +787,13 @@ export default function Exceptions() {
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => setAction(ex.id, action === 'resolve' ? null : 'resolve', ex.reason)}
-                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3.5 py-2 bg-[#15803D] hover:bg-[#166534] text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                                   >
-                                    <CheckCircle size={14} /> Mark Explained & Resolve
+                                    <CheckCircle size={14} /> Mark Explained &amp; Resolve
                                   </button>
                                   <button
                                     onClick={() => setAction(ex.id, action === 'escalate' ? null : 'escalate')}
-                                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                                    className="px-3.5 py-2 bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                                   >
                                     <UserCheck size={14} /> Escalate to Lead
                                   </button>

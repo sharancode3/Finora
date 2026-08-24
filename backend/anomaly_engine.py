@@ -120,7 +120,8 @@ def run_isolation_forest_analysis(transactions: List[Dict[str, Any]]) -> Dict[st
         elif max_feat_idx == 2:
             explanation = f"GST tax deduction of {point[2]*100:.2f}% on fees diverges from 18% statutory baseline."
         else:
-            explanation = f"Settlement delay of {point[3]:.0f} days exceeds standard T+2 SLA."
+            delay_val = point[3]
+            explanation = f"Settlement delay of {delay_val:.0f} {'day' if round(delay_val) == 1 else 'days'} exceeds standard T+2 SLA."
 
         if is_unusual:
             anomalies.append({

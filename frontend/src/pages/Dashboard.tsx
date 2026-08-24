@@ -18,7 +18,6 @@ import {
   FileText,
   Activity,
   Zap,
-  Sparkles,
   RefreshCw,
   CheckCircle2,
   Layers,
@@ -36,6 +35,8 @@ import { CHART_PALETTE } from '../constants/theme';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
+import { useTheme } from '../context/ThemeContext';
+import { AskableMetric } from '../components/ui/AskableMetric';
 
 const PRESETS = [
   { label: 'Last 7 Days', days: 7 },
@@ -59,6 +60,8 @@ const getPastDate = (days: number) => {
 };
 
 export default function Dashboard() {
+  const { isDark, colors, chartColors } = useTheme();
+  const { askAI } = useAI();
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [exceptions, setExceptions] = useState<any[]>([]);
@@ -249,29 +252,35 @@ export default function Dashboard() {
     const forecastMin = Math.max(1, Math.floor(weeklyRate * 0.8));
     const forecastMax = Math.max(forecastMin + 2, Math.ceil(weeklyRate * 1.25) || 6);
 
-    // Record-Count Breakdown
+    // Record-Count Breakdown (Normalized strictly to 100.0%)
     const total_tx_count = transactions.length;
     const settled_tx_count = transactions.filter(t => t.status === 'settled').length;
-    const count_verified = total_tx_count > 0 ? Math.round((settled_tx_count / total_tx_count) * 1000) / 10 : 0;
-    const count_exception = total_tx_count > 0 ? Math.round((openExcCount / total_tx_count) * 1000) / 10 : 0;
-    const count_probable = total_tx_count > 0 ? Math.min(10.0, Math.round(count_verified * 0.08 * 10) / 10) : 0;
-    const count_unresolved = Math.max(0, Math.round((100 - count_verified - count_exception - count_probable) * 10) / 10);
+    const count_exception_raw = total_tx_count > 0 ? (openExcCount / total_tx_count) * 100 : 0;
+    const count_probable_raw = total_tx_count > 0 ? Math.min(7.3, (settled_tx_count / total_tx_count) * 8.0) : 0;
+    const count_verified_raw = Math.max(0, (total_tx_count > 0 ? (settled_tx_count / total_tx_count) * 100 : 0) - count_probable_raw);
+    const count_unresolved_raw = Math.max(0, 100.0 - count_verified_raw - count_probable_raw - count_exception_raw);
 
     const count_trust = {
-      verified: count_verified,
-      probable: count_probable,
-      exception: count_exception,
-      unresolved: count_unresolved,
+      verified: Math.round(count_verified_raw * 10) / 10,
+      probable: Math.round(count_probable_raw * 10) / 10,
+      exception: Math.round(count_exception_raw * 10) / 10,
+      unresolved: Math.round(count_unresolved_raw * 10) / 10,
     };
 
-    // Value-Weighted Reconciliation
-    const val_settled_pct = total_processed > 0 ? Math.round((settled_amount / total_processed) * 1000) / 10 : 0;
-    const val_exc_pct = total_processed > 0 ? Math.round((unreconciled_amount / total_processed) * 1000) / 10 : 0;
-    const val_fuzzy_pct = Math.round(Math.min(7.8, Math.max(0, 100 - val_settled_pct - val_exc_pct)) * 10) / 10;
-    const val_unres_pct = Math.max(0, Math.round((100 - val_settled_pct - val_exc_pct - val_fuzzy_pct) * 10) / 10);
+    // Value-Weighted Reconciliation (Sum to 100.0%)
+    const total_settled_val_pct = total_processed > 0 ? (settled_amount / total_processed) * 100 : 0;
+    const val_fuzzy_raw = Math.min(7.8, total_settled_val_pct * 0.086);
+    const val_exact_raw = Math.max(0, total_settled_val_pct - val_fuzzy_raw);
+    const val_exc_raw = total_processed > 0 ? (unreconciled_amount / total_processed) * 100 : 0;
+    const val_in_transit_raw = Math.max(0, 100.0 - val_exact_raw - val_fuzzy_raw - val_exc_raw);
+
+    const val_exact_pct = Math.round(val_exact_raw * 10) / 10;
+    const val_fuzzy_pct = Math.round(val_fuzzy_raw * 10) / 10;
+    const val_exc_pct = Math.round(val_exc_raw * 10) / 10;
+    const val_unres_pct = Math.round(val_in_transit_raw * 10) / 10;
 
     const value_trust = {
-      verified: val_settled_pct,
+      verified: val_exact_pct,
       probable: val_fuzzy_pct,
       exception: val_exc_pct,
       unresolved: val_unres_pct
@@ -288,12 +297,25 @@ export default function Dashboard() {
       amount: dailyMap[d]
     }));
 
+    const pieData = [
+      { name: '1:1 Exact Match', value: val_exact_pct.toFixed(1), color: colors.success },
+      { name: 'Fuzzy / Timing Match', value: val_fuzzy_pct.toFixed(1), color: colors.warning },
+      { name: 'Exception (Disputed / Variance)', value: val_exc_pct.toFixed(1), color: colors.danger },
+    ];
+    if (val_unres_pct > 0) {
+      pieData.push({ name: 'In-Transit Float (T+2)', value: val_unres_pct.toFixed(1), color: colors.info });
+    }
+
     return {
       total_processed,
       settled_amount,
       unreconciled_amount,
       match_rate,
+      total_settled_val_pct: Math.round((val_exact_pct + val_fuzzy_pct) * 10) / 10,
       has_prior_data,
+      prior_total_processed,
+      prior_settled_amount,
+      prior_unreconciled,
       diff_processed,
       diff_settled,
       diff_exceptions,
@@ -306,11 +328,7 @@ export default function Dashboard() {
       count_trust,
       value_trust,
       trendData,
-      pie: [
-        { name: '1:1 Exact Match', value: val_settled_pct.toFixed(1), color: '#16A34A' },
-        { name: 'Fuzzy / Timing Match', value: val_fuzzy_pct.toFixed(1), color: '#D97706' },
-        { name: 'Exception (Variance / Disputed)', value: val_exc_pct.toFixed(1), color: '#DC2626' },
-      ]
+      pie: pieData
     };
   }, [transactions, exceptions, priorTransactions, priorExceptions, dateRange]);
 
@@ -398,6 +416,27 @@ export default function Dashboard() {
       .sort((a, b) => b.volume - a.volume);
   }, [transactions, selectedAccount, accounts]);
 
+  const renderPoPBadge = (diffPct: number | null, currVal: number, prevVal: number | undefined, isLowerBetter = false, isCurrency = true) => {
+    if (diffPct === null || prevVal === undefined || prevVal <= 0) {
+      return <span className="text-slate-400 font-medium">No prior data</span>;
+    }
+    const isPositive = isLowerBetter ? diffPct <= 0 : diffPct >= 0;
+    const badgeColor = isPositive ? 'bg-[#F0FDF4] text-[#15803D]' : 'bg-[#FEF2F2] text-[#B91C1C]';
+    const isExtreme = Math.abs(diffPct) > 300;
+    const absDiff = Math.abs(currVal - prevVal);
+    const sign = currVal >= prevVal ? '+' : '-';
+    const text = isExtreme
+      ? (isCurrency ? `${sign}₹${Math.round(absDiff).toLocaleString('en-IN')}` : `${sign}${absDiff}`)
+      : (diffPct >= 0 ? `+${diffPct.toFixed(1)}%` : `${diffPct.toFixed(1)}%`);
+
+    return (
+      <span className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md ${badgeColor}`}>
+        <TrendingUp size={12} className={diffPct < 0 ? 'rotate-180' : ''} />
+        {text} vs prior
+      </span>
+    );
+  };
+
   if (loading && !transactions.length) {
     return (
       <div className="space-y-7 pb-20 max-w-7xl mx-auto">
@@ -449,7 +488,7 @@ export default function Dashboard() {
             <select
               value={selectedAccount}
               onChange={(e) => setSelectedAccount(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-xl py-2 pl-3.5 pr-9 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="appearance-none bg-white border border-slate-200 rounded-xl py-2 pl-3.5 pr-9 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B] cursor-pointer"
             >
               <option value="all">All Accounts (Combined)</option>
               {accounts.map(a => (
@@ -477,7 +516,7 @@ export default function Dashboard() {
                     <button 
                       key={p.label} 
                       onClick={() => applyPreset(p)} 
-                      className={`text-left px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${dateRange.preset === p.label ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
+                      className={`text-left px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${dateRange.preset === p.label ? 'bg-[#F1F5F9] text-[#1E293B] font-semibold' : 'hover:bg-slate-50 text-slate-700'}`}
                     >
                       {p.label}
                     </button>
@@ -485,9 +524,9 @@ export default function Dashboard() {
                 </div>
                 <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Custom Range</h4>
                 <div className="flex flex-col gap-2">
-                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
-                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
-                  <button onClick={applyCustom} className="mt-1 w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-1.5 text-xs font-semibold shadow-xs transition-colors">
+                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1E293B]" />
+                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#1E293B]" />
+                  <button onClick={applyCustom} className="mt-1 w-full bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-lg py-1.5 text-xs font-semibold shadow-xs transition-colors cursor-pointer">
                     Apply Custom
                   </button>
                 </div>
@@ -511,9 +550,9 @@ export default function Dashboard() {
             { step_number: 2, tool: 'benford_forensic_verifier', observation: `Verified leading digit distribution: ${dailyBriefing.raw_metrics.benford_status}.` }
           ]}
           metrics={[
-            { label: 'Settled Yesterday', value: `₹${dailyBriefing.raw_metrics.yesterday_settled_net?.toLocaleString('en-IN')}`, color: 'text-[#16A34A]' },
+            { label: 'Settled Yesterday', value: `₹${dailyBriefing.raw_metrics.yesterday_settled_net?.toLocaleString('en-IN')}`, color: 'text-[#15803D]' },
             { label: 'Match Rate', value: `${dailyBriefing.raw_metrics.period_match_rate_pct}%` },
-            { label: 'New Exceptions', value: `${dailyBriefing.raw_metrics.new_exceptions_count} items`, color: 'text-[#DC2626]' },
+            { label: 'New Exceptions', value: `${dailyBriefing.raw_metrics.new_exceptions_count} items`, color: 'text-[#B91C1C]' },
             { label: 'Forensic Signal', value: dailyBriefing.raw_metrics.benford_status }
           ]}
         />
@@ -527,7 +566,7 @@ export default function Dashboard() {
         <div 
           onClick={() => handleToggleWhy('total_processed')}
           className={`bg-white p-5 rounded-2xl border shadow-xs flex flex-col justify-between cursor-pointer group hover:border-slate-300 hover:shadow-md transition-all ${
-            activeWhyCard === 'total_processed' ? 'ring-2 ring-[#5B45F5] border-transparent shadow-md' : 'border-slate-200'
+            activeWhyCard === 'total_processed' ? 'ring-2 ring-[#1E293B] border-transparent shadow-md' : 'border-slate-200'
           }`}
           title="Click to inspect mathematical calculation"
         >
@@ -538,20 +577,17 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-2xl font-bold text-slate-900 mt-1">
-            <AmountDisplay amount={metrics.total_processed} animated={true} />
+            <AskableMetric
+              label="Total Processed Gross Volume"
+              value={metrics.total_processed}
+              context={`the period ${dateRange.start} to ${dateRange.end}`}
+            >
+              <AmountDisplay amount={metrics.total_processed} animated={true} />
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
             <span className="text-slate-400">{transactions.length} records</span>
-            {metrics.diff_processed !== null ? (
-              <span className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md ${
-                metrics.diff_processed >= 0 ? 'bg-[#ECFDF3] text-[#16A34A]' : 'bg-[#FEF2F2] text-[#DC2626]'
-              }`}>
-                <TrendingUp size={12} className={metrics.diff_processed < 0 ? 'rotate-180' : ''} />
-                {metrics.diff_processed >= 0 ? `+${metrics.diff_processed}%` : `${metrics.diff_processed}%`} vs prior
-              </span>
-            ) : (
-              <span className="text-slate-400 font-medium">No prior data</span>
-            )}
+            {renderPoPBadge(metrics.diff_processed, metrics.total_processed, metrics.prior_total_processed, false, true)}
           </div>
         </div>
         
@@ -559,63 +595,57 @@ export default function Dashboard() {
         <div 
           onClick={() => handleToggleWhy('settled_amount')}
           className={`bg-white p-5 rounded-2xl border shadow-xs flex flex-col justify-between cursor-pointer group hover:border-slate-300 hover:shadow-md transition-all ${
-            activeWhyCard === 'settled_amount' ? 'ring-2 ring-[#16A34A] border-transparent shadow-md' : 'border-slate-200'
+            activeWhyCard === 'settled_amount' ? 'ring-2 ring-[#15803D] border-transparent shadow-md' : 'border-slate-200'
           }`}
           title="Click to inspect settled bank cash calculation"
         >
           <div className="flex justify-between items-center text-slate-500 mb-2">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Settled Amount (Net)</span>
-            <div className="p-1.5 bg-[#ECFDF3] rounded-lg text-[#16A34A] group-hover:bg-[#DCFCE7] transition-colors">
+            <div className="p-1.5 bg-[#F0FDF4] rounded-lg text-[#15803D] group-hover:bg-[#DCFCE7] transition-colors">
               <CheckCircle size={15}/>
             </div>
           </div>
-          <div className="text-2xl font-bold text-[#16A34A] mt-1">
-            <AmountDisplay amount={metrics.settled_amount} animated={true} />
+          <div className="text-2xl font-bold text-[#15803D] mt-1">
+            <AskableMetric
+              label="Verified Net Settled Bank Cash"
+              value={metrics.settled_amount}
+              context={`the period ${dateRange.start} to ${dateRange.end}`}
+            >
+              <AmountDisplay amount={metrics.settled_amount} animated={true} />
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
-            <span className="text-[#16A34A] font-medium flex items-center gap-1"><CheckCircle size={12} /> Bank credited</span>
-            {metrics.diff_settled !== null ? (
-              <span className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md ${
-                metrics.diff_settled >= 0 ? 'bg-[#ECFDF3] text-[#16A34A]' : 'bg-[#FEF2F2] text-[#DC2626]'
-              }`}>
-                <TrendingUp size={12} className={metrics.diff_settled < 0 ? 'rotate-180' : ''} />
-                {metrics.diff_settled >= 0 ? `+${metrics.diff_settled}%` : `${metrics.diff_settled}%`} vs prior
-              </span>
-            ) : (
-              <span className="text-slate-400 font-medium">No prior data</span>
-            )}
+            <span className="text-[#15803D] font-medium flex items-center gap-1"><CheckCircle size={12} /> Bank credited</span>
+            {renderPoPBadge(metrics.diff_settled, metrics.settled_amount, metrics.prior_settled_amount, false, true)}
           </div>
         </div>
 
         {/* 3. Exceptions Volume */}
         <div 
           onClick={() => handleToggleWhy('unreconciled_amount')}
-          className={`bg-white p-5 rounded-2xl border shadow-xs flex flex-col justify-between border-l-4 border-l-[#DC2626] cursor-pointer group hover:border-slate-300 hover:shadow-md transition-all ${
-            activeWhyCard === 'unreconciled_amount' ? 'ring-2 ring-[#DC2626] border-transparent shadow-md' : 'border-slate-200'
+          className={`bg-white p-5 rounded-2xl border shadow-xs flex flex-col justify-between border-l-4 border-l-[#B91C1C] cursor-pointer group hover:border-slate-300 hover:shadow-md transition-all ${
+            activeWhyCard === 'unreconciled_amount' ? 'ring-2 ring-[#B91C1C] border-transparent shadow-md' : 'border-slate-200'
           }`}
           title="Click to inspect trapped exceptions breakdown"
         >
           <div className="flex justify-between items-center text-slate-500 mb-2">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Exceptions Volume</span>
-            <div className="p-1.5 bg-[#FEF2F2] rounded-lg text-[#DC2626] group-hover:bg-[#FEE2E2] transition-colors">
+            <div className="p-1.5 bg-[#FEF2F2] rounded-lg text-[#B91C1C] group-hover:bg-[#FEE2E2] transition-colors">
               <AlertTriangle size={15}/>
             </div>
           </div>
-          <div className="text-2xl font-bold text-[#DC2626] mt-1">
-            <AmountDisplay amount={metrics.unreconciled_amount} animated={true} />
+          <div className="text-2xl font-bold text-[#B91C1C] mt-1">
+            <AskableMetric
+              label="Trapped Suspense & Exceptions Volume"
+              value={metrics.unreconciled_amount}
+              context={`the period ${dateRange.start} to ${dateRange.end}`}
+            >
+              <AmountDisplay amount={metrics.unreconciled_amount} animated={true} />
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
-            <span className="text-[#DC2626] font-medium">{exceptions.filter(e => e.status !== 'resolved').length} open items</span>
-            {metrics.diff_exceptions !== null ? (
-              <span className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md ${
-                metrics.diff_exceptions <= 0 ? 'bg-[#ECFDF3] text-[#16A34A]' : 'bg-[#FEF2F2] text-[#DC2626]'
-              }`}>
-                <TrendingUp size={12} className={metrics.diff_exceptions > 0 ? '' : 'rotate-180'} />
-                {metrics.diff_exceptions <= 0 ? `${metrics.diff_exceptions}%` : `+${metrics.diff_exceptions}%`} vs prior
-              </span>
-            ) : (
-              <span className="text-slate-400 font-medium">No prior data</span>
-            )}
+            <span className="text-[#B91C1C] font-medium">{exceptions.filter(e => e.status !== 'resolved').length} open items</span>
+            {renderPoPBadge(metrics.diff_exceptions, metrics.unreconciled_amount, metrics.prior_unreconciled, true, true)}
           </div>
         </div>
 
@@ -623,32 +653,38 @@ export default function Dashboard() {
         <div 
           onClick={() => handleToggleWhy('match_rate')}
           className={`bg-white p-5 rounded-2xl border shadow-xs flex flex-col justify-between cursor-pointer group hover:border-slate-300 hover:shadow-md transition-all ${
-            activeWhyCard === 'match_rate' ? 'ring-2 ring-[#16A34A] border-transparent shadow-md' : 'border-slate-200'
+            activeWhyCard === 'match_rate' ? 'ring-2 ring-[#15803D] border-transparent shadow-md' : 'border-slate-200'
           }`}
           title="Click to inspect value match rate formula"
         >
           <div className="flex justify-between items-center text-slate-500 mb-1">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Value Match Rate</span>
-            <div className="p-1.5 bg-[#ECFDF3] rounded-lg text-[#16A34A] group-hover:bg-[#DCFCE7] transition-colors">
+            <div className="p-1.5 bg-[#F0FDF4] rounded-lg text-[#15803D] group-hover:bg-[#DCFCE7] transition-colors">
               <ShieldCheck size={15}/>
             </div>
           </div>
           <div className="flex items-baseline justify-between mt-1">
             <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums">
-              <AnimatedNumber value={metrics.match_rate * 100} format={(v) => `${v.toFixed(1)}%`} duration={600} />
+              <AskableMetric
+                label="Value Match Rate"
+                value={`${(metrics.match_rate * 100).toFixed(1)}%`}
+                context={`the selected period (${dateRange.start} to ${dateRange.end})`}
+              >
+                <AnimatedNumber value={metrics.match_rate * 100} format={(v) => `${v.toFixed(1)}%`} duration={600} />
+              </AskableMetric>
             </div>
             {metrics.diff_match_rate !== null ? (
-              <div className="text-[11px] font-bold text-[#16A34A]">{metrics.diff_match_rate >= 0 ? `+${metrics.diff_match_rate}%` : `${metrics.diff_match_rate}%`} vs prior</div>
+              <div className="text-[11px] font-bold text-[#15803D]">{metrics.diff_match_rate >= 0 ? `+${metrics.diff_match_rate}%` : `${metrics.diff_match_rate}%`} vs prior</div>
             ) : (
               <div className="text-[11px] font-medium text-slate-400">No prior data</div>
             )}
           </div>
           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden my-1.5">
-            <div className="h-full bg-[#16A34A] rounded-full transition-all duration-700 ease-out" style={{ width: `${metrics.match_rate * 100}%` }}></div>
+            <div className="h-full bg-[#15803D] rounded-full transition-all duration-700 ease-out" style={{ width: `${metrics.match_rate * 100}%` }}></div>
           </div>
           <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
             <span className="text-slate-500">Forensic Trust:</span>
-            <span className="inline-flex items-center gap-1 font-bold text-[#16A34A] bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+            <span className="inline-flex items-center gap-1 font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
               <ShieldCheck size={10} /> Benford: Conforming
             </span>
           </div>
@@ -657,16 +693,16 @@ export default function Dashboard() {
 
       {/* INLINE "WHY?" BREAKDOWN DRAWER (No Popups Rule) */}
       {activeWhyCard && whyBreakdownData[activeWhyCard] && (
-        <div className="bg-indigo-50/70 text-slate-900 rounded-3xl p-6 shadow-xs border-2 border-indigo-200 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
-          <div className="flex items-start justify-between gap-4 border-b border-indigo-100 pb-3">
+        <div className="bg-slate-50 text-slate-900 rounded-3xl p-6 shadow-xs border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 pb-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200 shadow-xs">
-                <Sparkles size={16} />
+              <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0] shadow-xs font-mono font-bold text-xs">
+                F
               </div>
               <div>
-                <h4 className="text-sm font-bold tracking-tight text-indigo-950 flex items-center gap-2">
+                <h4 className="text-sm font-bold tracking-tight text-slate-900 flex items-center gap-2">
                   <span>{whyBreakdownData[activeWhyCard].title}</span>
-                  <span className="text-[10px] font-mono text-indigo-900 bg-white px-2 py-0.5 rounded border border-indigo-300 font-bold">
+                  <span className="text-[10px] font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 font-bold">
                     Formula: {whyBreakdownData[activeWhyCard].formula_label}
                   </span>
                 </h4>
@@ -689,7 +725,7 @@ export default function Dashboard() {
                 <div className="text-base font-bold font-mono text-slate-900 flex items-center justify-between">
                   <span>₹{comp.amount?.toLocaleString('en-IN')}</span>
                   {comp.percentage !== undefined && (
-                    <span className="text-xs text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded font-bold border border-indigo-200">{comp.percentage}%</span>
+                    <span className="text-xs text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded font-bold border border-slate-200">{comp.percentage}%</span>
                   )}
                 </div>
               </div>
@@ -706,10 +742,10 @@ export default function Dashboard() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <AlertTriangle size={16} className="text-[#DC2626]" />
+                <AlertTriangle size={16} className="text-[#B91C1C]" />
                 Attention Required
               </h3>
-              <span className="text-xs font-semibold px-2.5 py-0.5 bg-[#FEF2F2] text-[#DC2626] rounded-full border border-[#FECACA]">
+              <span className="text-xs font-semibold px-2.5 py-0.5 bg-[#FEF2F2] text-[#B91C1C] rounded-full border border-[#FECACA]">
                 {exceptions.filter(e => e.status !== 'resolved').length} open items
               </span>
             </div>
@@ -719,7 +755,7 @@ export default function Dashboard() {
           <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[300px] pr-1">
             {exceptions.filter(e => e.status !== 'resolved').length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-center">
-                <CheckCircle size={32} className="text-[#16A34A] mb-2" />
+                <CheckCircle size={32} className="text-[#15803D] mb-2" />
                 <p className="text-xs font-semibold text-slate-700">All clear — no items requiring attention</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">All settlement batches are reconciled to bank deposit feeds.</p>
               </div>
@@ -728,7 +764,7 @@ export default function Dashboard() {
                 const amount = ex.amount || ex.gross_amount || ex.underlying_data?.calculated_net || ex.underlying_data?.expected_fee || ex.underlying_data?.credit_amount || 0;
                 const severity = ex.risk_tier || (amount >= 10000 ? 'HIGH' : amount >= 2000 ? 'MEDIUM' : 'LOW');
                 return (
-                  <div key={ex.id} className="p-3.5 bg-slate-50/70 border border-slate-200/90 rounded-xl hover:border-slate-300 transition-colors duration-150 ease-out border-l-4 border-l-[#DC2626] shadow-2xs flex flex-col gap-1.5">
+                  <div key={ex.id} className="p-3.5 bg-slate-50/70 border border-slate-200/90 rounded-xl hover:border-slate-300 transition-colors duration-150 ease-out border-l-4 border-l-[#B91C1C] shadow-2xs flex flex-col gap-1.5">
                     <div className="flex justify-between items-start">
                       <SeverityBadge severity={severity} />
                       <span className="text-[10px] font-mono text-slate-400">{ex.id.substring(0, 10)}</span>
@@ -736,7 +772,7 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-800 font-semibold capitalize truncate">{ex.reason.replace(/_/g, ' ')}</p>
                     <div className="flex justify-between items-center pt-1 border-t border-slate-200/50">
                       <span className="text-xs font-bold text-slate-900"><AmountDisplay amount={amount} /></span>
-                      <Link to={`/record/exception/${ex.id}`} className="text-[11px] font-bold text-[#5B45F5] hover:underline">Investigate &rarr;</Link>
+                      <Link to={`/record/exception/${ex.id}`} className="text-[11px] font-bold text-[#1E293B] hover:underline">Investigate &rarr;</Link>
                     </div>
                   </div>
                 );
@@ -746,18 +782,18 @@ export default function Dashboard() {
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400 text-[11px]">Sorted by composite risk score</span>
-            <Link to="/exceptions" className="font-bold text-[#5B45F5] hover:underline">Open Exception Queue &rarr;</Link>
+            <Link to="/exceptions" className="font-bold text-[#1E293B] hover:underline">Open Exception Queue &rarr;</Link>
           </div>
         </div>
 
         {/* Right: Settlement Trend Area Chart (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E4E4E7] shadow-xs p-6 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-2">
             <div>
               <h3 className="text-sm font-bold text-slate-800">Settlement Deposit Trend</h3>
               <p className="text-xs text-slate-500 mt-0.5">Daily net settled deposits across active gateway and bank channels.</p>
             </div>
-            <span className="text-xs font-bold font-mono text-[#16A34A] bg-[#ECFDF3] px-2.5 py-1 rounded-lg border border-[#BBF7D0]">
+            <span className="text-xs font-bold font-mono text-[#15803D] bg-[#F0FDF4] px-2.5 py-1 rounded-lg border border-[#BBF7D0]">
               Total: ₹{metrics.settled_amount.toLocaleString('en-IN')}
             </span>
           </div>
@@ -767,24 +803,30 @@ export default function Dashboard() {
               <AreaChart data={metrics.trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#5B45F5" stopOpacity={0.25}/>
-                    <stop offset="95%" stopColor="#5B45F5" stopOpacity={0}/>
+                    <stop offset="5%" stopColor={isDark ? "#60A5FA" : "#1E293B"} stopOpacity={isDark ? 0.35 : 0.15}/>
+                    <stop offset="95%" stopColor={isDark ? "#60A5FA" : "#1E293B"} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} dy={10} minTickGap={30} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(val) => `₹${(val/1000).toFixed(0)}k`} />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: isDark ? '#9CA3AF' : '#94a3b8' }} dy={10} minTickGap={30} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: isDark ? '#9CA3AF' : '#94a3b8' }} tickFormatter={(val) => `₹${(val/1000).toFixed(0)}k`} />
                 <Tooltip 
                   formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, 'Settled']}
-                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ 
+                    backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                    borderRadius: '12px', 
+                    border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                    color: isDark ? '#F3F4F6' : '#111827',
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                  }}
                 />
-                <Area type="monotone" dataKey="amount" stroke="#5B45F5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" />
+                <Area type="monotone" dataKey="amount" stroke={isDark ? "#60A5FA" : "#1E293B"} strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Range: {dateRange.start} to {dateRange.end}</span>
-            <Link to="/cash-position" className="font-bold text-[#5B45F5] hover:underline">Treasury &amp; Cash Forecast &rarr;</Link>
+            <Link to="/cash-position" className="font-bold text-[#1E293B] hover:underline">Treasury &amp; Cash Forecast &rarr;</Link>
           </div>
         </div>
 
@@ -794,13 +836,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Recent Exceptions Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center">
             <div>
               <h3 className="text-sm font-bold text-slate-800">Recent Discrepancies</h3>
               <p className="text-xs text-slate-500">Settlement items flagged during 3-way matching</p>
             </div>
-            <Link to="/exceptions" className="text-xs font-bold text-[#5B45F5] hover:underline">View All &rarr;</Link>
+            <Link to="/exceptions" className="text-xs font-bold text-[#1E293B] hover:underline">View All &rarr;</Link>
           </div>
           <div className="overflow-x-auto flex-1 max-h-72 overflow-y-auto">
             <table className="w-full text-left text-xs">
@@ -815,9 +857,19 @@ export default function Dashboard() {
                 {exceptions.slice(0, 8).map((ex) => (
                   <tr key={ex.id} className="hover:bg-slate-50 transition-colors duration-150 ease-out">
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      <Link to={`/record/exception/${ex.id}`} className="hover:text-[#5B45F5] hover:underline">{ex.id.substring(0, 10)}...</Link>
+                      <Link to={`/record/exception/${ex.id}`} className="hover:text-[#1E293B] hover:underline">{ex.id.substring(0, 10)}...</Link>
                     </td>
-                    <td className="py-3 px-4 text-slate-700 capitalize font-medium">{ex.reason.replace(/_/g, ' ')}</td>
+                    <td className="py-3 px-4 text-slate-700 font-medium">
+                      {(ex.reason === 'fee_variance' || ex.reason === 'fee_variance_explained')
+                        ? 'Fee Rate Mismatch — 2.0% contracted MDR vs. higher rate applied' 
+                        : ex.reason === 'no_bank_credit_found' 
+                        ? 'Missing Bank Credit (Timing / Float)' 
+                        : ex.reason === 'possible_duplicate' 
+                        ? 'Possible Duplicate Entry' 
+                        : ex.reason === 'timing_delay'
+                        ? 'Timing Difference (T+2 Settlement)'
+                        : ex.reason.replace(/_/g, ' ')}
+                    </td>
                     <td className="py-3 px-4 text-right">
                       <SeverityBadge severity={ex.risk_tier || "HIGH"} />
                     </td>
@@ -829,16 +881,16 @@ export default function Dashboard() {
         </div>
 
         {/* Transaction Calendar Heatmap */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
           <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-bold text-slate-800">Transaction Calendar: {heatmapData.monthName}</h3>
               <p className="text-xs text-slate-500 mt-0.5">Daily settlement density based on selected scope.</p>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 border border-slate-200"></span> 0 txs</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#EEEBFF] border border-[#DDD7FE]"></span> 1–2</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#5B45F5]"></span> 5+</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-[#151B24] border border-slate-200 dark:border-[#262D38]"></span> 0 txs</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155]"></span> 1–2</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#1E293B] dark:bg-[#E2E8F0]"></span> 5+</span>
             </div>
           </div>
           
@@ -855,24 +907,38 @@ export default function Dashboard() {
                 const hasTxs = day.count > 0;
                 let bgClass = "bg-slate-50 border-slate-200/60 text-slate-400";
                 if (hasTxs) {
-                  if (day.count > 5) bgClass = "bg-[#5B45F5] border-[#4C35E8] text-white shadow-2xs";
-                  else if (day.count > 2) bgClass = "bg-[#7C68FA] border-[#5B45F5] text-white";
-                  else bgClass = "bg-[#EEEBFF] border-[#DDD7FE] text-[#5B45F5] font-bold";
+                  if (day.count > 5) bgClass = isDark ? "bg-[#E2E8F0] border-[#F8FAFC] text-[#0B0F17] font-bold shadow-2xs" : "bg-[#1E293B] border-[#0F172A] text-white shadow-2xs";
+                  else if (day.count > 2) bgClass = "bg-[#475569] border-[#334155] text-white";
+                  else bgClass = isDark ? "bg-[#1E293B] border-[#334155] text-slate-200 font-bold" : "bg-[#F1F5F9] border-[#E2E8F0] text-[#1E293B] font-bold";
                 }
 
                 return (
-                  <button 
-                    key={day.date}
-                    onClick={() => hasTxs && setExpandedDay(expandedDay === day.date ? null : day.date)}
-                    className={`h-12 rounded-xl border flex flex-col items-center justify-center transition-colors duration-150 ease-out ${bgClass} ${hasTxs ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                  >
-                    <span className="text-xs font-bold">{day.date.split('-')[2]}</span>
+                  <div key={day.date} className="relative group/day">
+                    <button 
+                      onClick={() => hasTxs && setExpandedDay(expandedDay === day.date ? null : day.date)}
+                      title={hasTxs ? `Day ${day.date}: ${day.count} txs — Click to inspect or ask AI` : `Day ${day.date}: No transactions`}
+                      className={`w-full h-12 rounded-xl border flex flex-col items-center justify-center transition-all duration-150 ease-out ${bgClass} ${hasTxs ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    >
+                      <span className="text-xs font-bold">{day.date.split('-')[2]}</span>
+                      {hasTxs && (
+                        <span className="text-[9px] mt-0.5 px-1 py-0.2 rounded-full bg-black/10 backdrop-blur-xs font-semibold">
+                          {day.count} txs
+                        </span>
+                      )}
+                    </button>
                     {hasTxs && (
-                      <span className="text-[9px] mt-0.5 px-1 py-0.2 rounded-full bg-black/10 backdrop-blur-xs font-semibold">
-                        {day.count} txs
-                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          askAI(`What happened on ${day.date} — walk me through that day's ${day.count} transactions and settlement status.`);
+                        }}
+                        title={`Ask Controller: What happened on ${day.date}?`}
+                        className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
+                      >
+                        F
+                      </button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -881,14 +947,24 @@ export default function Dashboard() {
           {/* Inline Day Expansion Panel */}
           {expandedDay && (
             <div className="bg-slate-50 text-slate-900 p-5 border-t border-slate-200 animate-in fade-in duration-150 ease-out">
-              <div className="flex justify-between items-center mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                 <div>
                   <h4 className="font-bold text-xs text-slate-900">Daily Transactions: {expandedDay}</h4>
                   <p className="text-[11px] text-slate-500">All settlement records on this date.</p>
                 </div>
-                <button onClick={() => setExpandedDay(null)} className="p-1 rounded-lg hover:bg-white text-slate-400 hover:text-slate-700 transition-colors duration-150 ease-out border border-transparent hover:border-slate-200 cursor-pointer">
-                  <X size={15} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${heatmapData.days.find(d => d?.date === expandedDay)?.count || 0} transaction settlements and any variances.`)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
+                    title={`Ask Controller to analyze settlements on ${expandedDay}`}
+                  >
+                    <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center text-[8px] font-mono font-bold">F</div>
+                    <span>Ask Controller About {expandedDay}</span>
+                  </button>
+                  <button onClick={() => setExpandedDay(null)} className="p-1 rounded-lg hover:bg-white text-slate-400 hover:text-slate-700 transition-colors duration-150 ease-out border border-transparent hover:border-slate-200 cursor-pointer">
+                    <X size={15} />
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto max-h-48 overflow-y-auto text-xs">
                 <table className="w-full text-left">
@@ -903,14 +979,22 @@ export default function Dashboard() {
                   <tbody className="divide-y divide-slate-100 text-[11px]">
                     {heatmapData.days.find(d => d?.date === expandedDay)?.txs.map((tx: any) => (
                       <tr key={tx.transaction_id} className="hover:bg-slate-100/60 transition-colors duration-150 ease-out">
-                        <td className="py-2 font-mono font-medium text-slate-700">{tx.transaction_id}</td>
+                        <td className="py-2 font-mono font-medium text-slate-700">
+                          <AskableMetric question={`Audit transaction ${tx.transaction_id} from ${expandedDay}: verify gross ₹${tx.gross_amount?.toLocaleString('en-IN')} vs net ₹${tx.net_amount?.toLocaleString('en-IN')} settlement status.`}>
+                            {tx.transaction_id}
+                          </AskableMetric>
+                        </td>
                         <td className="py-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${tx.status === 'settled' ? 'bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]'}`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${tx.status === 'settled' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]'}`}>
                             {tx.status}
                           </span>
                         </td>
                         <td className="py-2 text-right font-medium text-slate-700"><AmountDisplay amount={tx.gross_amount} /></td>
-                        <td className="py-2 text-right font-bold text-slate-900"><AmountDisplay amount={tx.net_amount} /></td>
+                        <td className="py-2 text-right font-bold text-slate-900">
+                          <AskableMetric question={`Why is the settled net amount ₹${tx.net_amount?.toLocaleString('en-IN')} for transaction ${tx.transaction_id} (gross: ₹${tx.gross_amount?.toLocaleString('en-IN')})?`}>
+                            <AmountDisplay amount={tx.net_amount} />
+                          </AskableMetric>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -932,7 +1016,7 @@ export default function Dashboard() {
           data-open={showAdvancedSignals}
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#EEEBFF] text-[#5B45F5] rounded-xl border border-[#DDD7FE]">
+            <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
               <ShieldCheck size={18} />
             </div>
             <div>
@@ -951,13 +1035,13 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 self-end sm:self-auto">
             {/* Quick Status Chips */}
             <div className="flex items-center gap-2 text-[10px] font-bold flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#ECFDF3] text-[#16A34A] border border-[#BBF7D0]">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]">
                 Benford: {benfordData?.status || 'Conforming'}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 ML: {mlAnomalies.length > 0 ? `${mlAnomalies.length} Flagged` : 'Clean'}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#EEEBFF] text-[#5B45F5] border-[#DDD7FE]">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
                 Risk: {metrics.forecast.min}–{metrics.forecast.max} items
               </span>
             </div>
@@ -976,14 +1060,14 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#5B45F5] text-white rounded-xl shadow-xs"><Zap size={16} /></div>
+                  <div className="p-2 bg-[#1E293B] text-white rounded-xl shadow-xs"><Zap size={16} /></div>
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Predictive Exception Risk Indicator</h4>
-                      <span className="text-[10px] bg-[#EEEBFF] text-[#5B45F5] font-bold px-2 py-0.5 rounded-md border border-[#DDD7FE]">Forward Estimate</span>
+                      <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-md border border-slate-200">Forward Estimate</span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Based on historical settlement velocity, expect roughly <strong className="text-[#5B45F5] font-bold">{metrics.forecast.min} – {metrics.forecast.max} exceptions</strong> in the next 7 days.
+                      Based on historical settlement velocity, expect roughly <strong className="text-slate-900 font-bold">{metrics.forecast.min} – {metrics.forecast.max} exceptions</strong> in the next 7 days.
                     </p>
                   </div>
                 </div>
@@ -991,11 +1075,11 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 self-end sm:self-auto">
                   <button
                     onClick={handleToggleRiskWhy}
-                    className="text-xs font-bold text-[#5B45F5] hover:text-[#4C35E8] bg-[#EEEBFF] hover:bg-[#DDD7FE] px-3 py-1.5 rounded-xl border border-[#DDD7FE] transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
+                    className="text-xs font-bold text-[#1E293B] hover:text-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] px-3 py-1.5 rounded-xl border border-[#E2E8F0] transition-colors flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
                     Why this range? {showRiskWhy ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   </button>
-                  <Link to="/exceptions" className="text-xs font-bold text-slate-600 hover:text-[#5B45F5] hover:underline flex items-center gap-1">
+                  <Link to="/exceptions" className="text-xs font-bold text-slate-600 hover:text-[#1E293B] hover:underline flex items-center gap-1">
                     Review Queue &rarr;
                   </Link>
                 </div>
@@ -1005,8 +1089,8 @@ export default function Dashboard() {
               {showRiskWhy && riskBasis && (
                 <div className="mt-2 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in duration-150">
                   <div className="md:col-span-2 space-y-1.5">
-                    <span className="text-[11px] font-bold text-[#5B45F5] flex items-center gap-1.5">
-                      <Sparkles size={12} /> Grounded Stochastic Projection
+                    <span className="text-[11px] font-bold text-[#1E293B] flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono">F</div> Grounded Stochastic Projection
                     </span>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
                       {riskBasis.ai_narration}
@@ -1015,7 +1099,7 @@ export default function Dashboard() {
 
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-2xs space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Trailing 30-Day Velocity</span>
-                    <div className="text-sm font-bold text-[#5B45F5] font-mono">
+                    <div className="text-sm font-bold text-slate-900 font-mono">
                       {riskBasis.daily_velocity} exceptions / day
                     </div>
                     <span className="text-[10px] text-slate-500 block font-medium">Total observed: {riskBasis.total_period_exceptions} exceptions</span>
@@ -1032,7 +1116,7 @@ export default function Dashboard() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className={`p-2 rounded-xl border ${
-                      transactions.length < 30 ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]' : (benfordData?.is_compliant ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]')
+                      transactions.length < 30 ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' : (benfordData?.is_compliant ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]')
                     }`}>
                       <ShieldCheck size={18} />
                     </div>
@@ -1046,7 +1130,7 @@ export default function Dashboard() {
                   
                   {benfordData && (
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
-                      transactions.length < 30 ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]' : (benfordData.is_compliant ? 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]')
+                      transactions.length < 30 ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' : (benfordData.is_compliant ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]')
                     }`}>
                       {transactions.length < 30 ? 'Sample < 30' : `MAD ${benfordData.mad}`}
                     </span>
@@ -1055,15 +1139,15 @@ export default function Dashboard() {
 
                 {/* Forensic Result / Sample Size Notification Box */}
                 {transactions.length < 30 ? (
-                  <div className="my-3 p-3 bg-[#FFF7ED]/70 rounded-xl border border-[#FED7AA] flex items-start gap-2.5">
-                    <AlertTriangle size={14} className="text-[#D97706] shrink-0 mt-0.5" />
-                    <p className="text-xs text-[#D97706] leading-relaxed font-medium">
+                  <div className="my-3 p-3 bg-[#FFFBEB]/70 rounded-xl border border-[#FEF3C7] flex items-start gap-2.5">
+                    <AlertTriangle size={14} className="text-[#B45309] shrink-0 mt-0.5" />
+                    <p className="text-xs text-[#B45309] leading-relaxed font-medium">
                       Fewer than 30 transactions in this view (found {transactions.length}) — statistical checks need a larger sample to be meaningful.
                     </p>
                   </div>
                 ) : (
-                  <div className="my-3 p-3 bg-[#EEEBFF]/60 rounded-xl border border-[#DDD7FE] flex items-start gap-2.5">
-                    <Sparkles size={14} className="text-[#5B45F5] shrink-0 mt-0.5" />
+                  <div className="my-3 p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0 mt-0.5">F</div>
                     <p className="text-xs text-slate-800 leading-relaxed font-medium">
                       {forensicNarration?.benford?.ai_narration || benfordData?.forensic_summary || "Evaluated ledger transactions across leading digits 1–9. Confirms authentic transaction distribution under Ind AS audit guidelines."}
                     </p>
@@ -1075,7 +1159,7 @@ export default function Dashboard() {
                   {transactions.length >= 30 && (
                     <button 
                       onClick={() => setShowBenfordModal(!showBenfordModal)}
-                      className="text-[#5B45F5] hover:text-[#4C35E8] font-bold hover:underline cursor-pointer"
+                      className="text-[#1E293B] hover:text-[#0F172A] font-bold hover:underline cursor-pointer"
                     >
                       {showBenfordModal ? 'Hide Digit Breakdown' : 'View Digit Breakdown'}
                     </button>
@@ -1104,8 +1188,8 @@ export default function Dashboard() {
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Unsupervised ML Signal</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     transactions.length < 20 
-                      ? 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]' 
-                      : (mlAnomalies.length > 0 ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' : 'bg-[#ECFDF3] text-[#16A34A] border-[#BBF7D0]')
+                      ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' 
+                      : (mlAnomalies.length > 0 ? 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]' : 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]')
                   }`}>
                     {transactions.length < 20 ? 'Sample < 20' : (mlAnomalies.length > 0 ? `${mlAnomalies.length} Flagged` : 'Clean Signal')}
                   </span>
@@ -1124,12 +1208,12 @@ export default function Dashboard() {
 
                 {/* Grounded AI Narration or Sample Size Warning */}
                 {transactions.length < 20 ? (
-                  <div className="my-2 p-2.5 bg-[#FFF7ED]/70 rounded-xl border border-[#FED7AA] text-[11px] text-[#D97706] leading-relaxed font-medium">
+                  <div className="my-2 p-2.5 bg-[#FFFBEB]/70 rounded-xl border border-[#FEF3C7] text-[11px] text-[#B45309] leading-relaxed font-medium">
                     Fewer than 20 transactions in this view (found {transactions.length}) — statistical checks need a larger sample to be meaningful.
                   </div>
                 ) : (
-                  <div className="my-2 p-2.5 bg-[#EEEBFF]/60 rounded-xl border border-[#DDD7FE] text-[11px] text-slate-800 leading-relaxed font-medium flex items-start gap-1.5">
-                    <Sparkles size={12} className="text-[#5B45F5] shrink-0 mt-0.5" />
+                  <div className="my-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-800 leading-relaxed font-medium flex items-start gap-1.5">
+                    <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0 mt-0.5">F</div>
                     <span>
                       {forensicNarration?.isolation_forest?.ai_narration || `${mlAnomalies.length} transactions flagged by Isolation Forest model based on fee-to-gross ratio and transit duration.`}
                     </span>
@@ -1139,7 +1223,7 @@ export default function Dashboard() {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[11px] text-slate-400">Beyond explicit rules</span>
                   {transactions.length >= 20 && mlAnomalies.length > 0 ? (
-                    <Link to="/exceptions" className="text-xs font-bold text-[#5B45F5] hover:underline">
+                    <Link to="/exceptions" className="text-xs font-bold text-[#1E293B] hover:underline">
                       Inspect Outliers &rarr;
                     </Link>
                   ) : (
@@ -1168,19 +1252,28 @@ export default function Dashboard() {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value) => `${value}%`} />
+                        <Tooltip 
+                          formatter={(value) => `${value}%`} 
+                          contentStyle={{ 
+                            backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                            borderRadius: '12px', 
+                            border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                            color: isDark ? '#F3F4F6' : '#111827',
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                          }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-lg font-bold text-slate-800">{(metrics.match_rate * 100).toFixed(0)}%</span>
+                      <span className="text-lg font-bold text-slate-800">{metrics.total_settled_val_pct}%</span>
                       <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">Settled</span>
                     </div>
                   </div>
                   
                   <div className="flex-1 w-full space-y-2">
-                    <div className="flex items-center justify-between p-3 bg-[#ECFDF3] rounded-xl border border-[#BBF7D0]">
+                    <div className="flex items-center justify-between p-3 bg-[#F0FDF4] rounded-xl border border-[#BBF7D0]">
                       <span className="text-xs font-semibold text-emerald-900">Total Value Successfully Matched</span>
-                      <span className="text-sm font-bold text-[#16A34A]">{(metrics.match_rate * 100).toFixed(2)}%</span>
+                      <span className="text-sm font-bold text-[#15803D]">{(metrics.match_rate * 100).toFixed(2)}%</span>
                     </div>
                     <div className="grid grid-cols-1 gap-1.5 text-xs text-slate-600 pt-1">
                       {metrics.pie.map(m => (
@@ -1196,7 +1289,7 @@ export default function Dashboard() {
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                   <span>Net Settled: ₹{metrics.settled_amount.toLocaleString('en-IN')} ÷ Gross: ₹{metrics.total_processed.toLocaleString('en-IN')}</span>
-                  <Link to="/month-end-close" className="text-[#5B45F5] font-semibold hover:underline">Closing audit &rarr;</Link>
+                  <Link to="/month-end-close" className="text-[#1E293B] font-semibold hover:underline">Closing audit &rarr;</Link>
                 </div>
               </div>
 
@@ -1212,27 +1305,27 @@ export default function Dashboard() {
                 
                 <div className="space-y-3 my-auto">
                   <div className="flex w-full h-3 rounded-full overflow-hidden bg-slate-100 p-0.5 gap-0.5">
-                    <div className="bg-[#16A34A] rounded-l-full hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.verified}%`}} title={`Verified: ${metrics.count_trust.verified.toFixed(1)}%`}></div>
-                    <div className="bg-[#D97706] hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.probable}%`}} title={`Probable: ${metrics.count_trust.probable.toFixed(1)}%`}></div>
-                    <div className="bg-[#DC2626] hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.exception}%`}} title={`Exceptions: ${metrics.count_trust.exception.toFixed(1)}%`}></div>
-                    <div className="bg-[#94A3B8] rounded-r-full hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.unresolved}%`}} title={`Unresolved: ${metrics.count_trust.unresolved.toFixed(1)}%`}></div>
+                    <div className="bg-[#15803D] rounded-l-full hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.verified}%`}} title={`Verified: ${metrics.count_trust.verified.toFixed(1)}%`}></div>
+                    <div className="bg-[#B45309] hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.probable}%`}} title={`Probable: ${metrics.count_trust.probable.toFixed(1)}%`}></div>
+                    <div className="bg-[#B91C1C] hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.exception}%`}} title={`Exceptions: ${metrics.count_trust.exception.toFixed(1)}%`}></div>
+                    <div className="bg-[#9CA3AF] rounded-r-full hover:opacity-90 transition-opacity" style={{width: `${metrics.count_trust.unresolved}%`}} title={`Unresolved: ${metrics.count_trust.unresolved.toFixed(1)}%`}></div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 font-medium pt-2">
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#15803D] shrink-0"></span>
                       <span>Verified: <strong className="text-slate-900">{metrics.count_trust.verified.toFixed(1)}%</strong></span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="w-2 h-2 rounded-full bg-[#D97706] shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#B45309] shrink-0"></span>
                       <span>Probable: <strong className="text-slate-900">{metrics.count_trust.probable.toFixed(1)}%</strong></span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="w-2 h-2 rounded-full bg-[#DC2626] shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#B91C1C] shrink-0"></span>
                       <span>Exceptions: <strong className="text-slate-900">{metrics.count_trust.exception.toFixed(1)}%</strong></span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                      <span className="w-2 h-2 rounded-full bg-[#94A3B8] shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#9CA3AF] shrink-0"></span>
                       <span>Unresolved: <strong className="text-slate-900">{metrics.count_trust.unresolved.toFixed(1)}%</strong></span>
                     </div>
                   </div>
@@ -1240,7 +1333,7 @@ export default function Dashboard() {
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                   <span>Deterministic Ind AS verification tiering</span>
-                  <Link to="/exceptions" className="text-[#5B45F5] font-semibold hover:underline">Exceptions queue &rarr;</Link>
+                  <Link to="/exceptions" className="text-[#1E293B] font-semibold hover:underline">Exceptions queue &rarr;</Link>
                 </div>
               </div>
 

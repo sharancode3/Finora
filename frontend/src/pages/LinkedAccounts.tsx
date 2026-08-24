@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Layers,
   X,
-  Sparkles,
   ArrowUpRight,
   TrendingUp,
   Workflow,
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { useAI } from '../context/AIContext';
+import { AskableMetric } from '../components/ui/AskableMetric';
 
 export default function LinkedAccounts() {
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -178,7 +178,7 @@ export default function LinkedAccounts() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#5B45F5] hover:bg-[#4C35E8] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#1E293B] hover:bg-[#0F172A] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-auto"
         >
           <Plus size={16} />
           Connect Integration
@@ -187,12 +187,12 @@ export default function LinkedAccounts() {
 
       {/* Sync Success Feedback Banner */}
       {syncSuccessMessage && (
-        <div className="p-3.5 bg-[#ECFDF3] text-[#16A34A] rounded-xl border border-[#BBF7D0] flex items-center justify-between gap-3 text-xs font-medium animate-in fade-in duration-200">
+        <div className="p-3.5 bg-[#F0FDF4] text-[#15803D] rounded-xl border border-[#BBF7D0] flex items-center justify-between gap-3 text-xs font-medium animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
+            <CheckCircle2 size={16} className="text-[#15803D] shrink-0" />
             <span>{syncSuccessMessage}</span>
           </div>
-          <button onClick={() => setSyncSuccessMessage(null)} className="text-[#16A34A] hover:opacity-80 cursor-pointer">
+          <button onClick={() => setSyncSuccessMessage(null)} className="text-[#15803D] hover:opacity-80 cursor-pointer">
             <X size={14} />
           </button>
         </div>
@@ -204,21 +204,21 @@ export default function LinkedAccounts() {
           {staleAccounts.map(stale => (
             <div 
               key={stale.account_id}
-              className="p-4 bg-[#FFF7ED] text-[#D97706] rounded-2xl border border-[#FED7AA] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="p-4 bg-[#FFFBEB] text-[#B45309] rounded-2xl border border-[#FEF3C7] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-[#FED7AA]/60 text-[#D97706] rounded-xl shrink-0 mt-0.5">
+                <div className="p-2 bg-[#FEF3C7] text-[#B45309] rounded-xl shrink-0 mt-0.5">
                   <AlertTriangle size={18} />
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold uppercase tracking-wider text-[#D97706]">Sync Delay Flagged</span>
-                    <span className="text-[#D97706] font-mono">({stale.name})</span>
+                    <span className="font-bold uppercase tracking-wider text-[#B45309]">Sync Delay Flagged</span>
+                    <span className="text-[#B45309] font-mono">({stale.name})</span>
                   </div>
                   
-                  {/* Grounded AI Explanation */}
-                  <div className="p-2.5 bg-white/90 rounded-xl border border-[#FED7AA]/70 text-slate-800 flex items-start gap-2">
-                    <Sparkles size={14} className="text-[#5B45F5] shrink-0 mt-0.5" />
+                  {/* Grounded Explanation */}
+                  <div className="p-2.5 bg-white/90 rounded-xl border border-[#FEF3C7] text-slate-800 flex items-start gap-2">
+                    <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0 mt-0.5">F</div>
                     <p className="leading-relaxed font-medium">
                       {stale.ai_sync_explanation || stale.sync_issue || `Last synced against a 15-minute polling interval.`}
                     </p>
@@ -229,7 +229,7 @@ export default function LinkedAccounts() {
               <button
                 onClick={() => handleSyncNow(stale.account_id)}
                 disabled={syncingId === stale.account_id}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#D97706] text-white hover:bg-[#B45309] rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#B45309] text-white hover:bg-[#92400E] rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 disabled:opacity-50"
               >
                 {syncingId === stale.account_id ? <RefreshCw size={13} className="animate-spin" /> : <RefreshCw size={13} />}
                 <span>{syncingId === stale.account_id ? 'Syncing...' : 'Sync Gateway Feed'}</span>
@@ -244,20 +244,20 @@ export default function LinkedAccounts() {
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#EEEBFF] text-[#5B45F5] rounded-2xl border border-[#DDD7FE] shadow-xs">
+              <div className="p-2.5 bg-[#F1F5F9] text-[#1E293B] rounded-2xl border border-[#E2E8F0] shadow-xs">
                 <Workflow size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">August 2026 Money Movement & Route Settlement</h3>
+                <h3 className="text-base font-bold text-slate-900">August 2026 Money Movement &amp; Route Settlement</h3>
                 <p className="text-xs text-slate-500">Live source-to-destination settlement pathways computed from SQLite ACID ledger.</p>
               </div>
             </div>
             
             <button
               onClick={() => handleAskFlowQuestion("Why did more money go to Kotak than HDFC?")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#EEEBFF] hover:bg-[#DDD7FE] text-[#5B45F5] border border-[#DDD7FE] rounded-xl text-xs font-bold transition-colors cursor-pointer self-start md:self-auto"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#1E293B] border border-[#E2E8F0] rounded-xl text-xs font-bold transition-colors cursor-pointer self-start md:self-auto"
             >
-              <Sparkles size={13} className="text-[#5B45F5]" />
+              <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
               Ask Fino: Why Kotak &gt; HDFC?
             </button>
           </div>
@@ -278,7 +278,9 @@ export default function LinkedAccounts() {
                     Payment Gateway
                   </span>
                   <span className="text-xs font-mono font-bold text-slate-900">
-                    <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50} />
+                    <AskableMetric label="Razorpay Gateway Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50}>
+                      <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50} />
+                    </AskableMetric>
                   </span>
                 </div>
                 <div>
@@ -298,7 +300,9 @@ export default function LinkedAccounts() {
                     Cross-Border Wallet
                   </span>
                   <span className="text-xs font-mono font-bold text-slate-900">
-                    <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00} />
+                    <AskableMetric label="PayPal Wallet Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00}>
+                      <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00} />
+                    </AskableMetric>
                   </span>
                 </div>
                 <div>
@@ -325,8 +329,10 @@ export default function LinkedAccounts() {
                   <span className="font-semibold text-slate-700 text-[11px]">Razorpay → Kotak</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <span>₹1,69,856.12</span>
-                  <span className="text-[10px] font-sans font-normal text-slate-500">(70.8%)</span>
+                  <AskableMetric question="Why did ₹1,69,856.12 (70.8% of Razorpay volume) settle into Kotak Mahindra Bank?">
+                    <span>₹1,69,856.12</span>
+                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(70.8%)</span>
+                  </AskableMetric>
                 </div>
               </div>
 
@@ -337,8 +343,10 @@ export default function LinkedAccounts() {
                   <span className="font-semibold text-slate-700 text-[11px]">Razorpay → HDFC</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <span>₹65,322.39</span>
-                  <span className="text-[10px] font-sans font-normal text-slate-500">(27.2%)</span>
+                  <AskableMetric question="Why did ₹65,322.39 (27.2% of Razorpay volume) settle into HDFC Bank?">
+                    <span>₹65,322.39</span>
+                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(27.2%)</span>
+                  </AskableMetric>
                 </div>
               </div>
 
@@ -349,8 +357,10 @@ export default function LinkedAccounts() {
                   <span className="font-semibold text-slate-700 text-[11px]">PayPal → Kotak</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <span>₹44,205.76</span>
-                  <span className="text-[10px] font-sans font-normal text-slate-500">(100%)</span>
+                  <AskableMetric question="Why did all ₹44,205.76 from PayPal settle into Kotak Mahindra Bank?">
+                    <span>₹44,205.76</span>
+                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(100%)</span>
+                  </AskableMetric>
                 </div>
               </div>
 
@@ -361,8 +371,10 @@ export default function LinkedAccounts() {
                   <span className="font-semibold text-amber-900 text-[11px]">Razorpay → Suspense</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-amber-950 text-[11px]">
-                  <span>₹4,800.00</span>
-                  <span className="text-[10px] font-sans font-normal text-amber-700">(Audit Hold)</span>
+                  <AskableMetric question="Why is ₹4,800.00 routed to Suspense / Audit Hold from Razorpay?">
+                    <span>₹4,800.00</span>
+                    <span className="text-[10px] font-sans font-normal text-amber-700 ml-1">(Audit Hold)</span>
+                  </AskableMetric>
                 </div>
               </div>
             </div>
@@ -376,11 +388,13 @@ export default function LinkedAccounts() {
               {/* Kotak Bank Destination */}
               <div className="p-4 bg-white rounded-xl border-2 border-[#BBF7D0] shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#16A34A] bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                  <span className="text-[11px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
                     Primary Bank
                   </span>
                   <span className="text-xs font-mono font-bold text-emerald-950">
-                    <AmountDisplay amount={crossRecon.summary?.kotak_total_credits || 214061.88} />
+                    <AskableMetric label="Kotak Mahindra Bank Total Monthly Credits" value={crossRecon.summary?.kotak_total_credits || 214061.88}>
+                      <AmountDisplay amount={crossRecon.summary?.kotak_total_credits || 214061.88} />
+                    </AskableMetric>
                   </span>
                 </div>
                 <div>
@@ -406,7 +420,9 @@ export default function LinkedAccounts() {
                     Secondary Bank
                   </span>
                   <span className="text-xs font-mono font-bold text-slate-900">
-                    <AmountDisplay amount={crossRecon.summary?.hdfc_total_credits || 70822.39} />
+                    <AskableMetric label="HDFC Bank Total Monthly Credits" value={crossRecon.summary?.hdfc_total_credits || 70822.39}>
+                      <AmountDisplay amount={crossRecon.summary?.hdfc_total_credits || 70822.39} />
+                    </AskableMetric>
                   </span>
                 </div>
                 <div>
@@ -430,11 +446,11 @@ export default function LinkedAccounts() {
 
           {/* Suspense Decomposition Inline Expansion */}
           {showSuspenseDetail && (
-            <div className="p-4.5 bg-indigo-50/70 text-slate-900 rounded-2xl border-2 border-indigo-200 space-y-3 animate-in fade-in duration-150 shadow-xs">
+            <div className="p-4.5 bg-slate-50 text-slate-900 rounded-2xl border border-slate-200 space-y-3 animate-in fade-in duration-150 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-indigo-600" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-950">
+                  <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[9px] font-mono shrink-0">F</div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
                     Why is ₹{crossRecon.summary?.trapped_in_exceptions?.toLocaleString('en-IN')} in Suspense?
                   </h4>
                 </div>
@@ -459,7 +475,7 @@ export default function LinkedAccounts() {
                       <div key={i} className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-xs">
                         <div className="text-xs text-slate-500 font-medium truncate">{cat.label}</div>
                         <div className="flex items-baseline justify-between mt-1">
-                          <span className="font-mono font-bold text-xs text-indigo-900">₹{cat.amount.toLocaleString('en-IN')}</span>
+                          <span className="font-mono font-bold text-xs text-slate-900">₹{cat.amount.toLocaleString('en-IN')}</span>
                           <span className="text-[10px] text-slate-500">{cat.count} items ({cat.percentage}%)</span>
                         </div>
                       </div>
@@ -489,7 +505,7 @@ export default function LinkedAccounts() {
             return (
               <div 
                 key={acct.account_id} 
-                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-indigo-200 transition-all space-y-4"
+                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all space-y-4"
               >
                 <div className="space-y-4">
                   {/* Top Header */}
@@ -500,37 +516,41 @@ export default function LinkedAccounts() {
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-900 text-sm">{acct.name}</h4>
-                        <span className="text-[11px] text-slate-500 font-mono">
-                          {acct.key_id || (acct.account_number ? `A/C ...${acct.account_number.slice(-4)}` : acct.account_id)}
-                        </span>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+                          <span>{acct.account_id}</span>
+                          <span>•</span>
+                          <span className="capitalize">{acct.type?.replace('_', ' ')}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border flex items-center gap-1 ${
-                      isHealthy ? 'text-[#16A34A] bg-[#ECFDF3] border-[#BBF7D0]' : 'text-[#D97706] bg-[#FFF7ED] border-[#FED7AA]'
-                    }`}>
-                      {isHealthy ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-                      {isHealthy ? 'Healthy' : 'Delayed'}
-                    </span>
-                  </div>
-
-                  {/* Monthly Volume Stat */}
-                  <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        {isBank ? 'Total Credits Received (August 2026)' : 'Gross Processed Volume (August 2026)'}
+                    <div className="flex items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                        isHealthy ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' : 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#15803D]' : 'bg-[#B45309]'}`} />
+                        {isHealthy ? 'Active' : 'Sync Delay'}
                       </span>
-                      <span className="font-mono font-bold text-base text-slate-900">
-                        <AmountDisplay amount={acct.monthly_total || 0} />
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>{acct.transaction_count || 0} transaction records</span>
-                      <span>Net Settled: <strong className="text-slate-800 font-mono">₹{(acct.net_settled || 0).toLocaleString('en-IN')}</strong></span>
                     </div>
                   </div>
 
-                  {/* Upstream / Downstream Breakdown Specifics */}
+                  {/* Summary Figures Grid */}
+                  <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Volume</span>
+                      <span className="font-mono font-bold text-slate-900 text-sm">
+                        ₹{(acct.total_settled || acct.balance || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Transactions</span>
+                      <span className="font-mono font-bold text-slate-700 text-sm">
+                        {acct.transaction_count || 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Upstream & Downstream Movement Breakdown */}
                   {isBank && acct.upstream_breakdown && (
                     <div className="space-y-2">
                       <div className="text-xs font-bold text-slate-700 flex items-center justify-between">
@@ -539,14 +559,14 @@ export default function LinkedAccounts() {
                       </div>
                       <div className="space-y-1.5">
                         {acct.upstream_breakdown.map((up: any, i: number) => (
-                          <div key={i} className="p-2.5 bg-indigo-50/40 rounded-xl border border-indigo-100 flex items-center justify-between text-xs">
+                          <div key={i} className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between text-xs">
                             <div>
                               <span className="font-bold text-slate-800">{up.source_name}</span>
                               <div className="text-[10px] text-slate-500">{up.flow_label} ({up.count} txns)</div>
                             </div>
                             <div className="text-right">
-                              <div className="font-mono font-bold text-indigo-950">₹{up.amount?.toLocaleString('en-IN')}</div>
-                              <div className="text-[10px] font-bold text-indigo-600">{up.percentage}% share</div>
+                              <div className="font-mono font-bold text-slate-900">₹{up.amount?.toLocaleString('en-IN')}</div>
+                              <div className="text-[10px] font-bold text-[#15803D]">{up.percentage}% share</div>
                             </div>
                           </div>
                         ))}
@@ -583,7 +603,7 @@ export default function LinkedAccounts() {
                   <button
                     onClick={() => handleSyncNow(acct.account_id)}
                     disabled={syncingId === acct.account_id}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
                   >
                     <RefreshCw size={12} className={syncingId === acct.account_id ? 'animate-spin' : ''} />
                     {syncingId === acct.account_id ? 'Syncing...' : 'Sync Now'}
@@ -601,7 +621,7 @@ export default function LinkedAccounts() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
+                <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
                   <Plus size={18} />
                 </div>
                 <div>
@@ -620,7 +640,7 @@ export default function LinkedAccounts() {
                 <select
                   value={newAccountType}
                   onChange={(e) => setNewAccountType(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                 >
                   <option value="payment_gateway">Payment Gateway (Razorpay, Stripe, Cashfree)</option>
                   <option value="bank_feed">Direct Bank Feed (Kotak, HDFC, ICICI, Axis, SBI)</option>
@@ -636,7 +656,7 @@ export default function LinkedAccounts() {
                   placeholder="e.g. Stripe USD Gateway or Axis Current Account"
                   value={newAccountName}
                   onChange={(e) => setNewAccountName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                 />
               </div>
 
@@ -648,7 +668,7 @@ export default function LinkedAccounts() {
                     placeholder="rzp_test_... or pk_test_..."
                     value={newApiKey}
                     onChange={(e) => setNewApiKey(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                   />
                 </div>
               ) : (
@@ -659,13 +679,13 @@ export default function LinkedAccounts() {
                     placeholder="e.g. 981200481920"
                     value={newAccountNumber}
                     onChange={(e) => setNewAccountNumber(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                   />
                 </div>
               )}
 
-              <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-900">
-                <ShieldCheck size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-2.5 text-xs text-slate-800">
+                <ShieldCheck size={16} className="text-[#15803D] shrink-0 mt-0.5" />
                 <span>Encrypted at rest using AES-256 GCM. Automated 15-minute reconciliation scheduler will initiate upon linking.</span>
               </div>
 
@@ -680,7 +700,7 @@ export default function LinkedAccounts() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 text-white shadow-xs transition-colors"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-[#1E293B] hover:bg-[#0F172A] disabled:bg-slate-300 text-white shadow-xs transition-colors cursor-pointer"
                 >
                   {isSubmitting ? 'Establishing Connection...' : 'Connect & Sync'}
                 </button>
