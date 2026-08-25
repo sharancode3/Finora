@@ -56,7 +56,7 @@ Managing this financial movement manually creates severe operational risks:
 
 ### The Finora Solution
 **Finora** is an **Autonomous AI Financial Controller** that automates the continuous financial governance lifecycle:
-- **3-Way Deterministic Reconciliation**: Reconciles Internal Orders ↔ Payment Gateways ↔ Bank Deposits in $<100\text{ms}$.
+- **3-Way Deterministic Reconciliation**: Reconciles Internal Orders ↔ Payment Gateways ↔ Bank Deposits in &lt; 100ms.
 - **Forensic Machine Learning**: Evaluates Isolation Forest anomalies, Benford’s Law digit distributions, and DBSCAN error clusters.
 - **Continuous Ind AS Close**: Replaces traditional 2-week close cycles with continuous daily audit readiness and cryptographically sealed closing memos.
 - **Grounded, Non-Hallucinating Copilot**: Powered by 100% local, on-device SLM inference (Gemma 3 4B) with verifiable SQL tool call trails.
@@ -222,7 +222,7 @@ graph TD
 ### 8. Continuous Month-End Close & Cryptographic Closing Memo
 - **5-Pillar Ind AS Statutory Checklist**:
   1. *Pillar 1: Sales Ledger Integrity* (Ind AS 115)
-  2. *Pillar 2: Payment Gateway Clearing* (MDR variance $<0.1\%$)
+  2. *Pillar 2: Payment Gateway Clearing* (MDR variance &lt; 0.1%)
   3. *Pillar 3: Bank Account Reconciliation* (Ind AS 7 Cash Flow)
   4. *Pillar 4: Suspense & Escrow Clearance* (Zero untriaged breaks)
   5. *Pillar 5: 3-Way Triangulation Audit* (Ledger ↔ Gateway ↔ Bank)
@@ -298,16 +298,16 @@ Finora follows an institutional aesthetic designed for financial software:
 ## 📐 Mathematical & Statistical Formulations
 
 ### 1. 3-Way Reconciliation Balance Equation
-$$\text{Gross Ledger Volume} - \sum \text{Contractual MDR Fees} - \sum \text{GST (18\%)} = \sum \text{Net Bank UTR Deposits}$$
+$$\text{Gross Ledger Volume} - \sum \text{MDR Fees} - \sum \text{GST} = \sum \text{Net Bank Deposits}$$
 
 ### 2. Input Tax Credit (ITC) Blocked Risk under CGST Rule 36(4)
-$$\text{Blocked ITC} = \sum_{i \in \text{Unfiled}} \text{GST Amount}_i \quad \text{where } \text{Status}_i = \text{"missing\_gstr2b"}$$
+$$\text{Blocked ITC} = \sum_{i \in \text{Unfiled}} \text{GST Amount}_i \quad \text{for all unfiled vendor GSTR-1 invoices}$$
 
 ### 3. Benford’s Law Digit Distribution Formula
 $$P(d) = \log_{10}\left(1 + \frac{1}{d}\right) \quad \text{for } d \in \{1, 2, \dots, 9\}$$
 
 ### 4. Monte Carlo Stochastic Liquidity Modeling
-$$C_{t} = C_{t-1} + \mathcal{N}(\mu_{\text{daily}}, \sigma_{\text{daily}}^2) - \text{MDR}_{\text{deducted}} - \text{Float}_{\text{delay}}$$
+$$C_{t} = C_{t-1} + \mathcal{N}(\mu, \sigma^2) - \text{MDR}_{\text{fees}} - \text{Float}_{\text{delay}}$$
 
 ---
 
