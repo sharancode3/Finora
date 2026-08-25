@@ -313,6 +313,38 @@ Finora incorporates the proven, production-grade AI copilot patterns used by ind
 
 ---
 
+## 🎨 Brand Identity: The Finora "F" Mark ("The Ledger Tick")
+
+```
+  ┌─────────────────────────────────────────────────────────────┐
+  │         CANONICAL FINORA BRAND MARK: THE LEDGER TICK        │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │     ████████████████████████████                            │
+  │     ██                    ████                              │
+  │     ██                    ████  ◄── Top arm hook / checkmark│
+  │     ██                    ████      ("The Ledger Tick")     │
+  │     ██                    ████                              │
+  │     ██                                                      │
+  │     ████████████████████                                    │
+  │     ██                                                      │
+  │     ██                                                      │
+  │     ██                                                      │
+  │     ██                                                      │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+```
+
+### Design Philosophy
+- **Concept**: An "F" built from a vertical stem with two horizontal strokes of decreasing length, where the top stroke terminates in a short downward hook. At normal size it reads unambiguously as "F", while the downward hook doubles as a checkmark/tick motif reinforcing matching & verification.
+- **Audit-Grade Single-Ink Monochrome**: Rendered exclusively in `var(--ink, #1E293B)` on light surfaces and `var(--ink-dark, #E2E8F0)` on dark surfaces. Zero gradients and zero secondary colors to maintain institutional gravitas.
+- **Adaptive Size Scaling**:
+  - **$\ge 24\text{px}$** (32px, 40px, 48px, 64px, 128px): Renders the full "Ledger Tick" hook.
+  - **$< 24\text{px}$** (14px, 16px): Drops the hook to render a clean three-stroke "F" without smudge artifacts.
+- **Animated "AI is Thinking" Inference Indicator (`FinoThinkingIndicator.tsx`)**: Replaces generic spinners across Ask Your Books, Month-End Close synthesis, and Document parsing with a pulsing Ledger Tick mark, providing transparent feedback that deterministic tools are executing.
+
+---
+
 ## 🧭 Information Hierarchy & Quick Orientation Guide
 
 To make the platform intuitive without cognitive overload, Finora introduces a structured 4-tier navigation model and an automated onboarding guide:

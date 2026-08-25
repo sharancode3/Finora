@@ -40,6 +40,7 @@ import { AskableMetric } from '../components/ui/AskableMetric';
 import { pluralize } from '../utils/formatters';
 import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
 import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
+import { FinoraMark } from '../components/ui/FinoraMark';
 
 export default function Exceptions() {
   const [exceptions, setExceptions] = useState<any[]>([]);
@@ -597,12 +598,8 @@ export default function Exceptions() {
                               onClick={(e) => handleInvestigateAI(ex.id, e)}
                               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E293B] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#E2E8F0] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
                             >
-                              {investigatingId === ex.id ? (
-                                <Loader2 size={13} className="text-[#1E293B] animate-spin" />
-                              ) : (
-                                <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
-                              )}
-                              {investigatingId === ex.id ? 'Investigating...' : 'Investigate'}
+                              <FinoraMark size={14} isThinking={investigatingId === ex.id} />
+                              <span>{investigatingId === ex.id ? 'Investigating...' : 'Investigate'}</span>
                             </button>
                             <Link 
                               to={`/record/exception/${ex.id}`}

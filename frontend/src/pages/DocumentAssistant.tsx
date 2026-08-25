@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { FormattedMarkdown } from '../components/ui/FormattedMarkdown';
+import { FinoraMark } from '../components/ui/FinoraMark';
+import { FinoThinkingIndicator } from '../components/ui/FinoThinkingIndicator';
 
 interface ParsedRow {
   line_number: number;
@@ -510,9 +512,12 @@ export default function DocumentAssistant() {
           {/* Parsed Table */}
           <div ref={tableContainerRef} className="overflow-x-auto max-h-[520px] overflow-y-auto">
             {isLoadingDoc ? (
-              <div className="p-12 text-center text-slate-400 space-y-3">
-                <Loader2 size={24} className="animate-spin text-[#1E293B] mx-auto" />
-                <p className="text-xs font-medium">Parsing statement line items and auditing fee structures...</p>
+              <div className="p-8">
+                <FinoThinkingIndicator
+                  text="Parsing statement line items and auditing fee structures..."
+                  subtext="Ingesting OCR feed & reconciling against Kotak/Razorpay settlement logs"
+                  size="sm"
+                />
               </div>
             ) : !documentData || filteredRows.length === 0 ? (
               <div className="p-12 text-center text-slate-400 space-y-3">
@@ -720,8 +725,8 @@ export default function DocumentAssistant() {
             ))}
 
             {isAsking && (
-              <div className="flex items-center gap-2 p-3 bg-white border border-[#E4E4E7] rounded-2xl rounded-tl-xs text-xs text-slate-600 shadow-2xs max-w-[85%]">
-                <Loader2 size={14} className="animate-spin text-[#1E293B]" />
+              <div className="flex items-center gap-2.5 p-3 bg-white border border-[#E4E4E7] rounded-2xl rounded-tl-xs text-xs text-slate-600 shadow-2xs max-w-[85%]">
+                <FinoraMark size={18} isThinking={true} />
                 <span>Auditing document lines and referencing financial rules...</span>
               </div>
             )}

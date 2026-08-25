@@ -29,6 +29,7 @@ import {
   GitBranch
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FinoraMark } from './ui/FinoraMark';
 
 export default function AppInfoGuide() {
   const [activeSection, setActiveSection] = useState<'ai_engines' | 'walkthrough' | 'benefits' | 'features' | 'roadmap'>('ai_engines');
@@ -131,7 +132,7 @@ export default function AppInfoGuide() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded-full text-xs font-bold uppercase tracking-wider">
-              <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
+              <FinoraMark size={14} />
               Platform Guide &amp; User Manual
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
@@ -162,7 +163,7 @@ export default function AppInfoGuide() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center font-bold text-[8px] font-mono">F</div>
+            <FinoraMark size={14} />
             Where &amp; How AI Is Used (6 Core Engines)
           </button>
           <button

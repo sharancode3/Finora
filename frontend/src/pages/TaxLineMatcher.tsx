@@ -31,6 +31,7 @@ import { AskableMetric } from '../components/ui/AskableMetric';
 import { FormattedMarkdown } from '../components/ui/FormattedMarkdown';
 import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { GroundedDeltaExplainer } from '../components/ui/GroundedDeltaExplainer';
+import { FinoraMark } from '../components/ui/FinoraMark';
 
 interface TaxSummary {
   total_tax_records: number;
@@ -621,7 +622,7 @@ export default function TaxLineMatcher() {
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
-                    <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
+                    <FinoraMark size={14} />
                     Grounded AI Tax Compliance Audit
                   </span>
                   <span className="text-[10px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">

@@ -13,6 +13,7 @@ import { useTheme } from '../context/ThemeContext';
 import { LedgerCopilotPanel } from '../components/LedgerCopilotPanel';
 import { ReconciliationRunModal } from '../components/ReconciliationRunModal';
 import { QuickOrientationTour } from '../components/ui/QuickOrientationTour';
+import { FinoraMark, FinoraBrandLockup } from '../components/ui/FinoraMark';
 
 interface NavItem {
   to: string;
@@ -133,13 +134,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <header className="bg-white text-slate-900 h-14 shrink-0 relative z-50 flex items-center justify-between px-5 border-b border-[#E4E4E7] shadow-xs">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-[#1E293B] flex items-center justify-center text-white font-extrabold text-base shadow-xs">
-              F
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight leading-none text-slate-900">Finora</span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Financial Controller</span>
-            </div>
+            <FinoraBrandLockup size="md" />
           </Link>
         </div>
 
@@ -161,9 +156,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E4E4E7] hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-all duration-150 ease-out cursor-pointer shadow-2xs"
               title="Open Global Ask Controller Panel"
             >
-              <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center text-[9px] font-mono font-bold shrink-0">
-                F
-              </div>
+              <FinoraMark size={16} />
               <span>Ask Controller</span>
             </button>
           )}

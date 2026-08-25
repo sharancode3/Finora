@@ -37,6 +37,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { FinoThinkingIndicator } from '../components/ui/FinoThinkingIndicator';
 
 interface Step {
   id: number;
@@ -912,9 +913,12 @@ export default function MonthEndClose() {
                   </span>
                 </div>
                 {loadingMemo ? (
-                  <div className="p-10 flex flex-col items-center justify-center text-slate-400 gap-2">
-                    <Loader2 size={20} className="text-[#1E293B] animate-spin" />
-                    <span>Synthesizing verified ledger numbers into formal closing memorandum...</span>
+                  <div className="p-6 flex flex-col items-center justify-center bg-slate-50 rounded-xl border border-slate-200">
+                    <FinoThinkingIndicator
+                      text="Synthesizing verified ledger numbers into formal closing memorandum..."
+                      subtext="Grounded against 5-pillar Ind AS statutory checklist"
+                      size="sm"
+                    />
                   </div>
                 ) : (
                   <textarea

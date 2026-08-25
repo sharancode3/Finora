@@ -11,6 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 import { FormattedMarkdown } from './ui/FormattedMarkdown';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
 import { pluralize } from '../utils/formatters';
+import { FinoraMark } from './ui/FinoraMark';
 
 export const LedgerCopilotPanel: React.FC = () => {
   const location = useLocation();
@@ -169,8 +170,8 @@ export const LedgerCopilotPanel: React.FC = () => {
           {/* Top Bar Header */}
           <div className="p-4 border-b border-[#E4E4E7] bg-slate-50/90 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-white flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-xs relative">
-                F
+              <div className="relative">
+                <FinoraMark size={32} />
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#15803D] border border-white" />
               </div>
               <div>
@@ -263,9 +264,7 @@ export const LedgerCopilotPanel: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-slate-400">
-                <div className="w-12 h-12 rounded-2xl bg-[#F1F5F9] text-[#1E293B] flex items-center justify-center border border-[#E2E8F0] font-mono font-bold text-base">
-                  F
-                </div>
+                <FinoraMark size={48} />
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-slate-700">How can Fino assist your review?</h4>
                   <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
@@ -497,8 +496,8 @@ export const LedgerCopilotPanel: React.FC = () => {
             ))}
 
             {isLoading && (
-              <div className="flex items-center gap-2 p-3 bg-[#F1F5F9] text-[#1E293B] rounded-2xl rounded-tl-xs text-xs font-medium border border-[#E2E8F0] max-w-[85%]">
-                <Loader2 size={14} className="animate-spin text-[#1E293B]" />
+              <div className="flex items-center gap-2.5 p-3 bg-[#F1F5F9] text-[#1E293B] rounded-2xl rounded-tl-xs text-xs font-medium border border-[#E2E8F0] max-w-[90%]">
+                <FinoraMark size={20} isThinking={true} />
                 <span>Executing read-only ledger tools &amp; verifier check...</span>
               </div>
             )}

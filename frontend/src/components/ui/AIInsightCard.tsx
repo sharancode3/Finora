@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ShieldCheck, Database, CheckCircle2 } from 'lucide-react';
 import { pluralize } from '../../utils/formatters';
+import { FinoraMark } from './FinoraMark';
 
 export interface EvidenceStep {
   step_number?: number;
@@ -72,8 +73,8 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
       {/* Header */}
       <div className="p-5 border-b border-[#E4E4E7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
         <div className="flex items-center gap-3">
-          <div className="relative w-8 h-8 rounded-xl bg-[#1E293B] text-white flex items-center justify-center text-xs font-bold font-mono shadow-xs shrink-0">
-            F
+          <div className="relative">
+            <FinoraMark size={32} />
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#15803D] ring-2 ring-white dark:ring-[#151B24]" title="Fino Grounded Engine Ready" />
           </div>
           <div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, CreditCard, Building2, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { FinoraBrandLockup } from '../components/ui/FinoraMark';
 
 export default function LandingPage() {
   return (
@@ -8,15 +9,7 @@ export default function LandingPage() {
       
       {/* Crisp White Top Header */}
       <header className="w-full bg-white text-slate-900 px-8 py-3.5 flex items-center justify-between border-b border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#1E293B] flex items-center justify-center text-white font-extrabold text-base shadow-xs font-mono">
-            F
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-slate-900 leading-none">Finora</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">AI Financial Controller</span>
-          </div>
-        </div>
+        <FinoraBrandLockup size="md" />
         
         <Link 
           to="/dashboard"

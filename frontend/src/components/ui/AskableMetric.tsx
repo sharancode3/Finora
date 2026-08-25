@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAI } from '../../context/AIContext';
+import { FinoraMark } from './FinoraMark';
 
 export interface AskableMetricProps {
   children?: React.ReactNode;
@@ -71,12 +72,10 @@ export const AskableMetric: React.FC<AskableMetricProps> = ({
     >
       <span>{children !== undefined && children !== null ? children : (value !== undefined ? String(value) : null)}</span>
       {showIcon && (
-        <span 
-          aria-hidden="true"
-          className="opacity-0 group-hover/askable:opacity-100 transition-opacity duration-150 ease-out inline-flex items-center justify-center w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[8px] font-mono font-bold shadow-2xs shrink-0 select-none pointer-events-none"
-        >
-          F
-        </span>
+        <FinoraMark 
+          size={14} 
+          className="opacity-0 group-hover/askable:opacity-100 transition-opacity duration-150 ease-out select-none pointer-events-none" 
+        />
       )}
     </Tag>
   );

@@ -31,6 +31,7 @@ import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import AppInfoGuide from '../components/AppInfoGuide';
 import { AIAccuracyTelemetryWidget } from '../components/ui/AIAccuracyTelemetryWidget';
+import { FinoraMark } from '../components/ui/FinoraMark';
 
 interface TeamMember {
   id: string;
@@ -142,7 +143,7 @@ export default function Settings() {
     { id: 'profile', label: 'My Profile', icon: <User size={16} /> },
     { id: 'appearance', label: 'Appearance & Theme', icon: <Moon size={16} /> },
     { id: 'team', label: 'Team & Governance', icon: <Users size={16} /> },
-    { id: 'ai-config', label: 'AI Architecture & Tools', icon: <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[9px] font-mono shrink-0">F</div> },
+    { id: 'ai-config', label: 'AI Architecture & Tools', icon: <FinoraMark size={16} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
     { id: 'security', label: 'Security & Posture', icon: <Shield size={16} /> },
     { id: 'about', label: 'About & Roadmap', icon: <Info size={16} /> },
@@ -695,7 +696,7 @@ export default function Settings() {
               {/* 1. Model Runtime & Privacy */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-slate-100 pb-3">
-                  <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[9px] font-mono shrink-0">F</div>
+                  <FinoraMark size={16} />
                   <h4 className="text-xs uppercase tracking-wider">Model Runtime &amp; Privacy Guarantees</h4>
                 </div>
 

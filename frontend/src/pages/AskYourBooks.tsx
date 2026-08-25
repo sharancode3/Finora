@@ -23,6 +23,8 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { pluralize } from '../utils/formatters';
+import { FinoraMark } from '../components/ui/FinoraMark';
+import { FinoThinkingIndicator } from '../components/ui/FinoThinkingIndicator';
 
 export default function AskYourBooks() {
   const { isDark } = useTheme();
@@ -91,9 +93,7 @@ export default function AskYourBooks() {
         {/* Canvas Header */}
         <div className="p-4 border-b border-[#E4E4E7] bg-slate-50/70 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#1E293B] text-white rounded-xl flex items-center justify-center font-bold font-mono text-sm shadow-xs">
-              F
-            </div>
+            <FinoraMark size={32} />
             <div>
               <h2 className="font-bold text-sm text-slate-900 leading-tight">Fino — Financial Controller</h2>
               <p className="text-[11px] text-slate-500">Multi-Step Tool Orchestration • Auditable Reasoning Chains</p>
@@ -111,8 +111,8 @@ export default function AskYourBooks() {
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center max-w-md mx-auto my-auto py-12">
-              <div className="w-14 h-14 bg-slate-100 text-[#1E293B] rounded-2xl flex items-center justify-center mb-4 border border-[#E4E4E7] font-mono font-black text-xl">
-                F
+              <div className="mb-4">
+                <FinoraMark size={56} />
               </div>
               <h3 className="font-bold text-base text-slate-800 mb-1">Ask Fino About Your Books</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
@@ -128,9 +128,13 @@ export default function AskYourBooks() {
 
               return (
                 <div key={idx} className={`flex gap-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold font-mono ${msg.role === 'user' ? 'bg-[#1E293B] text-white' : 'bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0]'}`}>
-                    {msg.role === 'user' ? <User size={14} /> : 'F'}
-                  </div>
+                  {msg.role === 'user' ? (
+                    <div className="w-8 h-8 rounded-full bg-[#1E293B] text-white flex items-center justify-center shrink-0">
+                      <User size={14} />
+                    </div>
+                  ) : (
+                    <FinoraMark size={32} />
+                  )}
                   
                   <div className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'} w-full`}>
                     
@@ -326,14 +330,12 @@ export default function AskYourBooks() {
           )}
 
           {isLoading && (
-            <div className="flex gap-3 max-w-[85%]">
-              <div className="w-8 h-8 rounded-full bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] flex items-center justify-center font-bold text-xs font-mono shrink-0">
-                F
-              </div>
-              <div className="bg-white border border-[#E4E4E7] p-4 rounded-2xl text-xs text-slate-500 flex items-center gap-2 shadow-xs">
-                <Loader2 size={14} className="animate-spin text-[#1E293B]" />
-                <span>Executing multi-step ledger tools and validating confidence...</span>
-              </div>
+            <div className="bg-white border border-[#E4E4E7] p-3 rounded-2xl max-w-fit shadow-xs animate-in fade-in duration-150">
+              <FinoThinkingIndicator
+                text="Fino is orchestrating ledger queries & computing deterministic math..."
+                subtext="Executing multi-step tools against SQLite ACID storage"
+                size="sm"
+              />
             </div>
           )}
 
