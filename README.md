@@ -33,7 +33,7 @@
 - [Information Hierarchy & Quick Orientation Guide](#-information-hierarchy--quick-orientation-guide)
 - [Authentic Institution Brand Marks & Design System](#-authentic-institution-brand-marks--design-system)
 - [Mathematical & Statistical Formulations](#-mathematical--statistical-formulations)
-- [5-Minute Video Demonstration Script](#-5-minute-video-demonstration-script)
+- [End-to-End Core Operational Workflow](#-end-to-end-core-operational-workflow)
 - [Quantitative Evaluation & Verification Suite](#-quantitative-evaluation--verification-suite)
 - [Statutory Standards & Compliance Alignment](#-statutory-standards--compliance-alignment)
 - [Technology Stack](#-technology-stack)
@@ -311,18 +311,18 @@ $$C_{t} = C_{t-1} + \mathcal{N}(\mu, \sigma^2) - \text{MDR}_{\text{fees}} - \tex
 
 ---
 
-## 🎬 5-Minute Video Demonstration Script
+## 🔄 End-to-End Core Operational Workflow
 
-A detailed, timed rehearsal guide is located in [`five_minute_demo_script.md`](./five_minute_demo_script.md):
+The complete financial controller lifecycle across Finora operates across six interconnected phases:
 
-| Timestamp | Scene | Key Feature Demonstrated |
+| Step | Stage / Module | Key Operational Capabilities |
 |---|---|---|
-| **0:00 – 0:45** | **Dashboard** | AI Controller Briefing + Universal Click-to-Ask on Settled Cash |
-| **0:45 – 1:45** | **Reconciliation** | Live 4-Stage Animated Pipeline + 4 MECE Tabs + Real Brand Marks |
-| **1:45 – 2:45** | **Exceptions** | Root-Cause Evidence Trail (`sqlite_cluster_aggregator`) + 1-Click Resolve |
-| **2:45 – 3:30** | **Cash Position** | 5-Stage Cash Waterfall + Monte Carlo Confidence Intervals + What-If Delay |
-| **3:30 – 4:15** | **Tax-Line Matcher** | GSTR-2B Matching + Count vs Value Gap Analysis (Delhivery Blocked ITC) |
-| **4:15 – 5:00** | **Month-End Close** | 5-Pillar Ind AS Checklist + SHA-256 Cryptographic Closing Memo |
+| **1** | **Executive Dashboard** | AI Controller Briefing + Universal Click-to-Ask (`AskableMetric`) on Settled Cash |
+| **2** | **Reconciliation Engine** | Deterministic 4-Stage Matching Pipeline + 4 MECE Tabs + Real Institution Brand Marks |
+| **3** | **Forensic Exceptions** | Root-Cause Evidence Trail (`sqlite_cluster_aggregator`) + 1-Click Accounting Resolution |
+| **4** | **Treasury Intelligence** | 5-Stage Cash Waterfall + Monte Carlo Confidence Intervals + What-If Float Simulation |
+| **5** | **Tax-Line Matcher** | GSTR-2B Matching + Grounded Count vs. Value Gap Analysis (Rule 36(4) Risk) |
+| **6** | **Month-End Close** | 5-Pillar Ind AS Checklist + SHA-256 Cryptographic Sealed Closing Memo |
 
 ---
 
