@@ -70,7 +70,7 @@ export default function Reconciliation() {
     try {
       const [scopeRes, txRes] = await Promise.all([
         api.get('/reconciliation/scopes').catch(() => ({ data: { scopes: [] } })),
-        api.get('/transactions/?start_date=2026-03-01&end_date=2026-09-05').catch(() => ({ data: [] }))
+        api.get('/transactions?start_date=2026-03-01&end_date=2026-09-05').catch(() => ({ data: [] }))
       ]);
 
       if (scopeRes?.data?.scopes) {
