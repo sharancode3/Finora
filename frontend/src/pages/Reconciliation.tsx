@@ -23,6 +23,7 @@ import { api } from '../api/client';
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { ReconciliationRunModal } from '../components/ReconciliationRunModal';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { useAI } from '../context/AIContext';
 
 export type ReconTier = 'exact' | 'fuzzy_batched' | 'discrepancy';
@@ -462,8 +463,11 @@ export default function Reconciliation() {
                       </td>
 
                       {/* Column 3: Channel / Rail */}
-                      <td className="py-3 px-3 font-sans font-semibold text-slate-700 capitalize">
-                        {railName.replace('_', ' ')}
+                      <td className="py-3 px-3 font-sans font-semibold text-slate-700">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                          <InstitutionLogo name={tx.source_account || railName} size="xs" />
+                          <span className="capitalize">{tx.source_account ? tx.source_account.split(' ')[0] : railName.replace(/_/g, ' ')}</span>
+                        </div>
                       </td>
 
                       {/* Column 4: UTR Reference */}

@@ -25,6 +25,7 @@ import {
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { SeverityBadge } from '../components/ui/SeverityBadge';
 import { AIInsightCard } from '../components/ui/AIInsightCard';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
 import { useAI } from '../context/AIContext';
@@ -421,7 +422,7 @@ export default function RecordDetail() {
               <div className="p-4 rounded-xl border border-slate-200 bg-[#EFF6FF]">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-bold text-[#1D4ED8] uppercase tracking-wider flex items-center gap-1.5">
-                    <CreditCard size={14} className="text-[#1D4ED8]" /> 2. Payment Gateway Settlement Feed
+                    <InstitutionLogo name="Razorpay" size="xs" /> 2. Payment Gateway Settlement Feed (Razorpay)
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Ingested</span>
                 </div>
@@ -447,7 +448,7 @@ export default function RecordDetail() {
               }`}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 size={14} className="text-[#15803D]" /> 3. Bank Account Statement
+                    <InstitutionLogo name={tx?.bank_reference?.startsWith('HDFC') ? 'HDFC Bank' : 'Kotak Mahindra Bank'} size="xs" /> 3. Bank Account Statement ({tx?.bank_reference?.startsWith('HDFC') ? 'HDFC' : 'Kotak'})
                   </span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     record.reason === 'no_bank_credit_found' 

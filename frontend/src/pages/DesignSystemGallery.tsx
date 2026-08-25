@@ -19,6 +19,7 @@ import { Button } from '../components/ui/Button';
 import { Tooltip } from '../components/ui/Tooltip';
 import { Skeleton } from '../components/ui/Skeleton';
 import { toast } from '../components/ui/Toast';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { ShieldAlert, FileText, CheckCircle2 } from 'lucide-react';
 
 const MOCK_TABLE_DATA = [
@@ -77,6 +78,46 @@ export default function DesignSystemGallery() {
               <SeverityBadge severity="LOW" />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Institution Brand Marks Showcase */}
+      <section>
+        <h2 className="mb-4">Institution Brand Marks &amp; Badges</h2>
+        <p className="text-xs text-slate-500 mb-6">Authentic SVG brand vectors and official corporate palettes for connected financial institutions.</p>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-4 flex items-center gap-3">
+            <InstitutionLogo name="Razorpay Gateway" size="lg" />
+            <div>
+              <div className="font-bold text-xs text-slate-900">Razorpay</div>
+              <div className="text-[10px] text-slate-500 font-mono">Brand: #0B72E7</div>
+            </div>
+          </Card>
+
+          <Card className="p-4 flex items-center gap-3">
+            <InstitutionLogo name="Kotak Mahindra Bank" size="lg" />
+            <div>
+              <div className="font-bold text-xs text-slate-900">Kotak Mahindra</div>
+              <div className="text-[10px] text-slate-500 font-mono">Brand: #ED1C24</div>
+            </div>
+          </Card>
+
+          <Card className="p-4 flex items-center gap-3">
+            <InstitutionLogo name="HDFC Bank" size="lg" />
+            <div>
+              <div className="font-bold text-xs text-slate-900">HDFC Bank</div>
+              <div className="text-[10px] text-slate-500 font-mono">Brand: #004B87</div>
+            </div>
+          </Card>
+
+          <Card className="p-4 flex items-center gap-3">
+            <InstitutionLogo name="PayPal" size="lg" />
+            <div>
+              <div className="font-bold text-xs text-slate-900">PayPal Wallet</div>
+              <div className="text-[10px] text-slate-500 font-mono">Brand: #003087</div>
+            </div>
+          </Card>
         </div>
       </section>
 

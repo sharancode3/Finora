@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { pluralize } from '../utils/formatters';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import axios from 'axios';
 import { 
   UploadCloud, 
@@ -316,13 +317,14 @@ export default function DocumentAssistant() {
               key={s.id}
               onClick={() => loadSample(s.id)}
               disabled={isLoadingDoc}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
                 documentData?.filename?.includes(s.name.split(' ')[0])
-                  ? 'bg-slate-100 border-slate-300 text-slate-900 font-bold'
+                  ? 'bg-slate-100 border-slate-300 text-slate-900 font-bold shadow-2xs'
                   : 'bg-white border-[#E4E4E7] text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs'
               }`}
             >
-              {s.name.split(' ')[0]} ({s.format})
+              <InstitutionLogo name={s.name} size="xs" />
+              <span>{s.name.split(' ')[0]} ({s.format})</span>
             </button>
           ))}
         </div>
@@ -355,15 +357,7 @@ export default function DocumentAssistant() {
           {/* Document Top Bar */}
           <div className="p-4 border-b border-[#E4E4E7] bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-white rounded-xl border border-slate-200 text-slate-700">
-                {documentData?.file_type === 'CSV' ? (
-                  <FileSpreadsheet size={18} />
-                ) : documentData?.file_type?.includes('IMAGE') ? (
-                  <ImageIcon size={18} />
-                ) : (
-                  <FileText size={18} />
-                )}
-              </div>
+              <InstitutionLogo name={documentData?.filename || 'Bank'} size={36} />
               <div>
                 <h3 className="font-bold text-xs text-slate-900 leading-tight">
                   {documentData?.filename || 'No Document Loaded'}

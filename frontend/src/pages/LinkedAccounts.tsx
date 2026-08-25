@@ -20,6 +20,7 @@ import {
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 
 export default function LinkedAccounts() {
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -266,6 +267,7 @@ export default function LinkedAccounts() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80">
             
             {/* UPSTREAM SOURCES (4 cols) */}
+            {/* UPSTREAM SOURCES (4 cols) */}
             <div className="lg:col-span-4 space-y-3">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <span>Origin Sources</span>
@@ -274,18 +276,24 @@ export default function LinkedAccounts() {
               {/* Razorpay Gateway Box */}
               <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
-                    Payment Gateway
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <InstitutionLogo name="Razorpay" size="xs" />
+                    <span className="text-[11px] font-bold text-[#0B72E7] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
+                      Payment Gateway
+                    </span>
+                  </div>
                   <span className="text-xs font-mono font-bold text-slate-900">
                     <AskableMetric label="Razorpay Gateway Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50}>
                       <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50} />
                     </AskableMetric>
                   </span>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Razorpay Gateway (Business)</h4>
-                  <p className="text-[10px] text-slate-500">Domestic INR card, UPI &amp; netbanking</p>
+                <div className="flex items-center gap-2.5 pt-0.5">
+                  <InstitutionLogo name="Razorpay" size={32} />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Razorpay Gateway (Business)</h4>
+                    <p className="text-[10px] text-slate-500">Domestic INR card, UPI &amp; netbanking</p>
+                  </div>
                 </div>
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
                   <span>Settled: <strong>₹2,39,978.51</strong></span>
@@ -296,18 +304,24 @@ export default function LinkedAccounts() {
               {/* PayPal Wallet Box */}
               <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                    Cross-Border Wallet
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <InstitutionLogo name="PayPal" size="xs" />
+                    <span className="text-[11px] font-bold text-[#003087] bg-[#F0F9FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
+                      Cross-Border Wallet
+                    </span>
+                  </div>
                   <span className="text-xs font-mono font-bold text-slate-900">
                     <AskableMetric label="PayPal Wallet Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00}>
                       <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00} />
                     </AskableMetric>
                   </span>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">PayPal — International Wallet</h4>
-                  <p className="text-[10px] text-slate-500">Cross-border USD payments (4.4% + ₹25 fee)</p>
+                <div className="flex items-center gap-2.5 pt-0.5">
+                  <InstitutionLogo name="PayPal" size={32} />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">PayPal — International Wallet</h4>
+                    <p className="text-[10px] text-slate-500">Cross-border USD payments (4.4% + ₹25 fee)</p>
+                  </div>
                 </div>
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
                   <span>Settled: <strong>₹44,205.76</strong></span>
@@ -325,7 +339,9 @@ export default function LinkedAccounts() {
               {/* Route 1: Razorpay -> Kotak */}
               <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-slate-700"></span>
+                  <InstitutionLogo name="Razorpay" size="xs" />
+                  <span className="text-slate-400">→</span>
+                  <InstitutionLogo name="Kotak" size="xs" />
                   <span className="font-semibold text-slate-700 text-[11px]">Razorpay → Kotak</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
@@ -339,7 +355,9 @@ export default function LinkedAccounts() {
               {/* Route 2: Razorpay -> HDFC */}
               <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-slate-600"></span>
+                  <InstitutionLogo name="Razorpay" size="xs" />
+                  <span className="text-slate-400">→</span>
+                  <InstitutionLogo name="HDFC" size="xs" />
                   <span className="font-semibold text-slate-700 text-[11px]">Razorpay → HDFC</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
@@ -353,7 +371,9 @@ export default function LinkedAccounts() {
               {/* Route 3: PayPal -> Kotak */}
               <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                  <InstitutionLogo name="PayPal" size="xs" />
+                  <span className="text-slate-400">→</span>
+                  <InstitutionLogo name="Kotak" size="xs" />
                   <span className="font-semibold text-slate-700 text-[11px]">PayPal → Kotak</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
@@ -367,7 +387,9 @@ export default function LinkedAccounts() {
               {/* Route 4: Razorpay -> Suspense */}
               <div className="p-2 bg-amber-50 rounded-xl border border-amber-200/80 shadow-2xs flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <InstitutionLogo name="Razorpay" size="xs" />
+                  <span className="text-slate-400">→</span>
+                  <span className="w-4 h-4 rounded-md bg-[#B91C1C] text-white flex items-center justify-center font-bold text-[8px]">!</span>
                   <span className="font-semibold text-amber-900 text-[11px]">Razorpay → Suspense</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-mono font-bold text-amber-950 text-[11px]">
@@ -388,18 +410,24 @@ export default function LinkedAccounts() {
               {/* Kotak Bank Destination */}
               <div className="p-4 bg-white rounded-xl border-2 border-[#BBF7D0] shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
-                    Primary Bank
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <InstitutionLogo name="Kotak Mahindra Bank" size="xs" />
+                    <span className="text-[11px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                      Primary Bank
+                    </span>
+                  </div>
                   <span className="text-xs font-mono font-bold text-emerald-950">
                     <AskableMetric label="Kotak Mahindra Bank Total Monthly Credits" value={crossRecon.summary?.kotak_total_credits || 214061.88}>
                       <AmountDisplay amount={crossRecon.summary?.kotak_total_credits || 214061.88} />
                     </AskableMetric>
                   </span>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">Kotak Mahindra Bank — Business Current</h4>
-                  <p className="text-[10px] text-slate-500 font-mono">A/C 981200481920 (45 deposits)</p>
+                <div className="flex items-center gap-2.5 pt-0.5">
+                  <InstitutionLogo name="Kotak Mahindra Bank" size={32} />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Kotak Mahindra Bank — Business Current</h4>
+                    <p className="text-[10px] text-slate-500 font-mono">A/C 981200481920 (45 deposits)</p>
+                  </div>
                 </div>
                 <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
                   <div className="flex justify-between text-slate-600">
@@ -416,18 +444,24 @@ export default function LinkedAccounts() {
               {/* HDFC Bank Destination */}
               <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
-                    Secondary Bank
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <InstitutionLogo name="HDFC Bank" size="xs" />
+                    <span className="text-[11px] font-bold text-[#004B87] bg-[#F0F7FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
+                      Secondary Bank
+                    </span>
+                  </div>
                   <span className="text-xs font-mono font-bold text-slate-900">
                     <AskableMetric label="HDFC Bank Total Monthly Credits" value={crossRecon.summary?.hdfc_total_credits || 70822.39}>
                       <AmountDisplay amount={crossRecon.summary?.hdfc_total_credits || 70822.39} />
                     </AskableMetric>
                   </span>
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900">HDFC Bank — Business Current</h4>
-                  <p className="text-[10px] text-slate-500 font-mono">A/C 50200084920192 (14 deposits)</p>
+                <div className="flex items-center gap-2.5 pt-0.5">
+                  <InstitutionLogo name="HDFC Bank" size={32} />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">HDFC Bank — Business Current</h4>
+                    <p className="text-[10px] text-slate-500 font-mono">A/C 50200084920192 (14 deposits)</p>
+                  </div>
                 </div>
                 <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
                   <div className="flex justify-between text-slate-600">
@@ -511,9 +545,7 @@ export default function LinkedAccounts() {
                   {/* Top Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                        {isGateway ? <CreditCard size={20} /> : isWallet ? <Wallet size={20} /> : <Building2 size={20} />}
-                      </div>
+                      <InstitutionLogo name={acct.name} type={acct.type} size={42} />
                       <div>
                         <h4 className="font-bold text-slate-900 text-sm">{acct.name}</h4>
                         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
