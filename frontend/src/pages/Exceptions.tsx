@@ -555,7 +555,7 @@ export default function Exceptions() {
                             </span>
                           </AskableMetric>
                           {ex.ml_explanation && (
-                            <p className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5">{ex.ml_explanation}</p>
+                            <p title={ex.ml_explanation} className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5 cursor-help">{ex.ml_explanation}</p>
                           )}
                         </td>
 

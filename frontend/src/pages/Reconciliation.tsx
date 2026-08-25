@@ -546,6 +546,7 @@ export default function Reconciliation() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCompleted={() => {
+          setSelectedScope(modalInitialScope);
           fetchScopesAndData();
         }}
         initialScope={modalInitialScope}

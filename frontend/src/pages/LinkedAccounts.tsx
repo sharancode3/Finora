@@ -539,7 +539,7 @@ export default function LinkedAccounts() {
                     <div>
                       <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Volume</span>
                       <span className="font-mono font-bold text-slate-900 text-sm">
-                        ₹{(acct.total_settled ?? acct.monthly_total ?? acct.total_volume ?? acct.balance ?? 0).toLocaleString('en-IN')}
+                        ₹{(acct.total_settled ?? acct.monthly_total ?? acct.total_volume ?? acct.balance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                     <div>
