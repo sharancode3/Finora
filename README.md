@@ -304,6 +304,13 @@ Finora incorporates the proven, production-grade AI copilot patterns used by ind
   - **False-Positive Cost**: Tracked continuously to avoid alert fatigue.
 - **Recent Query Audit Telemetry Logs**: Displays live ledger queries, tool engines used, grounding classifications, and execution timestamps.
 
+### 5. High-Fidelity Structured Conversational UI & Grounded Rendering (`FormattedMarkdown.tsx`)
+- **High-Contrast User Message Bubbles**: Ensures pure white typography (`#FFFFFF font-semibold`) on dark slate `#1E293B` surfaces with explicit `isUser={true}` propagation, eliminating dark text contrast issues.
+- **Context-Aware Header Iconography**: Automatically parses `$H1$` through `$H4$` headers, attaching contextual icons for statutory definitions (📖), operational impacts (📈), and controller actionable tips (🛡️).
+- **Metadata Key-Value Pills**: Automatically transforms raw bullet lines (e.g. `• Domain Category: ...`) into styled key labels and monospaced badge pills (`bg-slate-100 font-mono text-slate-800`).
+- **Responsive Markdown Tables**: Parses ledger tabular outputs into clean, responsive tabular cards with uppercase headers, hover rows, and monospaced currency numbers.
+- **Grounded Citation Footers**: Converts `*Verified Grounded Source:...*` into institutional callout cards with green `ShieldCheck` emblems.
+
 ---
 
 ## 🎨 Brand Identity: The Finora "F" Mark ("The Ledger Tick")
