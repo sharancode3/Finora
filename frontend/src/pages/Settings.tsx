@@ -30,6 +30,7 @@ import { api } from '../api/client';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import AppInfoGuide from '../components/AppInfoGuide';
+import { AIAccuracyTelemetryWidget } from '../components/ui/AIAccuracyTelemetryWidget';
 
 interface TeamMember {
   id: string;
@@ -687,6 +688,9 @@ export default function Settings() {
                   Transparent specifications of local model inference, registered reconciliation tools, and mathematical grounding policies.
                 </p>
               </div>
+
+              {/* Phase 5 Self-Reported AI Grounding Accuracy & Live Telemetry */}
+              <AIAccuracyTelemetryWidget />
 
               {/* 1. Model Runtime & Privacy */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">

@@ -30,6 +30,8 @@ import { CardSkeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
+import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
 
 export default function RecordDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -44,6 +46,10 @@ export default function RecordDetail() {
   const [actionReason, setActionReason] = useState('Gateway Fee Adjustment');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
+  // Phase 5 Multi-Cause Scoring & Human-Feedback Precedents State
+  const [multiCauseScores, setMultiCauseScores] = useState<any>(null);
+  const [precedentData, setPrecedentData] = useState<any>(null);
+
   // Phase 3 AI Investigation State
   const [aiInvestigation, setAiInvestigation] = useState<any>(null);
   const [investigationHistory, setInvestigationHistory] = useState<any[]>([]);
@@ -53,10 +59,20 @@ export default function RecordDetail() {
     const lookupId = targetId || id;
     if (lookupId) {
       try {
-        const res = await api.get(`/exceptions/${lookupId}/investigations`);
-        setInvestigationHistory(res.data || []);
-        if (res.data && res.data.length > 0) {
-          setAiInvestigation(res.data[0]);
+        const [invRes, scoreRes, precRes] = await Promise.all([
+          api.get(`/exceptions/${lookupId}/investigations`).catch(() => ({ data: [] })),
+          api.get(`/exceptions/${lookupId}/multi-cause-scores`).catch(() => ({ data: null })),
+          api.get(`/exceptions/${lookupId}/precedents`).catch(() => ({ data: null }))
+        ]);
+        setInvestigationHistory(invRes.data || []);
+        if (invRes.data && invRes.data.length > 0) {
+          setAiInvestigation(invRes.data[0]);
+        }
+        if (scoreRes.data) {
+          setMultiCauseScores(scoreRes.data);
+        }
+        if (precRes.data) {
+          setPrecedentData(precRes.data);
         }
       } catch (e) {}
     }
@@ -340,6 +356,16 @@ export default function RecordDetail() {
 
           {actionState === 'resolve' ? (
             <div className="space-y-3">
+              {/* Vic.ai Human-Feedback Precedent Learning Banner */}
+              <PrecedentResolutionBanner
+                precedentData={precedentData}
+                onApplyPrecedent={(reason, note) => {
+                  setActionReason(reason);
+                  setActionNote(note || '');
+                  handleResolve(reason, note, 'Human-Feedback Precedent Applied');
+                }}
+              />
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Adjustment Reason Category</label>
                 <select
@@ -387,6 +413,11 @@ export default function RecordDetail() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Phase 5 Explainable Multi-Cause Root Scoring */}
+      {multiCauseScores && (
+        <MultiCauseScoreBar scoresData={multiCauseScores} />
       )}
 
       {/* Main Investigation Grid */}

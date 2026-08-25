@@ -38,6 +38,8 @@ import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { pluralize } from '../utils/formatters';
+import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
+import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
 
 export default function Exceptions() {
   const [exceptions, setExceptions] = useState<any[]>([]);
@@ -52,6 +54,10 @@ export default function Exceptions() {
   const [activeActions, setActiveActions] = useState<Record<string, 'resolve' | 'escalate' | null>>({});
   const [actionNotes, setActionNotes] = useState<Record<string, string>>({});
   const [resolveReasons, setResolveReasons] = useState<Record<string, string>>({});
+
+  // Phase 5 Multi-Cause Scoring & Human-Feedback Precedents State
+  const [multiCauseMap, setMultiCauseMap] = useState<Record<string, any>>({});
+  const [precedentsMap, setPrecedentsMap] = useState<Record<string, any>>({});
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -151,6 +157,16 @@ export default function Exceptions() {
         next.delete(id);
       } else {
         next.add(id);
+        if (!multiCauseMap[id]) {
+          api.get(`/exceptions/${id}/multi-cause-scores`)
+            .then(r => setMultiCauseMap(m => ({ ...m, [id]: r.data })))
+            .catch(() => {});
+        }
+        if (!precedentsMap[id]) {
+          api.get(`/exceptions/${id}/precedents`)
+            .then(r => setPrecedentsMap(p => ({ ...p, [id]: r.data })))
+            .catch(() => {});
+        }
       }
       return next;
     });
@@ -158,8 +174,15 @@ export default function Exceptions() {
 
   const setAction = (id: string, action: 'resolve' | 'escalate' | null, defaultReason?: string) => {
     setActiveActions(prev => ({ ...prev, [id]: action }));
-    if (action === 'resolve' && defaultReason) {
-      setResolveReasons(prev => ({ ...prev, [id]: defaultReason.replace(/_/g, ' ') }));
+    if (action === 'resolve') {
+      if (defaultReason) {
+        setResolveReasons(prev => ({ ...prev, [id]: defaultReason.replace(/_/g, ' ') }));
+      }
+      if (!precedentsMap[id]) {
+        api.get(`/exceptions/${id}/precedents`)
+          .then(r => setPrecedentsMap(p => ({ ...p, [id]: r.data })))
+          .catch(() => {});
+      }
     }
   };
 
@@ -742,6 +765,9 @@ export default function Exceptions() {
                                 </div>
                               </div>
 
+                              {/* Phase 5 Explainable Multi-Cause Root Scoring */}
+                              <MultiCauseScoreBar scoresData={multiCauseMap[ex.id]} />
+
                               {/* 3-Way Evidence Sub-Panels */}
                               <div>
                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
@@ -808,6 +834,12 @@ export default function Exceptions() {
                                 <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 shadow-sm animate-in fade-in duration-150">
                                   {action === 'resolve' ? (
                                     <>
+                                      {/* Vic.ai Human-Feedback Precedent Learning Banner */}
+                                      <PrecedentResolutionBanner
+                                        precedentData={precedentsMap[ex.id]}
+                                        onApplyPrecedent={(reason, note) => handleResolve(ex.id, reason, note, 'Human-Feedback Precedent Applied')}
+                                      />
+
                                       <div className="flex items-center justify-between">
                                         <h5 className="font-bold text-xs text-slate-900">Select Accounting Adjustment Reason</h5>
                                         <span className="text-[10px] text-slate-500">Posts to Ind AS suspense ledger</span>

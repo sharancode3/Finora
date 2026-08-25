@@ -38,6 +38,7 @@ import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { pluralize } from '../utils/formatters';
+import { ProactiveAnomalyNudges } from '../components/ui/ProactiveAnomalyNudges';
 
 const SYSTEM_ANCHOR_DATE = '2026-08-31';
 
@@ -597,6 +598,9 @@ export default function Dashboard() {
           ]}
         />
       )}
+
+      {/* PROACTIVE CONTROLLER OBSERVATIONS (Ramp / Brex Proactive Copilot Pattern) */}
+      <ProactiveAnomalyNudges />
 
       {/* TOP 4 KPI CARDS WITH "WHY?" AFFORDANCES */}
       {/* TOP 4 KPI CARDS (Click card to expand mathematical decomposition) */}

@@ -1924,6 +1924,23 @@ def ask_finora_agent(question: str, context: Dict) -> Dict:
     result = orchestrate_agent_workflow(question, context)
     if "reasoning_trail" in result and "evidence_trail" not in result:
         result["evidence_trail"] = result["reasoning_trail"]
+    
+    # Record live telemetry for self-reported AI accuracy & audit tracking
+    try:
+        from backend.db.sqlite_client import record_query_telemetry
+        conf_score = float(result.get("confidence_score") or (0.98 if result.get("confidence") == "HIGH" else 0.75 if result.get("confidence") == "MEDIUM" else 0.40))
+        record_query_telemetry(
+            query_text=question,
+            intent=result.get("intent", "query_copilot"),
+            tool_used=result.get("tool_used") or (result.get("reasoning_trail", [{}])[0].get("tool") if result.get("reasoning_trail") else "analytical_dal"),
+            confidence_score=conf_score,
+            verifier_passed=result.get("verifier_passed", True),
+            was_fallback=bool(result.get("is_fallback", False)),
+            record_count=len(result.get("evidence_data") or []) or 1
+        )
+    except Exception:
+        pass
+
     return result
 
 def generate_month_end_summary(target_month: str) -> Dict:

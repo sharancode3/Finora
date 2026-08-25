@@ -133,6 +133,50 @@ def api_get_exception_investigations(exc_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@exceptions_router.get("/{exc_id}/precedents")
+def api_get_exception_precedents(exc_id: str):
+    try:
+        from backend.db.sqlite_client import get_exception_by_id, get_precedent_resolutions
+        exc = get_exception_by_id(exc_id)
+        vendor = (exc.get('source_account') or exc.get('business_id')) if exc else None
+        category = exc.get('reason') if exc else None
+        amt = float(exc.get('amount') or 0.0) if exc else None
+        precedents = get_precedent_resolutions(vendor=vendor, category=category, amount=amt)
+        return {
+            "exception_id": exc_id,
+            "vendor": vendor,
+            "category": category,
+            "precedents": precedents,
+            "has_precedent": len(precedents) > 0,
+            "top_suggestion": precedents[0] if precedents else None
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@exceptions_router.get("/{exc_id}/multi-cause-scores")
+def api_get_exception_multi_cause_scores(exc_id: str):
+    try:
+        from backend.db.sqlite_client import compute_multi_cause_scores
+        return compute_multi_cause_scores(exc_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/proactive-nudges")
+def api_get_proactive_nudges():
+    try:
+        from backend.db.sqlite_client import get_proactive_anomaly_nudges
+        return get_proactive_anomaly_nudges()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/ai-accuracy-telemetry")
+def api_get_ai_accuracy_telemetry():
+    try:
+        from backend.db.sqlite_client import get_ai_accuracy_telemetry
+        return get_ai_accuracy_telemetry()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @analytics_router.get("/aggregates")
 def api_get_aggregates(interval: str = Query("monthly")):
     try:
