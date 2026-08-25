@@ -139,43 +139,42 @@ export default function AskYourBooks() {
                   <div className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'} w-full`}>
                     
                     {/* Primary Content Bubble */}
-                    <div 
-                      className={`p-4 rounded-2xl text-xs leading-relaxed shadow-xs w-full max-w-fit ${
-                        msg.role === 'user' 
-                          ? 'bg-[#1E293B] text-white rounded-tr-xs' 
-                          : 'bg-white border border-[#E4E4E7] text-slate-800 rounded-tl-xs'
-                      }`}
-                    >
-                      {/* AI Confidence Header (Single Status Badge) */}
-                      {msg.role === 'ai' && conf && !meta.is_greeting && (
-                        <div className="flex items-center justify-between gap-3 pb-2.5 mb-2.5 border-b border-slate-100">
-                          <div className="flex items-center gap-1.5">
-                            {conf === 'HIGH' && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]">
-                                <ShieldCheck size={11} /> High Confidence ({Math.round((meta.confidence_score || 0.98) * 100)}%)
-                              </span>
-                            )}
-                            {conf === 'MEDIUM' && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]">
-                                <AlertTriangle size={11} /> Medium Confidence ({Math.round((meta.confidence_score || 0.75) * 100)}%)
-                              </span>
-                            )}
-                            {conf === 'LOW' && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
-                                <AlertTriangle size={11} /> Low Confidence ({Math.round((meta.confidence_score || 0.35) * 100)}%)
+                    {msg.role === 'user' ? (
+                      <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4 py-3 shadow-xs text-xs font-semibold leading-relaxed tracking-normal max-w-2xl">
+                        <FormattedMarkdown content={msg.content} isUser={true} className="text-white" />
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-[#E4E4E7] text-slate-800 rounded-2xl rounded-tl-xs p-4.5 text-xs leading-relaxed shadow-xs w-full max-w-2xl space-y-3">
+                        {/* AI Confidence Header (Single Status Badge) */}
+                        {conf && !meta.is_greeting && (
+                          <div className="flex items-center justify-between gap-3 pb-2.5 mb-1 border-b border-slate-100">
+                            <div className="flex items-center gap-1.5">
+                              {conf === 'HIGH' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]">
+                                  <ShieldCheck size={11} /> High Confidence ({Math.round((meta.confidence_score || 0.98) * 100)}%)
+                                </span>
+                              )}
+                              {conf === 'MEDIUM' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FFFBEB] text-[#B45309] border border-[#FEF3C7]">
+                                  <AlertTriangle size={11} /> Medium Confidence ({Math.round((meta.confidence_score || 0.75) * 100)}%)
+                                </span>
+                              )}
+                              {conf === 'LOW' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+                                  <AlertTriangle size={11} /> Low Confidence ({Math.round((meta.confidence_score || 0.35) * 100)}%)
+                                </span>
+                              )}
+                            </div>
+                            
+                            {meta.confidence_rationale && (
+                              <span className="text-[10px] text-slate-400 truncate max-w-xs" title={meta.confidence_rationale}>
+                                {meta.confidence_rationale}
                               </span>
                             )}
                           </div>
-                          
-                          {meta.confidence_rationale && (
-                            <span className="text-[10px] text-slate-400 truncate max-w-xs" title={meta.confidence_rationale}>
-                              {meta.confidence_rationale}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                        )}
 
-                      <FormattedMarkdown content={msg.content} className="font-medium" />
+                        <FormattedMarkdown content={msg.content} isUser={false} className="font-normal text-slate-800" />
 
                       {/* Low/Medium Confidence Escalation Path Banner */}
                       {msg.role === 'ai' && meta.escalation_recommendation && !meta.is_greeting && (
@@ -285,6 +284,7 @@ export default function AskYourBooks() {
                         </div>
                       )}
                     </div>
+                  )}
                     
                     {/* Grounded Evidence Trail Section */}
                     {msg.role === 'ai' && steps.length > 0 && !meta.is_greeting && (

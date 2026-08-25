@@ -648,8 +648,8 @@ export default function DocumentAssistant() {
                 
                 {/* User Message */}
                 {msg.role === 'user' ? (
-                  <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-3.5 py-2 max-w-[88%] font-medium shadow-2xs">
-                    {msg.content}
+                  <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-3.5 py-2.5 max-w-[88%] font-semibold shadow-xs leading-relaxed">
+                    <FormattedMarkdown content={msg.content} isUser={true} className="text-white" />
                   </div>
                 ) : (
                   /* AI Grounded Response Bubble */
