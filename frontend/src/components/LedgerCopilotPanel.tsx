@@ -4,7 +4,7 @@ import {
   X, Send, RotateCcw, ChevronDown, ChevronUp, 
   AlertTriangle, CheckCircle, Database,
   ArrowRight, Loader2, Calendar, CheckCircle2,
-  BookOpen, HelpCircle, ShieldCheck
+  BookOpen, HelpCircle, ShieldCheck, Info
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
@@ -287,20 +287,26 @@ export const LedgerCopilotPanel: React.FC = () => {
                   /* AI Grounded Response Card */
                   <div className="bg-white border border-[#E4E4E7] rounded-2xl rounded-tl-xs p-4 max-w-full text-xs shadow-xs space-y-3">
                     
-                    {/* Single Confidence Status Badge in Header */}
+                    {/* Single Confidence Status Badge in Header with Tooltip */}
                     {msg.metadata?.confidence && !msg.metadata?.is_greeting && (
                       <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
-                          msg.metadata?.confidence === 'HIGH' 
-                            ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' 
-                            : msg.metadata?.confidence === 'MEDIUM'
-                            ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]'
-                            : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
-                        }`}>
-                          {msg.metadata?.confidence === 'HIGH' ? <CheckCircle size={11} /> : <AlertTriangle size={11} />}
-                          Confidence: {msg.metadata?.confidence === 'HIGH' ? 'High' : msg.metadata?.confidence === 'MEDIUM' ? 'Medium' : 'Low'} ({Math.round((msg.metadata?.confidence_score ?? 0.98) * 100)}%)
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">Grounded Execution</span>
+                        <div 
+                          className="group relative inline-flex items-center"
+                          title="Confidence measures deterministic grounding and tool completeness against the ACID SQLite ledger, not model probability or uncertainty."
+                        >
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 cursor-help transition-all shadow-2xs ${
+                            msg.metadata?.confidence === 'HIGH' 
+                              ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' 
+                              : msg.metadata?.confidence === 'MEDIUM'
+                              ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]'
+                              : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]'
+                          }`}>
+                            {msg.metadata?.confidence === 'HIGH' ? <CheckCircle size={11} /> : <AlertTriangle size={11} />}
+                            <span>Confidence: {msg.metadata?.confidence === 'HIGH' ? 'High' : msg.metadata?.confidence === 'MEDIUM' ? 'Medium' : 'Low'} ({Math.round((msg.metadata?.confidence_score ?? 0.98) * 100)}%)</span>
+                            <Info size={10} className="opacity-60 group-hover:opacity-100" />
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">Deterministic Tool Execution</span>
                       </div>
                     )}
 
@@ -461,6 +467,26 @@ export const LedgerCopilotPanel: React.FC = () => {
                             {id}
                           </span>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Dynamic Grounded Suggested Questions Chips */}
+                    {msg.metadata?.suggested_questions && msg.metadata.suggested_questions.length > 0 && (
+                      <div className="pt-2.5 border-t border-slate-100 space-y-1.5">
+                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Suggested Next Questions:
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.metadata.suggested_questions.map((sq: string, sqIdx: number) => (
+                            <button
+                              key={sqIdx}
+                              onClick={() => handleSuggestedClick(sq)}
+                              className="text-[11px] px-2.5 py-1 rounded-lg bg-[#F8FAFC] hover:bg-[#1E293B] text-slate-700 hover:text-white border border-[#E2E8F0] hover:border-[#1E293B] transition-all text-left font-medium cursor-pointer flex items-center gap-1 shadow-2xs"
+                            >
+                              <span>{sq}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
 

@@ -44,13 +44,18 @@ def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
     
     # Common interrogative prefixes to strip for pure term extraction
     strip_phrases = [
-        "what is", "what does", "what are", "explain", "define", "tell me about",
-        "difference between", "how does", "what is meant by", "meaning of", "details on", "definition of"
+        "what is meant by", "difference between", "tell me about", "can you explain", "can u explain",
+        "please explain", "pls explain", "tell me what is", "tell me wat is", "what does", "what are",
+        "what is", "whats", "what s", "wat is", "wats", "define", "explain", "meaning of", "details on",
+        "definition of", "how does", "wat", "y"
     ]
     extracted_target = clean_q
     for p in strip_phrases:
-        if extracted_target.startswith(p):
+        if extracted_target.startswith(p + " "):
             extracted_target = extracted_target[len(p):].strip()
+            break
+        elif extracted_target == p:
+            extracted_target = ""
             break
 
     # 1. Exact match on term_id or canonical name

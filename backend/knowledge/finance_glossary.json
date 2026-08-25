@@ -20,7 +20,7 @@
       "aliases": ["mdr", "merchant discount rate", "gateway fee", "interchange", "processing fee", "gateway charges", "transaction fee"],
       "category": "Settlement & Banking",
       "statutory_reference": "RBI Master Directions on Payment Aggregators & Merchant Acquiring",
-      "plain_definition": "The percentage fee (typically 1.8% to 2.5% plus GST) charged by a payment gateway or acquiring bank for processing electronic payments (Credit/Debit Cards, Netbanking, Wallets). Note: UPI P2M has zero MDR under current statutory rules.",
+      "plain_definition": "The percentage fee (typically 1.8% to 2.5%, with a standard contractual baseline of 2.0% plus 18% GST) charged by a payment gateway or acquiring bank for processing electronic payments (Credit/Debit Cards, Netbanking, Wallets). Note: UPI P2M has zero MDR under current statutory rules.",
       "merchant_impact": "MDR creates the fundamental spread between your Gross Processed Volume (what customers paid) and Net Settled Cash (what reaches your bank account). Hidden rate hikes or tier misclassifications leak 0.2%–0.5% of top-line revenue if unreconciled.",
       "actionable_tip": "Finora automatically calculates contractual vs. deducted MDR on every transaction and flags discrepancies as 'fee_variance' exceptions.",
       "related_terms": ["gst_gateway_fees", "fee_variance", "gross_vs_net", "nodal_account"]

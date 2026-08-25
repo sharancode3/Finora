@@ -9,7 +9,7 @@ export interface UIAction {
   record_id?: string;
 }
 
-export interface ChatResponse {
+  export interface ChatResponse {
   answer: string;
   evidence_ids: string[];
   evidence_data: any[];
@@ -20,6 +20,7 @@ export interface ChatResponse {
   confidence_score?: number;
   confidence_rationale?: string;
   escalation_recommendation?: string | null;
+  suggested_questions?: string[];
   reasoning_trail?: Array<{
     step_number: number;
     action: string;
@@ -141,6 +142,8 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (storedRange) dateRange = JSON.parse(storedRange);
       } catch (e) {}
       
+      const conversationHistory = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
+      
       const freshContext: PageContext = {
         page_name: activePageName,
         route: currentPath,
@@ -151,6 +154,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         selected_record_id: activeRecordId,
         suggested_inquiries: isContextMatchingRoute ? pageContext!.suggested_inquiries : undefined,
         extra_hints: isContextMatchingRoute ? pageContext!.extra_hints : undefined,
+        conversation_history: conversationHistory,
         ...(isContextMatchingRoute ? pageContext : {})
       };
 
@@ -158,6 +162,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       freshContext.page_name = activePageName;
       freshContext.route = currentPath;
       freshContext.screen = currentPath.replace('/', '') || 'dashboard';
+      freshContext.conversation_history = conversationHistory;
 
       setLastSentContext(freshContext);
 
@@ -177,6 +182,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           escalation_recommendation: data.escalation_recommendation,
           reasoning_trail: data.reasoning_trail,
           evidence_record_ids: data.evidence_ids,
+          suggested_questions: data.suggested_questions,
           visual_data: data.visual_data,
           debug_page_context: freshContext
         }

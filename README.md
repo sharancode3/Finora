@@ -197,10 +197,15 @@ graph TD
 - **Verifiable Evidence Trail**: Displays named tool execution steps (`sqlite_cluster_aggregator`, `deterministic_pattern_matcher`) with raw SQL parameters.
 - **Closed-Loop Resolution Drawer**: Allows controllers to apply AI-recommended journal adjustments or escalate with audit notes.
 
-### 4. Global Contextual Copilot & Curated Finance Glossary
-- **Context-Aware Sidebar Panel**: Floats across every screen, dynamically adapting suggested questions to the active route and visible metrics.
-- **Curated Finance Knowledge Base**: Integrated statutory glossary with 20+ authoritative definitions (MDR, CGST Rule 36(4), TDS Section 194C vs. 194J, Ind AS 115, UTR, Float, DSO).
-- **Conversational Filter Bar**: Clickable glossary chip pills in "Ask Your Books" enable rapid definitions lookup.
+### 4. 3-Stage AI Controller Intelligence Shell (Fino)
+- **3-Stage LLM & Deterministic Agent Pipeline**:
+  - **Stage A — Normalize & Classify**: Parses colloquial English, typos, and conversational phrasing (e.g. *"can i know y my pay this month is less than last month"*, *"wats mdr"*, *"kotak vs hdfc which got more"*) into structured intents (`period_comparison`, `routing_flow`, `exception_investigation`, `cash_forecast`, `definition_lookup`, `page_context`, `close_status`, `metric_lookup`, `greeting`). Resolves multi-turn conversational continuations (e.g. *"what about the month before that"*).
+  - **Stage B — Deterministic Tool Orchestration**: Executes read-only Python and SQLite analytical kernels (`get_period_comparison`, `get_accounts_summary`, `run_isolation_forest_analysis`, `compute_benfords_law_distribution`, `get_cash_position_analytics`) with zero mental arithmetic hallucinations.
+  - **Stage C — Grounded Synthesis & Self-Verification**: Generates markdown tables and categorized financial drivers citing real ledger categories (MDR fees, GST, open exceptions, volume changes). Enforces strict numerical verification against database schemas.
+- **Never Dead-End Fallback Architecture**: Replaces brittle pattern-match failures with intelligent second-pass synthesis and concrete clarifying clickable chips.
+- **Dynamic Proactive Next Questions**: Automatically suggests 2–3 grounded follow-up inquiries with 1-click continuation pills below every AI response.
+- **Confidence Tooltip**: Informative tooltip on every confidence badge clarifying that confidence measures deterministic grounding and tool completeness against the ACID SQLite ledger, not model uncertainty.
+- **Curated Finance Knowledge Base**: Integrated statutory glossary with 20+ authoritative definitions (MDR, CGST Rule 36(4), TDS Section 194C vs. 194J, Ind AS 115, UTR, Float, DSO) with typo-tolerant fuzzy lookup.
 
 ### 5. Treasury Intelligence & Monte Carlo Cash Simulation
 - **5-Stage Cash Conversion Waterfall**:

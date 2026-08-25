@@ -3073,6 +3073,150 @@ def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "a
         "stages": stages
     }
 
+def get_period_comparison(
+    current_start: str = "2026-08-01",
+    current_end: str = "2026-08-31",
+    prior_start: Optional[str] = None,
+    prior_end: Optional[str] = None,
+    account_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Computes a comprehensive, categorized comparison between two periods
+    (e.g., current month vs prior month). Calculates deltas for gross volume,
+    contractual fees, GST deductions, settled bank cash, open exception amounts,
+    and transaction counts, and synthesizes the exact primary drivers.
+    """
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Resolve prior period dates if not provided
+    if not prior_start or not prior_end:
+        try:
+            cs = datetime.strptime(current_start, '%Y-%m-%d')
+            ce = datetime.strptime(current_end, '%Y-%m-%d')
+            days = (ce - cs).days + 1
+            if days >= 28 and cs.day == 1:
+                # Calendar month shift
+                if cs.month == 1:
+                    ps = cs.replace(year=cs.year - 1, month=12, day=1)
+                else:
+                    ps = cs.replace(month=cs.month - 1, day=1)
+                import calendar
+                _, last_day = calendar.monthrange(ps.year, ps.month)
+                pe = ps.replace(day=last_day)
+            else:
+                pe = cs - timedelta(days=1)
+                ps = pe - timedelta(days=days - 1)
+            prior_start = ps.strftime('%Y-%m-%d')
+            prior_end = pe.strftime('%Y-%m-%d')
+        except Exception:
+            prior_start = "2026-07-01"
+            prior_end = "2026-07-31"
+
+    acct_filter = get_account_filter_clause(account_id)
+
+    def _fetch_period_data(s_date: str, e_date: str):
+        c.execute(f'''
+            SELECT 
+                COUNT(*) as count,
+                SUM(gross_amount) as gross,
+                SUM(fee) as fees,
+                SUM(gst) as gst,
+                SUM(CASE WHEN status='settled' THEN net_amount ELSE 0 END) as net_settled,
+                SUM(CASE WHEN status='pending' OR status='unmatched' THEN net_amount ELSE 0 END) as pending_net
+            FROM transactions
+            WHERE transaction_date BETWEEN ? AND ? {acct_filter}
+        ''', (s_date, e_date))
+        t_row = c.fetchone()
+
+        exc_acct_filter = get_account_filter_clause(account_id, table_prefix="e")
+        c.execute(f'''
+            SELECT 
+                COUNT(*) as exc_count,
+                SUM(t.gross_amount) as exc_amount,
+                SUM(CASE WHEN e.status='open' OR e.status IS NULL THEN t.gross_amount ELSE 0 END) as open_exc_amount,
+                SUM(CASE WHEN e.status='open' OR e.status IS NULL THEN 1 ELSE 0 END) as open_exc_count
+            FROM exceptions e
+            LEFT JOIN transactions t ON e.transaction_id = t.transaction_id
+            WHERE e.transaction_date BETWEEN ? AND ? {exc_acct_filter}
+        ''', (s_date, e_date))
+        e_row = c.fetchone()
+
+        gross = float(t_row['gross'] or 0.0) if t_row else 0.0
+        fees = float(t_row['fees'] or 0.0) if t_row else 0.0
+        gst = float(t_row['gst'] or 0.0) if t_row else 0.0
+        net_settled = float(t_row['net_settled'] or 0.0) if t_row else 0.0
+        count = int(t_row['count'] or 0) if t_row else 0
+        open_exc_amount = float(e_row['open_exc_amount'] or 0.0) if e_row else 0.0
+        open_exc_count = int(e_row['open_exc_count'] or 0) if e_row else 0
+
+        return {
+            "start_date": s_date,
+            "end_date": e_date,
+            "transaction_count": count,
+            "gross_volume": round(gross, 2),
+            "fees": round(fees, 2),
+            "gst": round(gst, 2),
+            "total_deductions": round(fees + gst, 2),
+            "net_settled": round(net_settled, 2),
+            "open_exceptions_amount": round(open_exc_amount, 2),
+            "open_exceptions_count": open_exc_count
+        }
+
+    cur_data = _fetch_period_data(current_start, current_end)
+    prev_data = _fetch_period_data(prior_start, prior_end)
+
+    # Compute deltas
+    delta_gross = round(cur_data['gross_volume'] - prev_data['gross_volume'], 2)
+    delta_net = round(cur_data['net_settled'] - prev_data['net_settled'], 2)
+    delta_fees = round(cur_data['fees'] - prev_data['fees'], 2)
+    delta_gst = round(cur_data['gst'] - prev_data['gst'], 2)
+    delta_deductions = round(cur_data['total_deductions'] - prev_data['total_deductions'], 2)
+    delta_exceptions = round(cur_data['open_exceptions_amount'] - prev_data['open_exceptions_amount'], 2)
+    delta_count = cur_data['transaction_count'] - prev_data['transaction_count']
+
+    # Percentages
+    pct_net_change = round((delta_net / prev_data['net_settled'] * 100), 1) if prev_data['net_settled'] > 0 else 0.0
+    pct_gross_change = round((delta_gross / prev_data['gross_volume'] * 100), 1) if prev_data['gross_volume'] > 0 else 0.0
+
+    # Stated Primary Drivers & Causes
+    drivers = []
+    if cur_data['open_exceptions_amount'] > 0:
+        drivers.append(f"₹{cur_data['open_exceptions_amount']:,.2f} remains trapped across {cur_data['open_exceptions_count']} open exceptions awaiting credit or resolution")
+    if delta_gross < 0:
+        drivers.append(f"Gross processed order volume was ₹{abs(delta_gross):,.2f} lower ({pct_gross_change:+.1f}%)")
+    elif delta_gross > 0:
+        drivers.append(f"Gross processed order volume was ₹{delta_gross:,.2f} higher ({pct_gross_change:+.1f}%)")
+    
+    if cur_data['total_deductions'] > 0:
+        drivers.append(f"Total MDR merchant gateway fees and GST deductions totaled ₹{cur_data['total_deductions']:,.2f} (fees: ₹{cur_data['fees']:,.2f}, GST: ₹{cur_data['gst']:,.2f})")
+
+    conn.close()
+
+    return {
+        "current_period": cur_data,
+        "prior_period": prev_data,
+        "deltas": {
+            "gross_volume_delta": delta_gross,
+            "net_settled_delta": delta_net,
+            "fee_delta": delta_fees,
+            "gst_delta": delta_gst,
+            "total_deductions_delta": delta_deductions,
+            "open_exceptions_delta": delta_exceptions,
+            "transaction_count_delta": delta_count,
+            "net_settled_pct_change": pct_net_change,
+            "gross_volume_pct_change": pct_gross_change
+        },
+        "primary_drivers": drivers,
+        "verifiable_cause": (
+            f"Net settled bank cash for {current_start[:7]} (₹{cur_data['net_settled']:,.2f}) is "
+            f"{'₹' + f'{abs(delta_net):,.2f} lower' if delta_net < 0 else '₹' + f'{delta_net:,.2f} higher'} "
+            f"than {prior_start[:7]} (₹{prev_data['net_settled']:,.2f}). "
+            f"Primary causes: " + "; ".join(drivers) + "."
+        )
+    }
+
 # Ensure tables are created when module loads
 init_db()
 
