@@ -215,24 +215,28 @@ graph TD
 
 ### 6. Tax-Line Matcher (GSTR-2B & TRACES TDS Reconciler)
 - **3-Stage Tax Matching Engine**: Reconciles internal purchase registers against GSTN GSTR-2B auto-drafted feeds and TRACES TDS withholding statements.
-- **Grounded Count vs. Value Gap Analysis**:
-  Explains why the **Count Match Rate (91.4%)** diverges from the **Monetary Value Match Rate (47.9%)**: routine gateway fees reconcile at high frequency, while a single unfiled supplier invoice from **Delhivery Supply Chain Logistics Ltd** (₹3,312.00 GST blocked under Rule 36(4)) and an **AWS cloud variance** (₹340.00) dominate over half of the month's total taxable volume.
+- **Reusable Grounded Delta Explainer Component (`GroundedDeltaExplainer.tsx`)**:
+  - Encapsulates count-vs-value divergence logic into a reusable UI component that pairs two related metrics with a one-sentence, data-grounded narrative and interactive outlier chips.
+  - Explains why the **Count Match Rate (91.4%)** diverges from the **Monetary Value Match Rate (47.9%)**: routine gateway fees reconcile at high frequency, while a single unfiled supplier invoice from **Delhivery Supply Chain Logistics Ltd** (₹3,312.00 GST blocked under Rule 36(4)) and an **AWS cloud variance** (₹340.00) dominate over half of the month's total taxable volume.
 - **Representative Default Table View**: Zero-filter first page immediately surfaces Delhivery, AWS, Google Cloud TDS 194J misclassifications, and Mehta & Partners Legal credits.
 
 ### 7. Document Assistant & Sandboxed Statement Explainer
 - **Multi-Format Parsing**: Ingests PDF and CSV bank/processor statements, extracting tabular debits, credits, and UTR references.
+- **Click-to-Ask Category Totals & Summary Strip**: Every top-level category total chip (Bank Fees ₹2,714, Gateway Payouts, Total Deposits, Withdrawals) features 1-click **Ask Fino** affordance, opening instant contextual audits directly inside the sandboxed chat.
 - **Strict Security Sandbox**: Prominently displays user-facing disclosure: *"Document Assistant operates in an isolated memory buffer and never mutates the verified transactional ledger."*
 - **Statement Explainer Agent**: Automatically calculates net deductions, reverse charge mechanism (RCM) liabilities, and 18% GST splits for any statement line item.
 
-### 8. Continuous Month-End Close & Cryptographic Closing Memo
+### 8. Continuous Month-End Close & Two-Step Sign-Off Gate
 - **5-Pillar Ind AS Statutory Checklist**:
   1. *Pillar 1: Sales Ledger Integrity* (Ind AS 115)
   2. *Pillar 2: Payment Gateway Clearing* (MDR variance &lt; 0.1%)
   3. *Pillar 3: Bank Account Reconciliation* (Ind AS 7 Cash Flow)
   4. *Pillar 4: Suspense & Escrow Clearance* (Zero untriaged breaks)
   5. *Pillar 5: 3-Way Triangulation Audit* (Ledger ↔ Gateway ↔ Bank)
+- **Two-Step Authorization & Irreversible Freeze Workflow**:
+  - **Step A (Controller Review & Authorization)**: Formally captures controller credentials, review notes, and timestamps to certify compliance.
+  - **Step B (Immutable Ledger Lock & Cryptographic Seal)**: A distinct, guarded execution gate that irreversibly freezes the period in SQLite ACID storage and attaches an auditable **SHA-256 seal** (`7f83b165...e201c59d`).
 - **Executive Closing Memo**: Formatted according to ICAI statutory guidelines with period-over-period variance tables.
-- **Cryptographic Period Lock**: Generates a **SHA-256 seal** computed over all reconciled transaction hashes, creating a tamper-evident audit record.
 - **Percentage Points Precision**: Differentiates between percentage points (`"pp"` / `"percentage points"`) for comparing rate metrics (e.g. $97.6\% \to 81.8\% = 15.8\text{ percentage points down}$) versus relative percentage changes.
 
 ### 9. Linked Accounts & Institution Money Movement

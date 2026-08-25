@@ -30,6 +30,7 @@ import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { FormattedMarkdown } from '../components/ui/FormattedMarkdown';
 import { InstitutionLogo } from '../components/ui/InstitutionLogo';
+import { GroundedDeltaExplainer } from '../components/ui/GroundedDeltaExplainer';
 
 interface TaxSummary {
   total_tax_records: number;
@@ -289,29 +290,40 @@ export default function TaxLineMatcher() {
 
       </div>
 
-      {/* COUNT VS. MONETARY VALUE MATCH RATE GAP EXPLANATION CALLOUT */}
-      <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl flex items-start gap-3 text-xs text-slate-700 shadow-2xs">
-        <div className="w-5 h-5 rounded-md bg-[#1E293B] text-white flex items-center justify-center font-bold text-[9px] font-mono shrink-0 mt-0.5">
-          F
-        </div>
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <strong className="text-slate-900 font-semibold">
-              Tax Match Rate Divergence Analysis ({summary?.tax_match_rate_pct || 91.4}% Count vs {summary?.value_match_rate_pct || 47.9}% Monetary Value):
-            </strong>
-            <span className="text-[10px] font-bold text-[#B91C1C] bg-[#FEF2F2] px-2 py-0.2 rounded border border-[#FECACA]">
-              Skew Driver Identified
-            </span>
-          </div>
-          <p className="text-slate-600 leading-relaxed font-normal">
-            {summary?.value_gap_explanation || (
-              <>
-                The 64 routine payment gateway fee lines (Razorpay, ₹18–₹120 each) reconcile at 98%+ by count, while a single unfiled supplier invoice from <strong>Delhivery Supply Chain Logistics Ltd</strong> (₹3,312.00 GST blocked under Rule 36(4)) and an <strong>AWS cloud credit variance</strong> (₹340.00) dominate over half of the month's total taxable volume.
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+      {/* COUNT VS. MONETARY VALUE MATCH RATE GAP EXPLANATION (REUSABLE COMPONENT) */}
+      <GroundedDeltaExplainer
+        title="Tax Match Rate Divergence Analysis"
+        metricA={{
+          label: "Count Match Rate",
+          value: `${summary?.tax_match_rate_pct || 91.4}% (${summary?.matched_records || 64}/${summary?.total_tax_records || 70} lines)`
+        }}
+        metricB={{
+          label: "Monetary Value Match Rate",
+          value: `${summary?.value_match_rate_pct || 47.9}% (₹2,98,603.50 base)`
+        }}
+        badgeLabel="Skew Driver Identified"
+        badgeVariant="danger"
+        explanation={summary?.value_gap_explanation || (
+          <span>
+            The 64 routine payment gateway fee lines (Razorpay, ₹18–₹120 each) reconcile at 98%+ by count, while a single unfiled supplier invoice from <strong>Delhivery Supply Chain Logistics Ltd</strong> (₹3,312.00 GST blocked under Rule 36(4)) and an <strong>AWS cloud credit variance</strong> (₹340.00) dominate over half of the month's total taxable volume.
+          </span>
+        )}
+        outliers={[
+          {
+            name: "Delhivery Supply Chain Logistics Ltd",
+            amount: 3312.0,
+            detail: "Unfiled GSTR-1 supplier invoice blocking input tax credit",
+            rule: "CGST Rule 36(4)"
+          },
+          {
+            name: "Amazon Web Services (AWS Cloud)",
+            amount: 340.0,
+            detail: "GST credit timing mismatch across multi-region billings",
+            rule: "GSTR-2B Variance"
+          }
+        ]}
+        customQuestion={`Explain why our Tax Match Rate is ${summary?.tax_match_rate_pct || 91.4}% by count but only ${summary?.value_match_rate_pct || 47.9}% by monetary value for period ${scopePeriod}.`}
+      />
 
       {/* FILTER & SEARCH BAR */}
       <div className="p-3.5 bg-white border border-[#E4E4E7] rounded-2xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">

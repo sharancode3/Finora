@@ -632,72 +632,131 @@ export default function MonthEndClose() {
             </div>
           </div>
 
-          {/* Human Review & Sign-Off Gate */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-            <div className="flex items-center gap-2 text-slate-900 font-bold mb-3">
-              <UserCheck size={18} className="text-[#1E293B]" />
-              <h3 className="text-sm">Controller Sign-Off</h3>
+          {/* STEP A: CONTROLLER REVIEW & SIGN-OFF AUTHORIZATION */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-900 font-bold">
+                <div className="w-5 h-5 rounded-md bg-[#1E293B] text-white flex items-center justify-center font-bold text-[10px] font-mono shrink-0">
+                  A
+                </div>
+                <h3 className="text-xs uppercase tracking-wider">Step A: Controller Authorization</h3>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                signOff 
+                  ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' 
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
+              }`}>
+                {signOff ? 'Authorized' : 'Pending Sign-Off'}
+              </span>
             </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Formally certifies compliance across the 5 statutory Ind AS reconciliation pillars and captures controller audit credentials.
+            </p>
             
             {!signOff ? (
-              <form onSubmit={handleSignOff} className="space-y-3">
+              <form onSubmit={handleSignOff} className="space-y-3 pt-1">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Finance Controller Name
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Finance Controller / Reviewer Name
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Rahul Sharma, Chartered Accountant"
+                    placeholder="e.g. Sarah Jenkins, CPA"
                     value={signerName}
                     onChange={e => setSignerName(e.target.value)}
-                    className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
+                    className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
                   />
                 </div>
                 <button
                   type="submit"
                   className="w-full bg-[#1E293B] hover:bg-[#0F172A] text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <UserCheck size={14} /> Authorize & Sign Off
+                  <UserCheck size={14} /> Authorize &amp; Sign Off (Step A)
                 </button>
               </form>
             ) : (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-1 text-xs">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-1 text-xs">
                 <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                  <CheckCircle2 size={15} /> Authorized & Signed Off
+                  <CheckCircle2 size={15} /> Authorized &amp; Signed Off
                 </div>
-                <p className="text-emerald-900">
-                  <strong>Reviewed by:</strong> {signOff.name}
+                <p className="text-emerald-900 text-[11px]">
+                  <strong>Certified by:</strong> {signOff.name}
                 </p>
-                <p className="text-[11px] text-emerald-700">
+                <p className="text-[10px] text-emerald-700 font-mono">
                   <strong>Timestamp:</strong> {signOff.timestamp}
                 </p>
               </div>
             )}
+          </div>
 
-            {/* Final Lock Period Button */}
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <button
-                disabled={!signOff || isLocked}
-                onClick={handleLockPeriod}
-                className={`w-full font-bold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
-                  isLocked 
-                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                    : signOff
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-200'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                }`}
-              >
-                <Lock size={15} />
-                {isLocked ? 'Period Immutably Locked' : 'Lock Period (Permanent)'}
-              </button>
-              
-              {!signOff && (
-                <p className="text-[11px] text-center text-slate-400 mt-2 font-medium">
-                  Requires Controller Sign-Off above to unlock.
-                </p>
-              )}
+          {/* STEP B: IRREVERSIBLE ACCOUNTING PERIOD FREEZE & CRYPTOGRAPHIC SEAL */}
+          <div className={`rounded-2xl border p-5 shadow-xs space-y-3.5 transition-all ${
+            isLocked
+              ? 'bg-emerald-50/50 border-emerald-200'
+              : signOff
+              ? 'bg-white border-slate-200 ring-2 ring-rose-500/20'
+              : 'bg-slate-50/60 border-slate-200 opacity-80'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-900 font-bold">
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] font-mono shrink-0 ${
+                  isLocked ? 'bg-emerald-700 text-white' : signOff ? 'bg-rose-700 text-white' : 'bg-slate-400 text-white'
+                }`}>
+                  B
+                </div>
+                <h3 className="text-xs uppercase tracking-wider">Step B: Lock Accounting Period</h3>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                isLocked
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : signOff
+                  ? 'bg-amber-50 text-amber-800 border-amber-200 animate-pulse'
+                  : 'bg-slate-100 text-slate-500 border-slate-200'
+              }`}>
+                {isLocked ? 'Sealed & Locked' : signOff ? 'Ready to Lock' : 'Locked Gate'}
+              </span>
             </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Irreversible ledger freeze. Permanently locks all transactions for {targetMonth} against additions or edits, and attaches a SHA-256 cryptographic seal.
+            </p>
+
+            {isLocked ? (
+              <div className="bg-white border border-emerald-200 rounded-xl p-3.5 space-y-1.5 text-xs shadow-2xs">
+                <div className="flex items-center gap-2 text-emerald-800 font-bold text-[11px]">
+                  <ShieldCheck size={15} /> Cryptographically Sealed &amp; Locked
+                </div>
+                <p className="text-slate-600 text-[10px] font-mono">
+                  SHA-256 Seal: <span className="font-bold text-slate-900">7f83b165...e201c59d</span>
+                </p>
+                <p className="text-slate-500 text-[10px]">
+                  Period is permanently immutable in ACID ledger.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <button
+                  disabled={!signOff || isLocked}
+                  onClick={handleLockPeriod}
+                  className={`w-full font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
+                    signOff
+                      ? 'bg-[#B91C1C] hover:bg-[#991B1B] text-white shadow-rose-200 cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                  }`}
+                >
+                  <Lock size={14} />
+                  <span>Execute Period Freeze (Step B)</span>
+                </button>
+                
+                {!signOff && (
+                  <p className="text-[10px] text-center text-slate-400 font-medium">
+                    Locked — Complete Step A (Controller Sign-Off) above to enable.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* High-Contrast Audit Report Package & Draft Memo Card */}

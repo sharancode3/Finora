@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { pluralize } from '../utils/formatters';
 import { InstitutionLogo } from '../components/ui/InstitutionLogo';
@@ -89,6 +89,23 @@ export default function DocumentAssistant() {
   const [isAsking, setIsAsking] = useState(false);
   const [highlightedRowMap, setHighlightedRowMap] = useState<Record<number, boolean>>({});
   const [expandedReasoningMap, setExpandedReasoningMap] = useState<Record<number, boolean>>({});
+
+  const categoryStats = useMemo(() => {
+    if (!documentData || !documentData.rows) return {};
+    const stats: Record<string, { count: number; total: number }> = {
+      bank_fee: { count: 0, total: 0 },
+      gateway: { count: 0, total: 0 },
+      tax: { count: 0, total: 0 },
+      vendor: { count: 0, total: 0 }
+    };
+    documentData.rows.forEach(r => {
+      const cat = r.category || 'other';
+      if (!stats[cat]) stats[cat] = { count: 0, total: 0 };
+      stats[cat].count += 1;
+      stats[cat].total += (r.debit || 0) + (r.credit || 0);
+    });
+    return stats;
+  }, [documentData]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -373,52 +390,119 @@ export default function DocumentAssistant() {
             </span>
           </div>
 
-          {/* Quick Summary Strip */}
+          {/* Quick Summary Strip (Click-to-Ask AI about totals) */}
           {documentData && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-slate-50/30 border-b border-slate-100 text-xs">
-              <div className="p-2 bg-white rounded-xl border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Deposits</span>
-                <span className="font-bold font-mono text-[#15803D]">₹{documentData.summary.total_credit.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="p-2 bg-white rounded-xl border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Withdrawals</span>
-                <span className="font-bold font-mono text-[#B91C1C]">₹{documentData.summary.total_debit.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="p-2 bg-white rounded-xl border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Bank Charges</span>
-                <span className="font-bold font-mono text-amber-700">₹{documentData.summary.bank_charges_total.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="p-2 bg-white rounded-xl border border-slate-200/80">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Gateway Payouts</span>
-                <span className="font-bold font-mono text-slate-900">₹{documentData.summary.gateway_settlement_total.toLocaleString('en-IN')}</span>
-              </div>
+              
+              {/* Card 1: Total Deposits */}
+              <button
+                onClick={() => handleSendMessage(`Explain the total deposits of ₹${documentData.summary.total_credit.toLocaleString('en-IN')} parsed from ${documentData.filename}.`)}
+                className="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/80 hover:border-slate-300 text-left transition-all group cursor-pointer shadow-2xs relative"
+                title="Click to ask AI about total deposits"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Deposits</span>
+                  <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white opacity-0 group-hover:opacity-100 flex items-center justify-center font-bold text-[8px] font-mono shrink-0 transition-opacity">F</div>
+                </div>
+                <span className="font-bold font-mono text-[#15803D] block text-xs mt-0.5">₹{documentData.summary.total_credit.toLocaleString('en-IN')}</span>
+              </button>
+
+              {/* Card 2: Total Withdrawals */}
+              <button
+                onClick={() => handleSendMessage(`Break down the total withdrawals of ₹${documentData.summary.total_debit.toLocaleString('en-IN')} parsed from ${documentData.filename}.`)}
+                className="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/80 hover:border-slate-300 text-left transition-all group cursor-pointer shadow-2xs relative"
+                title="Click to ask AI about total withdrawals"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Withdrawals</span>
+                  <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white opacity-0 group-hover:opacity-100 flex items-center justify-center font-bold text-[8px] font-mono shrink-0 transition-opacity">F</div>
+                </div>
+                <span className="font-bold font-mono text-[#B91C1C] block text-xs mt-0.5">₹{documentData.summary.total_debit.toLocaleString('en-IN')}</span>
+              </button>
+
+              {/* Card 3: Bank Charges */}
+              <button
+                onClick={() => handleSendMessage(`What are all the bank fees and charges on this statement? Explain the ₹${documentData.summary.bank_charges_total.toLocaleString('en-IN')} total.`)}
+                className="p-2.5 bg-white hover:bg-amber-50/40 rounded-xl border border-slate-200/80 hover:border-amber-300 text-left transition-all group cursor-pointer shadow-2xs relative"
+                title="Click to ask AI about bank charges and fee breakdown"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Bank Charges</span>
+                  <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white opacity-0 group-hover:opacity-100 flex items-center justify-center font-bold text-[8px] font-mono shrink-0 transition-opacity">F</div>
+                </div>
+                <span className="font-bold font-mono text-amber-700 block text-xs mt-0.5">₹{documentData.summary.bank_charges_total.toLocaleString('en-IN')}</span>
+              </button>
+
+              {/* Card 4: Gateway Payouts */}
+              <button
+                onClick={() => handleSendMessage(`Analyze the gateway settlements and payouts totaling ₹${documentData.summary.gateway_settlement_total.toLocaleString('en-IN')} parsed from this statement.`)}
+                className="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/80 hover:border-slate-300 text-left transition-all group cursor-pointer shadow-2xs relative"
+                title="Click to ask AI about gateway settlements"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Gateway Payouts</span>
+                  <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white opacity-0 group-hover:opacity-100 flex items-center justify-center font-bold text-[8px] font-mono shrink-0 transition-opacity">F</div>
+                </div>
+                <span className="font-bold font-mono text-slate-900 block text-xs mt-0.5">₹{documentData.summary.gateway_settlement_total.toLocaleString('en-IN')}</span>
+              </button>
+
             </div>
           )}
 
-          {/* Category Filter Strip */}
+          {/* Category Filter & Click-to-Ask Chips */}
           {documentData && (
             <div className="px-3 py-2 bg-slate-50/60 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px]">
               <span className="text-slate-400 font-medium flex items-center gap-1 mr-1">
                 <Filter size={11} /> Filter:
               </span>
               {[
-                { id: 'all', label: `All (${documentData.total_rows})` },
-                { id: 'bank_fee', label: 'Bank Fees' },
-                { id: 'gateway', label: 'Gateway Payouts' },
-                { id: 'tax', label: 'Taxes & Challans' },
-                { id: 'vendor', label: 'Vendor Debits' }
+                { 
+                  id: 'all', 
+                  label: `All (${documentData.total_rows})`,
+                  askQuery: null
+                },
+                { 
+                  id: 'bank_fee', 
+                  label: `Bank Fees (₹${(categoryStats['bank_fee']?.total || documentData.summary.bank_charges_total).toLocaleString('en-IN')})`,
+                  askQuery: `List and explain all bank fee line items on this statement totaling ₹${(categoryStats['bank_fee']?.total || documentData.summary.bank_charges_total).toLocaleString('en-IN')}.`
+                },
+                { 
+                  id: 'gateway', 
+                  label: `Gateway Payouts (₹${(categoryStats['gateway']?.total || documentData.summary.gateway_settlement_total).toLocaleString('en-IN')})`,
+                  askQuery: `Analyze all payment gateway settlement credits on this statement totaling ₹${(categoryStats['gateway']?.total || documentData.summary.gateway_settlement_total).toLocaleString('en-IN')}.`
+                },
+                { 
+                  id: 'tax', 
+                  label: `Taxes & Challans (₹${(categoryStats['tax']?.total || 0).toLocaleString('en-IN')})`,
+                  askQuery: `Explain the taxes, TDS, and statutory challan entries on this statement totaling ₹${(categoryStats['tax']?.total || 0).toLocaleString('en-IN')}.`
+                },
+                { 
+                  id: 'vendor', 
+                  label: `Vendor Debits (₹${(categoryStats['vendor']?.total || 0).toLocaleString('en-IN')})`,
+                  askQuery: `Explain the vendor debits and outgoing supplier transfers on this statement totaling ₹${(categoryStats['vendor']?.total || 0).toLocaleString('en-IN')}.`
+                }
               ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedCategoryFilter(tab.id)}
-                  className={`px-2.5 py-0.5 rounded-lg font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                    selectedCategoryFilter === tab.id
-                      ? 'bg-[#1E293B] text-white font-bold'
-                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  {tab.label}
-                </button>
+                <div key={tab.id} className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => setSelectedCategoryFilter(tab.id)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                      selectedCategoryFilter === tab.id
+                        ? 'bg-[#1E293B] text-white font-bold'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                  {tab.askQuery && (
+                    <button
+                      onClick={() => handleSendMessage(tab.askQuery!)}
+                      className="p-1 text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-md transition-colors cursor-pointer"
+                      title={`Ask Fino about ${tab.label}`}
+                    >
+                      <div className="w-3 h-3 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[7px] font-mono">F</div>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

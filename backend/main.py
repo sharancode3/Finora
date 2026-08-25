@@ -388,7 +388,7 @@ def api_get_audit_logs(limit: int = 100):
 @audit_router.post("/")
 def api_create_audit_log(req: AuditLogCreateReq):
     from backend.db.sqlite_client import record_audit_log
-    return record_audit_log(
+    res = record_audit_log(
         user=req.user,
         trigger_type=req.trigger_type,
         action=req.action,
@@ -398,6 +398,7 @@ def api_create_audit_log(req: AuditLogCreateReq):
         notes=req.notes,
         ip=req.ip or "127.0.0.1 (Local Verified)"
     )
+    return {"status": "success", "log_id": res.get("id"), "audit_log": res}
 
 month_end_router = APIRouter(prefix="/api/v1/month-end", tags=["Month-End Close"])
 
@@ -419,7 +420,13 @@ def api_sign_off_month_end(req: SignOffReq):
         new_value="Status: Cryptographically Certified & Locked",
         notes=req.note or "Full 5-pillar statutory Ind AS reconciliation checklist verified."
     )
-    return {"status": "success", "audit_log": log}
+    return {
+        "status": "success",
+        "signer_name": req.signer_name,
+        "signer_role": req.signer_role,
+        "target_month": req.target_month,
+        "audit_log": log
+    }
 
 reconciliation_router = APIRouter(prefix="/api/v1/reconciliation", tags=["Reconciliation Run"])
 
