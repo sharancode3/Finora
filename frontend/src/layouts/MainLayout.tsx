@@ -4,7 +4,7 @@ import {
   LayoutGrid, AlertTriangle, MessageSquare, Wallet, 
   Link as LinkIcon, CalendarCheck, Settings as SettingsIcon, 
   Bell, ChevronLeft, ChevronRight, CheckCircle2, Info,
-  Layers, Play, Sun, Moon, FileText, Receipt
+  Layers, Play, Sun, Moon, FileText, Receipt, Compass
 } from 'lucide-react';
 import { Banner } from '../components/ui/Banner';
 import { ToastContainer } from '../components/ui/Toast';
@@ -12,39 +12,55 @@ import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { LedgerCopilotPanel } from '../components/LedgerCopilotPanel';
 import { ReconciliationRunModal } from '../components/ReconciliationRunModal';
+import { QuickOrientationTour } from '../components/ui/QuickOrientationTour';
 
 interface NavItem {
   to: string;
   icon: any;
   label: string;
+  badge?: string;
+  isPrimary?: boolean;
 }
 
 interface NavSection {
   title: string;
+  badge?: string;
+  priority: 'primary' | 'secondary' | 'system';
   items: NavItem[];
 }
 
 const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Daily Operations',
+    badge: 'Core',
+    priority: 'primary',
     items: [
-      { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
-      { to: '/reconciliation', icon: Layers, label: 'Reconciliation' },
-      { to: '/exceptions', icon: AlertTriangle, label: 'Exceptions' },
-      { to: '/ask_your_books', icon: MessageSquare, label: 'Ask Your Books' },
+      { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard', isPrimary: true },
+      { to: '/reconciliation', icon: Layers, label: 'Reconciliation', isPrimary: true },
+      { to: '/exceptions', icon: AlertTriangle, label: 'Exceptions', isPrimary: true },
+      { to: '/ask_your_books', icon: MessageSquare, label: 'Ask Your Books', isPrimary: true },
     ]
   },
   {
     title: 'Treasury & Finance Ops',
+    priority: 'primary',
     items: [
       { to: '/cash-position', icon: Wallet, label: 'Cash Position' },
-      { to: '/tax-matcher', icon: Receipt, label: 'Tax-Line Matcher' },
-      { to: '/document-assistant', icon: FileText, label: 'Document Assistant' },
       { to: '/month-end-close', icon: CalendarCheck, label: 'Month-End Close' },
     ]
   },
   {
+    title: 'Specialized Tools',
+    badge: 'Deep-Dive',
+    priority: 'secondary',
+    items: [
+      { to: '/tax-matcher', icon: Receipt, label: 'Tax-Line Matcher' },
+      { to: '/document-assistant', icon: FileText, label: 'Document Assistant' },
+    ]
+  },
+  {
     title: 'Configuration & Controls',
+    priority: 'system',
     items: [
       { to: '/accounts', icon: LinkIcon, label: 'Linked Accounts' },
       { to: '/settings', icon: SettingsIcon, label: 'Settings & Governance' },
@@ -107,6 +123,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#FAFAFA] font-sans antialiased text-slate-900">
       <ToastContainer />
+      <QuickOrientationTour />
       
       {bannerMessage && (
         <Banner message={bannerMessage} onClose={clearBanner} />
@@ -259,8 +276,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <div className="py-3 px-3 space-y-4 overflow-y-auto">
             {NAV_SECTIONS.map((section, sIdx) => (
               <div key={sIdx} className="space-y-1">
-                <div className={`px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${isCollapsed ? 'text-center' : ''}`}>
-                  {isCollapsed ? '•••' : section.title}
+                <div className={`px-2 pb-1 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between ${isCollapsed ? 'text-center' : ''} ${section.priority === 'secondary' ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <span>{isCollapsed ? '•••' : section.title}</span>
+                  {!isCollapsed && section.badge && (
+                    <span className={`text-[8.5px] font-bold px-1.5 py-0.2 rounded font-mono ${
+                      section.badge === 'Core' 
+                        ? 'bg-slate-900 text-white' 
+                        : 'bg-slate-100 text-slate-500 border border-slate-200/80'
+                    }`}>
+                      {section.badge}
+                    </span>
+                  )}
                 </div>
                 
                 {section.items.map((link) => {
@@ -280,7 +306,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     >
                       <Icon size={17} className={`shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-[#1E293B]' : 'text-slate-400'}`} />
                       {!isCollapsed && (
-                        <span className="truncate">{link.label}</span>
+                        <span className={`truncate ${link.isPrimary ? 'font-semibold' : ''}`}>{link.label}</span>
                       )}
                       {isActive && !isCollapsed && (
                         <span className="ml-auto w-1.5 h-3.5 bg-[#1E293B] rounded-full"></span>
@@ -293,22 +319,43 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Sidebar Footer */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/70">
+          <div className="p-3 border-t border-slate-100 bg-slate-50/70 space-y-2">
             {!isCollapsed ? (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
-                    Audit-Ready
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400">Ind AS</span>
+              <>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('finora-open-quick-tour'))}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-semibold transition-all cursor-pointer shadow-2xs group"
+                  title="Re-open guided orientation tour"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Compass size={13} className="text-[#1E293B] group-hover:rotate-45 transition-transform" />
+                    <span>Quick Tour</span>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold text-[#15803D] bg-[#F0FDF4] px-1.5 py-0.2 rounded border border-[#BBF7D0]">3 Steps</span>
+                </button>
+
+                <div className="space-y-1 pt-0.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+                      Audit-Ready
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">Ind AS</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 truncate">
+                    Fino Controller Engine • v2.4
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 truncate">
-                  Fino Controller Engine • v2.4
-                </div>
-              </div>
+              </>
             ) : (
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('finora-open-quick-tour'))}
+                  className="p-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 cursor-pointer shadow-2xs"
+                  title="Open Quick Orientation Tour"
+                >
+                  <Compass size={14} className="text-[#1E293B]" />
+                </button>
                 <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" title="Audit-Ready Local Engine"></span>
               </div>
             )}
