@@ -121,7 +121,12 @@ def run_isolation_forest_analysis(transactions: List[Dict[str, Any]]) -> Dict[st
             explanation = f"GST tax deduction of {point[2]*100:.2f}% on fees diverges from 18% statutory baseline."
         else:
             delay_val = point[3]
-            explanation = f"Settlement delay of {delay_val:.0f} {'day' if round(delay_val) == 1 else 'days'} exceeds standard T+2 SLA."
+            if delay_val > 2:
+                explanation = f"Settlement delay of {delay_val:.0f} {'day' if round(delay_val) == 1 else 'days'} exceeds standard T+2 SLA."
+            elif delay_val == 0:
+                explanation = "Settlement cleared same-day (T+0 instant posting), diverging from expected T+2 rolling batch window."
+            else:
+                explanation = f"Settlement timing of {delay_val:.0f} {'day' if round(delay_val) == 1 else 'days'} is within standard T+2 window."
 
         if is_unusual:
             anomalies.append({

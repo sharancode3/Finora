@@ -22,6 +22,7 @@ import { FormattedMarkdown } from '../components/ui/FormattedMarkdown';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { pluralize } from '../utils/formatters';
 
 export default function AskYourBooks() {
   const { isDark } = useTheme();
@@ -290,7 +291,7 @@ export default function AskYourBooks() {
                         >
                           {isTrailOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                           <GitFork size={12} className="text-[#1E293B]" />
-                          <span>{isTrailOpen ? 'Hide Evidence Trail' : `Show Evidence Trail (${steps.length} tool steps)`}</span>
+                          <span>{isTrailOpen ? 'Hide Evidence Trail' : `Show Evidence Trail (${pluralize(steps.length, 'tool step', 'tool steps')})`}</span>
                         </button>
 
                         {isTrailOpen && (

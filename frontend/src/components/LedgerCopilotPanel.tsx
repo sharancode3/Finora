@@ -10,6 +10,7 @@ import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { FormattedMarkdown } from './ui/FormattedMarkdown';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie } from 'recharts';
+import { pluralize } from '../utils/formatters';
 
 export const LedgerCopilotPanel: React.FC = () => {
   const location = useLocation();
@@ -423,7 +424,7 @@ export const LedgerCopilotPanel: React.FC = () => {
                         >
                           <span className="flex items-center gap-1.5">
                             <Database size={12} className="text-[#1E293B]" />
-                            Show Evidence Trail ({(msg.metadata.evidence_trail || msg.metadata.reasoning_trail).length} tool steps)
+                            Show Evidence Trail ({pluralize((msg.metadata.evidence_trail || msg.metadata.reasoning_trail).length, 'tool step', 'tool steps')})
                           </span>
                           {expandedReasoningMap[idx] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>

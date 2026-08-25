@@ -376,69 +376,78 @@ export default function MonthEndClose() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Volume</p>
-              <p className="text-xl font-bold text-slate-900 mt-1">
-                <AskableMetric label="Gross Processed Volume" value={current.volume || 0} context={`close period ${targetMonth}`}>
-                  <AmountDisplay amount={current.volume || 0} animated={true} />
-                </AskableMetric>
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                {prev?.has_data || (prev?.volume > 0) ? `vs ₹${(prev.volume || 0).toLocaleString('en-IN')} prior` : 'No prior period data loaded'}
-              </p>
-            </div>
-            
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Exceptions</p>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-xl font-bold text-slate-900 font-mono">
-                  <AskableMetric label="Total Open Exceptions" value={current.exceptions_total || 0} context={`close period ${targetMonth}`}>
-                    <AnimatedNumber value={current.exceptions_total || 0} duration={600} />
-                  </AskableMetric>
-                </span>
-                {prev?.has_data || (prev?.exceptions_total > 0) ? (
-                  (current.exceptions_total || 0) <= (prev.exceptions_total || 0) ? (
-                    <span className="text-xs text-[#15803D] font-bold flex items-center">
-                      <TrendingDown size={14} className="mr-0.5" /> {(prev.exceptions_total || 0) - (current.exceptions_total || 0)} fewer
-                    </span>
-                  ) : (
-                    <span className="text-xs text-[#B91C1C] font-bold flex items-center">
-                      <TrendingUp size={14} className="mr-0.5" /> {(current.exceptions_total || 0) - (prev.exceptions_total || 0)} more
-                    </span>
-                  )
-                ) : (
-                  <span className="text-xs text-slate-400 font-medium">Initial period</span>
-                )}
-              </div>
-              <p className="text-xs text-slate-500 mt-1">{current.exceptions_resolved || 0} cleared</p>
-            </div>
+            {(() => {
+              const hasPriorData = Boolean(prev?.has_data && (prev?.volume > 0 || prev?.transaction_count > 0));
+              return (
+                <>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Volume</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1">
+                      <AskableMetric label="Gross Processed Volume" value={current.volume || 0} context={`close period ${targetMonth}`}>
+                        <AmountDisplay amount={current.volume || 0} animated={true} />
+                      </AskableMetric>
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {hasPriorData ? `vs ₹${(prev.volume || 0).toLocaleString('en-IN')} prior` : 'No prior period data loaded'}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Exceptions</p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-xl font-bold text-slate-900 font-mono">
+                        <AskableMetric label="Total Open Exceptions" value={current.exceptions_total || 0} context={`close period ${targetMonth}`}>
+                          <AnimatedNumber value={current.exceptions_total || 0} duration={600} />
+                        </AskableMetric>
+                      </span>
+                      {hasPriorData ? (
+                        (current.exceptions_total || 0) <= (prev.exceptions_total || 0) ? (
+                          <span className="text-xs text-[#15803D] font-bold flex items-center">
+                            <TrendingDown size={14} className="mr-0.5" /> {(prev.exceptions_total || 0) - (current.exceptions_total || 0)} fewer
+                          </span>
+                        ) : (
+                          <span className="text-xs text-[#B91C1C] font-bold flex items-center">
+                            <TrendingUp size={14} className="mr-0.5" /> {(current.exceptions_total || 0) - (prev.exceptions_total || 0)} more
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">Initial period</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">{current.exceptions_resolved || 0} cleared</p>
+                  </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Resolution Speed</p>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-xl font-bold text-slate-900 font-mono">
-                  <AskableMetric label="Average Resolution Speed" value={`${current.avg_resolution_days || 2.1} days`} context={`close period ${targetMonth}`}>
-                    <AnimatedNumber value={current.avg_resolution_days || 2.1} format={v => `${v.toFixed(1)}d`} duration={600} />
-                  </AskableMetric>
-                </span>
-                <span className="text-xs text-[#15803D] font-bold flex items-center">
-                  <Clock size={13} className="mr-0.5" /> Historical avg
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                {prev?.has_data || (prev?.avg_resolution_days > 0) ? `Prior: ${prev.avg_resolution_days} days` : 'Standard SLA: 2.5 days'}
-              </p>
-            </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Resolution Speed</p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-xl font-bold text-slate-900 font-mono">
+                        <AskableMetric label="Average Resolution Speed" value={`${current.avg_resolution_days || 2.1} days`} context={`close period ${targetMonth}`}>
+                          <AnimatedNumber value={current.avg_resolution_days || 2.1} format={v => `${v.toFixed(1)}d`} duration={600} />
+                        </AskableMetric>
+                      </span>
+                      <span className="text-xs text-[#15803D] font-bold flex items-center">
+                        <Clock size={13} className="mr-0.5" /> Historical avg
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {hasPriorData ? `Prior: ${prev.avg_resolution_days || 2.1} days` : 'Standard SLA: 2.5 days'}
+                    </p>
+                  </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory Match Rate</p>
-              <p className="text-xl font-bold text-[#15803D] mt-1 font-mono">
-                <AskableMetric label="Statutory Value Match Rate" value={`${(current.match_rate || 97.7).toFixed(1)}%`} context={`close period ${targetMonth}`}>
-                  <AnimatedNumber value={current.match_rate || 97.7} format={v => `${v.toFixed(1)}%`} duration={600} />
-                </AskableMetric>
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Statutory Format: Ind AS–aligned</p>
-            </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory Match Rate</p>
+                    <p className="text-xl font-bold text-[#15803D] mt-1 font-mono">
+                      <AskableMetric label="Statutory Value Match Rate" value={`${(current.match_rate || 97.7).toFixed(1)}%`} context={`close period ${targetMonth}`}>
+                        <AnimatedNumber value={current.match_rate || 97.7} format={v => `${v.toFixed(1)}%`} duration={600} />
+                      </AskableMetric>
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {hasPriorData && prev?.match_rate ? `Prior: ${(prev.match_rate).toFixed(1)}%` : 'Statutory Format: Ind AS–aligned'}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 

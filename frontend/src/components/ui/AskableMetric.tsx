@@ -69,7 +69,7 @@ export const AskableMetric: React.FC<AskableMetricProps> = ({
         showUnderline ? 'hover:underline hover:decoration-slate-400 hover:decoration-dotted hover:underline-offset-3' : ''
       } ${className}`}
     >
-      <span>{children}</span>
+      <span>{children !== undefined && children !== null ? children : (value !== undefined ? String(value) : null)}</span>
       {showIcon && (
         <span 
           aria-hidden="true"

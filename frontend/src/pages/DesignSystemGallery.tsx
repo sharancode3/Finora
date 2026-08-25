@@ -53,7 +53,7 @@ export default function DesignSystemGallery() {
     <div className="space-y-12 pb-24">
       <div>
         <h1 className="mb-2">Design System Gallery</h1>
-        <p>Verification for Phase 1 components. All strictly using Tailwind tokens.</p>
+        <p>Verification for core UI components. All strictly using design system tokens.</p>
       </div>
 
       <section>

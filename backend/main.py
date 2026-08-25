@@ -16,7 +16,7 @@ from backend.db.sqlite_client import (
 )
 from backend.ai_agent import ask_finora_agent
 
-app = FastAPI(title="Finora API", description="AI Finance Controller API - Phase 0 (Data Foundation)")
+app = FastAPI(title="Finora API", description="AI Finance Controller API")
 
 app.add_middleware(
     CORSMiddleware,

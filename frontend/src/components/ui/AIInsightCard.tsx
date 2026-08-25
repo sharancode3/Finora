@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ShieldCheck, Database, CheckCircle2 } from 'lucide-react';
+import { pluralize } from '../../utils/formatters';
 
 export interface EvidenceStep {
   step_number?: number;
@@ -104,7 +105,7 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
             className="text-xs font-bold text-[#1E293B] hover:text-[#0F172A] bg-[#F1F5F9] hover:bg-[#E2E8F0] px-3 py-1.5 rounded-xl border border-[#E2E8F0] transition-colors duration-150 ease-out flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
           >
             <Database size={13} />
-            <span>{showEvidence ? 'Hide Evidence Trail' : `Show Evidence Trail (${evidenceTrail.length} steps)`}</span>
+            <span>{showEvidence ? 'Hide Evidence Trail' : `Show Evidence Trail (${pluralize(evidenceTrail.length, 'step', 'steps')})`}</span>
             {showEvidence ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
         )}

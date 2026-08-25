@@ -38,26 +38,36 @@ import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 
+const SYSTEM_ANCHOR_DATE = '2026-08-31';
+
 const PRESETS = [
-  { label: 'Last 7 Days', days: 7 },
-  { label: 'Last 30 Days', days: 30 },
-  { label: 'Last 90 Days', days: 90 },
-  { label: 'Last 6 Months', days: 180 },
-  { label: 'Last Year', days: 365 },
+  { label: 'Last 7 Days', days: 7, start: '2026-08-25', end: '2026-08-31' },
+  { label: 'Last 30 Days', days: 30, start: '2026-08-01', end: '2026-08-31' },
+  { label: 'Last 90 Days', days: 90, start: '2026-06-01', end: '2026-08-31' },
+  { label: 'Last 6 Months', days: 180, start: '2026-03-01', end: '2026-08-31' },
 ];
 
-const formatDate = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-};
+function parseDateTuple(dStr: string): [number, number, number] {
+  const parts = (dStr || SYSTEM_ANCHOR_DATE).split('-').map(Number);
+  return [parts[0] || 2026, (parts[1] || 8) - 1, parts[2] || 1];
+}
 
-const getPastDate = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return formatDate(d);
-};
+function shiftDateString(dStr: string, days: number): string {
+  const [y, m, d] = parseDateTuple(dStr);
+  const dt = new Date(Date.UTC(y, m, d + days));
+  const ny = dt.getUTCFullYear();
+  const nm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const nd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${ny}-${nm}-${nd}`;
+}
+
+function countDaysBetween(startStr: string, endStr: string): number {
+  const [y1, m1, d1] = parseDateTuple(startStr);
+  const [y2, m2, d2] = parseDateTuple(endStr);
+  const dt1 = Date.UTC(y1, m1, d1);
+  const dt2 = Date.UTC(y2, m2, d2);
+  return Math.max(1, Math.round((dt2 - dt1) / (24 * 60 * 60 * 1000)) + 1);
+}
 
 export default function Dashboard() {
   const { isDark, colors, chartColors } = useTheme();
@@ -87,8 +97,15 @@ export default function Dashboard() {
   // Date Range State
   const [dateRange, setDateRange] = useState(() => {
     const saved = localStorage.getItem('finora_dashboard_range');
-    if (saved) return JSON.parse(saved);
-    return { start: getPastDate(30), end: formatDate(new Date()), preset: 'Last 30 Days' };
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.start && parsed?.end && String(parsed.start).startsWith('2026-')) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return { start: '2026-08-01', end: '2026-08-31', preset: 'Last 30 Days' };
   });
   
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -120,15 +137,10 @@ export default function Dashboard() {
     setLoading(true);
     setExpandedDay(null);
 
-    // Calculate equivalent prior period
-    const startDt = new Date(dateRange.start);
-    const endDt = new Date(dateRange.end);
-    const diffDays = Math.max(1, Math.round((endDt.getTime() - startDt.getTime()) / (1000 * 60 * 60 * 24)));
-    
-    const priorEndDt = new Date(startDt.getTime() - 24 * 60 * 60 * 1000);
-    const priorStartDt = new Date(priorEndDt.getTime() - (diffDays - 1) * 24 * 60 * 60 * 1000);
-    const pStart = formatDate(priorStartDt);
-    const pEnd = formatDate(priorEndDt);
+    // Calculate equivalent prior period using clean UTC date shifting
+    const diffDays = countDaysBetween(dateRange.start, dateRange.end);
+    const pEnd = shiftDateString(dateRange.start, -1);
+    const pStart = shiftDateString(pEnd, -(diffDays - 1));
 
     try {
       const [txRes, excRes, priorTxRes, priorExcRes, benfordRes, mlRes, briefingRes, forensicRes, riskRes] = await Promise.all([
@@ -189,8 +201,8 @@ export default function Dashboard() {
 
   const applyPreset = (preset: typeof PRESETS[0]) => {
     setDateRange({
-      start: getPastDate(preset.days),
-      end: formatDate(new Date()),
+      start: preset.start,
+      end: preset.end,
       preset: preset.label
     });
     setShowDatePicker(false);

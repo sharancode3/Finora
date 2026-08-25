@@ -202,7 +202,13 @@ export default function Reconciliation() {
               value={`${metrics.match_rate}%`}
               customQuestion={`Why is the statutory value match rate ${metrics.match_rate}% for scope ${selectedScope}? Please walk me through the settlement breakdown.`}
               className="text-2xl font-extrabold text-[#15803D] font-mono"
-            />
+            >
+              {loading ? (
+                <div className="h-8 w-24 bg-slate-100 rounded-lg animate-pulse" />
+              ) : (
+                <span>{metrics.match_rate}%</span>
+              )}
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
             <span>Statutory Format: Verified Ledger</span>
@@ -223,7 +229,13 @@ export default function Reconciliation() {
               value={`₹${metrics.total_gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
               customQuestion={`Break down the gross processed volume of ₹${metrics.total_gross.toLocaleString('en-IN')} across linked rails for scope ${selectedScope}.`}
               className="text-2xl font-extrabold text-slate-900 font-mono"
-            />
+            >
+              {loading ? (
+                <div className="h-8 w-32 bg-slate-100 rounded-lg animate-pulse" />
+              ) : (
+                <span>₹{metrics.total_gross.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              )}
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
             <span>{scopeAndSearchFiltered.length} records</span>
@@ -240,7 +252,13 @@ export default function Reconciliation() {
               value={`₹${metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
               customQuestion={`Explain our net settled bank cash of ₹${metrics.total_net.toLocaleString('en-IN')} for scope ${selectedScope}.`}
               className="text-2xl font-extrabold text-[#15803D] font-mono"
-            />
+            >
+              {loading ? (
+                <div className="h-8 w-32 bg-slate-100 rounded-lg animate-pulse" />
+              ) : (
+                <span>₹{metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              )}
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-[#15803D] pt-2 border-t border-slate-100 font-medium">
             <span className="flex items-center gap-1"><CheckCircle2 size={12} /> Bank Credited</span>
@@ -257,7 +275,13 @@ export default function Reconciliation() {
               value={`₹${metrics.exc_val.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
               customQuestion={`Why is ₹${metrics.exc_val.toLocaleString('en-IN')} trapped in exceptions for scope ${selectedScope}? Show root cause reasons.`}
               className="text-2xl font-extrabold text-[#B91C1C] font-mono"
-            />
+            >
+              {loading ? (
+                <div className="h-8 w-28 bg-slate-100 rounded-lg animate-pulse" />
+              ) : (
+                <span>₹{metrics.exc_val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              )}
+            </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-[#B91C1C] pt-2 border-t border-slate-100 font-bold">
             <span>{metrics.open_exc_count} open items</span>
@@ -274,26 +298,41 @@ export default function Reconciliation() {
       <div className="bg-white rounded-2xl border border-[#E4E4E7] p-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Scope:</span>
-          {scopes.slice(0, 4).map(s => (
-            <button
-              key={s.id}
-              onClick={() => setSelectedScope(s.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                selectedScope === s.id
-                  ? 'bg-slate-100 text-slate-900 font-bold border border-slate-300'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-[#E4E4E7]'
-              }`}
-            >
-              {s.label.split(' (')[0]}
-            </button>
-          ))}
-          <button
-            onClick={() => handleLaunchRun('full_history')}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1E293B] hover:bg-[#0F172A] text-white transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-2xs"
-          >
-            <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center font-bold text-[8px] font-mono shrink-0">F</div>
-            <span>Full 6-Month Run (300+ Records)</span>
-          </button>
+          {scopes.map(s => {
+            const isFullHistory = s.id === 'full_history';
+            const isSelected = selectedScope === s.id;
+            if (isFullHistory) {
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedScope('full_history')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-[#1E293B] text-white shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200'
+                  }`}
+                >
+                  <div className={`w-3.5 h-3.5 rounded flex items-center justify-center font-bold text-[8px] font-mono shrink-0 ${isSelected ? 'bg-white text-[#1E293B]' : 'bg-[#1E293B] text-white'}`}>
+                    F
+                  </div>
+                  <span>Full 6-Month Run ({s.record_count || '300+'} Records)</span>
+                </button>
+              );
+            }
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSelectedScope(s.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-slate-100 text-slate-900 font-bold border border-slate-300'
+                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-[#E4E4E7]'
+                }`}
+              >
+                {s.label.split(' (')[0]}
+              </button>
+            );
+          })}
         </div>
 
         <div className="relative shrink-0 w-full sm:w-56">

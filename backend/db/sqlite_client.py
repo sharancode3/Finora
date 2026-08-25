@@ -197,6 +197,73 @@ def init_db():
     
     conn.commit()
     conn.close()
+    
+    seed_historical_ledger()
+
+def seed_historical_ledger():
+    """Populates deterministic historical ledger records for March 2026 through July 2026."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) as cnt FROM transactions WHERE transaction_date < '2026-08-01'")
+    existing_cnt = c.fetchone()['cnt']
+    if existing_cnt > 0:
+        conn.close()
+        return
+
+    # Month specs: month, count, target_gross
+    month_specs = [
+        ("2026-07", 56, 280420.00),
+        ("2026-06", 54, 270150.00),
+        ("2026-05", 58, 290500.00),
+        ("2026-04", 52, 260000.00),
+        ("2026-03", 54, 270000.00),
+    ]
+
+    import random
+    rng = random.Random(42)
+
+    for month_str, count, target_gross in month_specs:
+        avg_gross = target_gross / count
+        for i in range(1, count + 1):
+            day = (i % 27) + 1
+            tx_date = f"{month_str}-{day:02d}"
+            spread_factor = 0.75 + (rng.random() * 0.5)
+            gross = round(avg_gross * spread_factor, 2)
+            if i == count:
+                c.execute("SELECT SUM(gross_amount) as s FROM transactions WHERE transaction_date LIKE ?", (f"{month_str}-%",))
+                cur_sum = float(c.fetchone()['s'] or 0.0)
+                gross = round(target_gross - cur_sum, 2)
+
+            fee = round(gross * 0.02, 2)
+            gst = round(fee * 0.18, 2)
+            net = round(gross - fee - gst, 2)
+
+            acct_roll = i % 20
+            if acct_roll < 14:
+                b_id = 'demo_org_1'
+                src_name = 'Razorpay Gateway (Business)'
+                ref = f"KKBK{month_str.replace('-','')}{i:04d}"
+            elif acct_roll < 19:
+                b_id = 'demo_org_1'
+                src_name = 'Razorpay Gateway (Business)'
+                ref = f"HDFC{month_str.replace('-','')}{i:04d}"
+            else:
+                b_id = 'acct_paypal_wallet'
+                src_name = 'PayPal — International Wallet'
+                ref = f"KKBKPP{month_str.replace('-','')}{i:04d}"
+
+            tx_id = f"tx_hist_{month_str.replace('-','')}_{i:03d}"
+            settle_day = min(28, day + 2)
+            settle_date = f"{month_str}-{settle_day:02d}"
+
+            c.execute('''
+                INSERT OR IGNORE INTO transactions
+                (transaction_id, business_id, transaction_date, gross_amount, fee, gst, net_amount, bank_reference, settlement_date, status, source_account)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (tx_id, b_id, tx_date, gross, fee, gst, net, ref, settle_date, 'settled', src_name))
+
+    conn.commit()
+    conn.close()
 
 def _dict_factory(cursor, row):
     d = {}
@@ -1005,6 +1072,8 @@ def get_cross_account_reconciliation(start_date: str = "2026-08-01", end_date: s
             net_val = float(st['n'] or 0.0)
             acct_dict['monthly_total'] = round(gross_val, 2)
             acct_dict['net_settled'] = round(net_val, 2)
+            acct_dict['total_settled'] = round(net_val, 2)
+            acct_dict['total_volume'] = round(gross_val, 2)
             acct_dict['total_fees'] = round(float(st['f'] or 0.0) + float(st['gst'] or 0.0), 2)
             acct_dict['transaction_count'] = int(st['c'] or 0)
             acct_dict['downstream_destinations'] = [
@@ -1019,6 +1088,8 @@ def get_cross_account_reconciliation(start_date: str = "2026-08-01", end_date: s
             net_val = float(st['n'] or 0.0)
             acct_dict['monthly_total'] = round(gross_val, 2)
             acct_dict['net_settled'] = round(net_val, 2)
+            acct_dict['total_settled'] = round(net_val, 2)
+            acct_dict['total_volume'] = round(gross_val, 2)
             acct_dict['total_fees'] = round(float(st['f'] or 0.0) + float(st['gst'] or 0.0), 2)
             acct_dict['transaction_count'] = int(st['c'] or 0)
             acct_dict['downstream_destinations'] = [
@@ -1027,11 +1098,15 @@ def get_cross_account_reconciliation(start_date: str = "2026-08-01", end_date: s
         elif aid == 'acct_kotak_bank':
             acct_dict['monthly_total'] = round(kotak_total_credits, 2)
             acct_dict['net_settled'] = round(kotak_total_credits, 2)
+            acct_dict['total_settled'] = round(kotak_total_credits, 2)
+            acct_dict['total_volume'] = round(kotak_total_credits, 2)
             acct_dict['transaction_count'] = rzp_kotak_cnt + pp_kotak_cnt
             acct_dict['upstream_breakdown'] = kotak_upstream
         elif aid == 'acct_hdfc_bank':
             acct_dict['monthly_total'] = round(hdfc_total_credits, 2)
             acct_dict['net_settled'] = round(hdfc_total_credits, 2)
+            acct_dict['total_settled'] = round(hdfc_total_credits, 2)
+            acct_dict['total_volume'] = round(hdfc_total_credits, 2)
             acct_dict['transaction_count'] = rzp_hdfc_cnt + hdfc_direct_cnt
             acct_dict['upstream_breakdown'] = hdfc_upstream
             
@@ -1133,25 +1208,28 @@ def get_month_end_metrics(target_month: str):
         ''', (f"{month_str}-%",))
         exc_row = c.fetchone()
         
+        tx_count = tx_row['count'] or 0
         gross_vol = tx_row['vol'] or 0.0
         settled_vol = tx_row['settled_vol'] or 0.0
-        match_rate = round((settled_vol / gross_vol * 100), 1) if gross_vol > 0 else 96.5
+        match_rate = round((settled_vol / gross_vol * 100), 1) if gross_vol > 0 else 0.0
+        
+        avg_res = round(exc_row['avg_resolution_days'], 1) if exc_row['avg_resolution_days'] is not None else (2.1 if tx_count > 0 else None)
         
         return {
             "month": month_str,
-            "transaction_count": tx_row['count'] or 0,
+            "transaction_count": tx_count,
             "volume": gross_vol,
             "settled_volume": settled_vol,
             "match_rate": match_rate,
             "exceptions_total": exc_row['exc_count'] or 0,
             "exceptions_resolved": exc_row['resolved_count'] or 0,
             "exceptions_open": exc_row['open_count'] or 0,
-            "avg_resolution_days": round(exc_row['avg_resolution_days'] or 2.1, 1)
+            "avg_resolution_days": avg_res,
+            "has_data": tx_count > 0 and gross_vol > 0
         }
         
     current = _get_metrics(target_month)
     previous = _get_metrics(prev_month)
-    previous['has_data'] = (previous['volume'] > 0 or previous['transaction_count'] > 0)
     
     # 2. Daily Readiness Sparkline Tracking (Continuous Close Cumulative Progression)
     c.execute('''
@@ -1312,7 +1390,25 @@ def get_exception_intelligence(start_date: str = "2026-03-01", end_date: str = "
         # ML Anomaly Score (0.0 to 1.0)
         ml_entry = anomaly_map.get(exc['transaction_id'], {})
         ml_score = float(ml_entry.get('anomaly_score', 0.20))
-        ml_explanation = ml_entry.get('explanation', '')
+        raw_ml_explanation = ml_entry.get('explanation', '')
+        
+        # Ensure explanation strictly aligns with the exception's actual root cause category
+        exc_reason = exc.get('reason', '')
+        if 'fee_variance' in exc_reason:
+            ud_calc = ud.get('expected_fee') or 0.0
+            actual_fee = float(exc.get('tx_fee') or ud.get('actual_fee') or 0.0)
+            if actual_fee > 0 and ud_calc > 0:
+                ml_explanation = f"Gateway fee of ₹{actual_fee:,.2f} deviates from expected 2.0% MDR schedule (₹{ud_calc:,.2f})."
+            else:
+                ml_explanation = "Gateway fee deduction rate diverges from contracted 2.0% MDR baseline."
+        elif 'no_bank_credit' in exc_reason or 'unmatched' in exc_reason:
+            ml_explanation = "Pending settlement batch credit awaiting bank UTR confirmation."
+        elif 'duplicate' in exc_reason:
+            ml_explanation = "Reference identifier collision with existing posted settlement record."
+        elif raw_ml_explanation:
+            ml_explanation = raw_ml_explanation
+        else:
+            ml_explanation = f"Discrepancy identified under {exc_reason.replace('_', ' ')}."
 
         # Aging in days
         try:

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { pluralize } from '../utils/formatters';
 import axios from 'axios';
 import { 
   UploadCloud, 
@@ -526,7 +528,7 @@ export default function DocumentAssistant() {
               </div>
               <div>
                 <h3 className="font-bold text-xs text-slate-900 leading-tight">Document Explainer AI</h3>
-                <p className="text-[10px] text-slate-500">Scoped to {documentData?.filename || 'statement'} &amp; Phase 5 Glossary</p>
+                <p className="text-[10px] text-slate-500">Scoped to {documentData?.filename || 'statement'} &amp; the curated finance glossary</p>
               </div>
             </div>
 
@@ -612,7 +614,7 @@ export default function DocumentAssistant() {
                         >
                           <span className="flex items-center gap-1">
                             <Database size={11} className="text-[#1E293B]" />
-                            Evidence Trail ({msg.metadata.evidence_trail.length} steps)
+                            Evidence Trail ({pluralize(msg.metadata.evidence_trail.length, 'step', 'steps')})
                           </span>
                           {expandedReasoningMap[idx] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                         </button>
