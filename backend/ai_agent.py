@@ -1960,7 +1960,7 @@ def generate_month_end_summary(target_month: str) -> Dict:
     if prev['volume'] > 0:
         summary_text = (
             f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} {vol_str}. "
-            f"Statutory Value Match Rate reached {curr['match_rate']}% ({abs(match_rate_diff)}% {match_dir} vs prior month). "
+            f"Statutory Value Match Rate reached {curr['match_rate']}% ({abs(match_rate_diff):.1f} percentage points {match_dir} vs {prev['month']}). "
             f"Total exceptions {exc_dir} to {curr['exceptions_total']} {exc_item_word}, with average resolution turnaround at {curr['avg_resolution_days']} {res_day_word} ({abs(time_diff):.1f} {diff_day_word} {time_dir}). "
             f"Ledger balances align with Ind AS statutory close readiness."
         )
@@ -1992,7 +1992,7 @@ def generate_month_end_summary(target_month: str) -> Dict:
             "action": "Computed period-over-period delta variances and validated against Ind AS statutory reconciliation requirements",
             "tool": "variance_calculator",
             "input": {"volume_diff": vol_diff, "match_rate_diff": match_rate_diff, "turnaround_diff": time_diff},
-            "observation": f"Volume: {vol_pct}%, Match Rate: {match_rate_diff}%, Resolution Speed: {time_diff:+.1f} days."
+            "observation": f"Volume: {vol_pct}%, Match Rate: {match_rate_diff:+.1f} pp, Resolution Speed: {time_diff:+.1f} days."
         }
     ]
     

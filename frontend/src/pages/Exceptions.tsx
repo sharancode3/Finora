@@ -37,6 +37,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { pluralize } from '../utils/formatters';
 
 export default function Exceptions() {
   const [exceptions, setExceptions] = useState<any[]>([]);
@@ -403,7 +404,7 @@ export default function Exceptions() {
           {selectedClusterKey && clusterWhyData[selectedClusterKey] && (
             <AIInsightCard
               title={`Common-Thread Synthesis: ${clusterWhyData[selectedClusterKey].title}`}
-              subtitle={`${clusterWhyData[selectedClusterKey].member_count} items • ₹${clusterWhyData[selectedClusterKey].total_variance?.toLocaleString('en-IN')} aggregate variance`}
+              subtitle={`${pluralize(clusterWhyData[selectedClusterKey].member_count, 'item', 'items')} • ₹${clusterWhyData[selectedClusterKey].total_variance?.toLocaleString('en-IN')} aggregate variance`}
               narration={clusterWhyData[selectedClusterKey].ai_common_thread}
               confidence="HIGH"
               confidenceScore={0.92}
@@ -412,9 +413,7 @@ export default function Exceptions() {
                 { 
                   step_number: 1, 
                   tool: 'sqlite_cluster_aggregator', 
-                  observation: clusterWhyData[selectedClusterKey].member_count === 1 
-                    ? 'Aggregated 1 item across identical variance signature.' 
-                    : `Aggregated ${clusterWhyData[selectedClusterKey].member_count} items across identical variance signatures.` 
+                  observation: `Aggregated ${pluralize(clusterWhyData[selectedClusterKey].member_count, 'item', 'items')} across identical variance signature${clusterWhyData[selectedClusterKey].member_count === 1 ? '' : 's'}.` 
                 },
                 { step_number: 2, tool: 'deterministic_pattern_matcher', observation: `Verified recurring root-cause: ${clusterWhyData[selectedClusterKey].title}.` }
               ]}

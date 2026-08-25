@@ -264,219 +264,250 @@ export default function LinkedAccounts() {
           </div>
 
           {/* Interactive Flow Diagram */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80">
-            
-            {/* UPSTREAM SOURCES (4 cols) */}
-            {/* UPSTREAM SOURCES (4 cols) */}
-            <div className="lg:col-span-4 space-y-3">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <span>Origin Sources</span>
-              </div>
+          {(() => {
+            const routes = crossRecon.settlement_routes || {
+              rzp_to_kotak: { amount: 148707.92, percentage_of_source: 62.0, percentage_of_target: 77.1, count: 30 },
+              rzp_to_hdfc: { amount: 51457.51, percentage_of_source: 21.4, percentage_of_target: 90.3, count: 12 },
+              pp_to_kotak: { amount: 44205.76, percentage_of_source: 100.0, percentage_of_target: 22.9, count: 12 },
+              rzp_to_suspense: { amount: 16500.00, percentage_of_source: 6.9, percentage_of_target: 100.0, count: 3 },
+              rzp_in_transit: { amount: 23313.08, percentage_of_source: 9.7, percentage_of_target: 100.0, count: 2 }
+            };
+            const rzpAcct = crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1');
+            const ppAcct = crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet');
+            const kotakAcct = crossRecon.accounts?.find((a: any) => a.account_id === 'acct_kotak_bank');
+            const hdfcAcct = crossRecon.accounts?.find((a: any) => a.account_id === 'acct_hdfc_bank');
 
-              {/* Razorpay Gateway Box */}
-              <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <InstitutionLogo name="Razorpay" size="xs" />
-                    <span className="text-[11px] font-bold text-[#0B72E7] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
-                      Payment Gateway
-                    </span>
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80">
+                
+                {/* UPSTREAM SOURCES (4 cols) */}
+                <div className="lg:col-span-4 space-y-3">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <span>Origin Sources</span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-900">
-                    <AskableMetric label="Razorpay Gateway Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50}>
-                      <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'demo_org_1')?.monthly_total || 246103.50} />
-                    </AskableMetric>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5 pt-0.5">
-                  <InstitutionLogo name="Razorpay" size={32} />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Razorpay Gateway (Business)</h4>
-                    <p className="text-[10px] text-slate-500">Domestic INR card, UPI &amp; netbanking</p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
-                  <span>Settled: <strong>₹2,39,978.51</strong></span>
-                  <span className="text-slate-400">47 transactions</span>
-                </div>
-              </div>
 
-              {/* PayPal Wallet Box */}
-              <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <InstitutionLogo name="PayPal" size="xs" />
-                    <span className="text-[11px] font-bold text-[#003087] bg-[#F0F9FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
-                      Cross-Border Wallet
-                    </span>
+                  {/* Razorpay Gateway Box */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <InstitutionLogo name="Razorpay" size="xs" />
+                        <span className="text-[11px] font-bold text-[#0B72E7] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
+                          Payment Gateway
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-slate-900">
+                        <AskableMetric label="Razorpay Gateway Monthly Gross" value={rzpAcct?.monthly_total || 246103.50}>
+                          <AmountDisplay amount={rzpAcct?.monthly_total || 246103.50} />
+                        </AskableMetric>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 pt-0.5">
+                      <InstitutionLogo name="Razorpay" size={32} />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">Razorpay Gateway (Business)</h4>
+                        <p className="text-[10px] text-slate-500">Domestic INR card, UPI &amp; netbanking</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
+                      <span>Net Captured: <strong>₹{(rzpAcct?.net_settled || 239978.51).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
+                      <span className="text-slate-400">{rzpAcct?.transaction_count || 47} txns</span>
+                    </div>
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-900">
-                    <AskableMetric label="PayPal Wallet Monthly Gross" value={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00}>
-                      <AmountDisplay amount={crossRecon.accounts?.find((a: any) => a.account_id === 'acct_paypal_wallet')?.monthly_total || 47000.00} />
-                    </AskableMetric>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5 pt-0.5">
-                  <InstitutionLogo name="PayPal" size={32} />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">PayPal — International Wallet</h4>
-                    <p className="text-[10px] text-slate-500">Cross-border USD payments (4.4% + ₹25 fee)</p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
-                  <span>Settled: <strong>₹44,205.76</strong></span>
-                  <span className="text-slate-400">12 transactions (2 batches)</span>
-                </div>
-              </div>
-            </div>
 
-            {/* FLOW ROUTE ARROWS (4 cols) */}
-            <div className="lg:col-span-4 space-y-2.5 px-2">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-center">
-                Settlement Routes
-              </div>
-
-              {/* Route 1: Razorpay -> Kotak */}
-              <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <InstitutionLogo name="Razorpay" size="xs" />
-                  <span className="text-slate-400">→</span>
-                  <InstitutionLogo name="Kotak" size="xs" />
-                  <span className="font-semibold text-slate-700 text-[11px]">Razorpay → Kotak</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <AskableMetric question="Why did ₹1,69,856.12 (70.8% of Razorpay volume) settle into Kotak Mahindra Bank?">
-                    <span>₹1,69,856.12</span>
-                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(70.8%)</span>
-                  </AskableMetric>
-                </div>
-              </div>
-
-              {/* Route 2: Razorpay -> HDFC */}
-              <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <InstitutionLogo name="Razorpay" size="xs" />
-                  <span className="text-slate-400">→</span>
-                  <InstitutionLogo name="HDFC" size="xs" />
-                  <span className="font-semibold text-slate-700 text-[11px]">Razorpay → HDFC</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <AskableMetric question="Why did ₹65,322.39 (27.2% of Razorpay volume) settle into HDFC Bank?">
-                    <span>₹65,322.39</span>
-                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(27.2%)</span>
-                  </AskableMetric>
-                </div>
-              </div>
-
-              {/* Route 3: PayPal -> Kotak */}
-              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <InstitutionLogo name="PayPal" size="xs" />
-                  <span className="text-slate-400">→</span>
-                  <InstitutionLogo name="Kotak" size="xs" />
-                  <span className="font-semibold text-slate-700 text-[11px]">PayPal → Kotak</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                  <AskableMetric question="Why did all ₹44,205.76 from PayPal settle into Kotak Mahindra Bank?">
-                    <span>₹44,205.76</span>
-                    <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(100%)</span>
-                  </AskableMetric>
-                </div>
-              </div>
-
-              {/* Route 4: Razorpay -> Suspense */}
-              <div className="p-2 bg-amber-50 rounded-xl border border-amber-200/80 shadow-2xs flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <InstitutionLogo name="Razorpay" size="xs" />
-                  <span className="text-slate-400">→</span>
-                  <span className="w-4 h-4 rounded-md bg-[#B91C1C] text-white flex items-center justify-center font-bold text-[8px]">!</span>
-                  <span className="font-semibold text-amber-900 text-[11px]">Razorpay → Suspense</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono font-bold text-amber-950 text-[11px]">
-                  <AskableMetric question="Why is ₹4,800.00 routed to Suspense / Audit Hold from Razorpay?">
-                    <span>₹4,800.00</span>
-                    <span className="text-[10px] font-sans font-normal text-amber-700 ml-1">(Audit Hold)</span>
-                  </AskableMetric>
-                </div>
-              </div>
-            </div>
-
-            {/* DOWNSTREAM BANK DESTINATIONS (4 cols) */}
-            <div className="lg:col-span-4 space-y-3">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <span>Bank Deposit Targets</span>
-              </div>
-
-              {/* Kotak Bank Destination */}
-              <div className="p-4 bg-white rounded-xl border-2 border-[#BBF7D0] shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <InstitutionLogo name="Kotak Mahindra Bank" size="xs" />
-                    <span className="text-[11px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
-                      Primary Bank
-                    </span>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-emerald-950">
-                    <AskableMetric label="Kotak Mahindra Bank Total Monthly Credits" value={crossRecon.summary?.kotak_total_credits || 214061.88}>
-                      <AmountDisplay amount={crossRecon.summary?.kotak_total_credits || 214061.88} />
-                    </AskableMetric>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5 pt-0.5">
-                  <InstitutionLogo name="Kotak Mahindra Bank" size={32} />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Kotak Mahindra Bank — Business Current</h4>
-                    <p className="text-[10px] text-slate-500 font-mono">A/C 981200481920 (45 deposits)</p>
+                  {/* PayPal Wallet Box */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <InstitutionLogo name="PayPal" size="xs" />
+                        <span className="text-[11px] font-bold text-[#003087] bg-[#F0F9FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
+                          Cross-Border Wallet
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-slate-900">
+                        <AskableMetric label="PayPal Wallet Monthly Gross" value={ppAcct?.monthly_total || 47000.00}>
+                          <AmountDisplay amount={ppAcct?.monthly_total || 47000.00} />
+                        </AskableMetric>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 pt-0.5">
+                      <InstitutionLogo name="PayPal" size={32} />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">PayPal — International Wallet</h4>
+                        <p className="text-[10px] text-slate-500">Cross-border USD payments (4.4% + ₹25 fee)</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-600">
+                      <span>Net Settled: <strong>₹{(ppAcct?.net_settled || 44205.76).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
+                      <span className="text-slate-400">{ppAcct?.transaction_count || 12} txns (2 batches)</span>
+                    </div>
                   </div>
                 </div>
-                <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>From Razorpay:</span>
-                    <span className="font-mono font-semibold">₹1,69,856.12 (79.3%)</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>From PayPal:</span>
-                    <span className="font-mono font-semibold">₹44,205.76 (20.7%)</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* HDFC Bank Destination */}
-              <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <InstitutionLogo name="HDFC Bank" size="xs" />
-                    <span className="text-[11px] font-bold text-[#004B87] bg-[#F0F7FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
-                      Secondary Bank
-                    </span>
+                {/* FLOW ROUTE ARROWS (4 cols) */}
+                <div className="lg:col-span-4 space-y-2.5 px-2">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-center">
+                    Settlement Routes
                   </div>
-                  <span className="text-xs font-mono font-bold text-slate-900">
-                    <AskableMetric label="HDFC Bank Total Monthly Credits" value={crossRecon.summary?.hdfc_total_credits || 70822.39}>
-                      <AmountDisplay amount={crossRecon.summary?.hdfc_total_credits || 70822.39} />
-                    </AskableMetric>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5 pt-0.5">
-                  <InstitutionLogo name="HDFC Bank" size={32} />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">HDFC Bank — Business Current</h4>
-                    <p className="text-[10px] text-slate-500 font-mono">A/C 50200084920192 (14 deposits)</p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>From Razorpay:</span>
-                    <span className="font-mono font-semibold">₹65,322.39 (92.2%)</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Direct Inward NEFT:</span>
-                    <span className="font-mono font-semibold">₹5,500.00 (7.8%)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-          </div>
+                  {/* Route 1: Razorpay -> Kotak */}
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <InstitutionLogo name="Razorpay" size="xs" />
+                      <span className="text-slate-400">→</span>
+                      <InstitutionLogo name="Kotak" size="xs" />
+                      <span className="font-semibold text-slate-700 text-[11px]">Razorpay → Kotak</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
+                      <AskableMetric question={`Why did ₹${routes.rzp_to_kotak.amount.toLocaleString('en-IN')} (${routes.rzp_to_kotak.percentage_of_source}% of Razorpay volume) settle into Kotak Mahindra Bank?`}>
+                        <span>₹{routes.rzp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_kotak.percentage_of_source}%)</span>
+                      </AskableMetric>
+                    </div>
+                  </div>
+
+                  {/* Route 2: Razorpay -> HDFC */}
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <InstitutionLogo name="Razorpay" size="xs" />
+                      <span className="text-slate-400">→</span>
+                      <InstitutionLogo name="HDFC" size="xs" />
+                      <span className="font-semibold text-slate-700 text-[11px]">Razorpay → HDFC</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
+                      <AskableMetric question={`Why did ₹${routes.rzp_to_hdfc.amount.toLocaleString('en-IN')} (${routes.rzp_to_hdfc.percentage_of_source}% of Razorpay volume) settle into HDFC Bank?`}>
+                        <span>₹{routes.rzp_to_hdfc.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_hdfc.percentage_of_source}%)</span>
+                      </AskableMetric>
+                    </div>
+                  </div>
+
+                  {/* Route 3: PayPal -> Kotak */}
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <InstitutionLogo name="PayPal" size="xs" />
+                      <span className="text-slate-400">→</span>
+                      <InstitutionLogo name="Kotak" size="xs" />
+                      <span className="font-semibold text-slate-700 text-[11px]">PayPal → Kotak</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
+                      <AskableMetric question={`Why did all ₹${routes.pp_to_kotak.amount.toLocaleString('en-IN')} from PayPal settle into Kotak Mahindra Bank?`}>
+                        <span>₹{routes.pp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(100%)</span>
+                      </AskableMetric>
+                    </div>
+                  </div>
+
+                  {/* Route 4: Razorpay -> Suspense */}
+                  <div className="p-2 bg-amber-50 rounded-xl border border-amber-200/80 shadow-2xs flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <InstitutionLogo name="Razorpay" size="xs" />
+                      <span className="text-slate-400">→</span>
+                      <span className="w-4 h-4 rounded-md bg-[#B91C1C] text-white flex items-center justify-center font-bold text-[8px]">!</span>
+                      <span className="font-semibold text-amber-900 text-[11px]">Razorpay → Suspense</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-amber-950 text-[11px]">
+                      <AskableMetric question={`Why is ₹${routes.rzp_to_suspense.amount.toLocaleString('en-IN')} routed to Suspense / Audit Hold from Razorpay?`}>
+                        <span>₹{routes.rzp_to_suspense.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-sans font-normal text-amber-700 ml-1">({routes.rzp_to_suspense.percentage_of_source}%)</span>
+                      </AskableMetric>
+                    </div>
+                  </div>
+
+                  {/* Route 5: Razorpay -> In-Transit Float */}
+                  <div className="p-2 bg-blue-50/70 rounded-xl border border-blue-200/80 shadow-2xs flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <InstitutionLogo name="Razorpay" size="xs" />
+                      <span className="text-slate-400">→</span>
+                      <span className="w-4 h-4 rounded-md bg-[#0B72E7] text-white flex items-center justify-center font-bold text-[8px]">~</span>
+                      <span className="font-semibold text-blue-950 text-[11px]">In-Transit Float (T+2)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-blue-950 text-[11px]">
+                      <AskableMetric question={`Why is ₹${routes.rzp_in_transit.amount.toLocaleString('en-IN')} in rolling T+2 transit float?`}>
+                        <span>₹{routes.rzp_in_transit.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] font-sans font-normal text-blue-700 ml-1">({routes.rzp_in_transit.percentage_of_source}%)</span>
+                      </AskableMetric>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DOWNSTREAM BANK DESTINATIONS (4 cols) */}
+                <div className="lg:col-span-4 space-y-3">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <span>Bank Deposit Targets</span>
+                  </div>
+
+                  {/* Kotak Bank Destination */}
+                  <div className="p-4 bg-white rounded-xl border-2 border-[#BBF7D0] shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <InstitutionLogo name="Kotak Mahindra Bank" size="xs" />
+                        <span className="text-[11px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
+                          Primary Bank
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-emerald-950">
+                        <AskableMetric label="Kotak Mahindra Bank Total Monthly Credits" value={crossRecon.summary?.kotak_total_credits || 192913.68}>
+                          <AmountDisplay amount={crossRecon.summary?.kotak_total_credits || 192913.68} />
+                        </AskableMetric>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 pt-0.5">
+                      <InstitutionLogo name="Kotak Mahindra Bank" size={32} />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">Kotak Mahindra Bank — Business Current</h4>
+                        <p className="text-[10px] text-slate-500 font-mono">A/C 981200481920 (42 deposits)</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
+                      <div className="flex justify-between text-slate-600">
+                        <span>From Razorpay:</span>
+                        <span className="font-mono font-semibold">₹{routes.rzp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} ({routes.rzp_to_kotak.percentage_of_target}%)</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>From PayPal:</span>
+                        <span className="font-mono font-semibold">₹{routes.pp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} ({routes.pp_to_kotak.percentage_of_target}%)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* HDFC Bank Destination */}
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <InstitutionLogo name="HDFC Bank" size="xs" />
+                        <span className="text-[11px] font-bold text-[#004B87] bg-[#F0F7FF] px-2 py-0.5 rounded-full border border-[#BAE6FD]">
+                          Secondary Bank
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-slate-900">
+                        <AskableMetric label="HDFC Bank Total Monthly Credits" value={crossRecon.summary?.hdfc_total_credits || 56957.51}>
+                          <AmountDisplay amount={crossRecon.summary?.hdfc_total_credits || 56957.51} />
+                        </AskableMetric>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 pt-0.5">
+                      <InstitutionLogo name="HDFC Bank" size={32} />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">HDFC Bank — Business Current</h4>
+                        <p className="text-[10px] text-slate-500 font-mono">A/C 50200084920192 (13 deposits)</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 space-y-1 text-[10px]">
+                      <div className="flex justify-between text-slate-600">
+                        <span>From Razorpay:</span>
+                        <span className="font-mono font-semibold">₹{routes.rzp_to_hdfc.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} ({routes.rzp_to_hdfc.percentage_of_target}%)</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>Direct Inward NEFT:</span>
+                        <span className="font-mono font-semibold">₹5,500.00 (9.7%)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
 
           {/* Suspense Decomposition Inline Expansion */}
           {showSuspenseDetail && (

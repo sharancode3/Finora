@@ -12,7 +12,7 @@ from backend.db.sqlite_client import (
     get_exceptions_by_date_range, get_aggregates,
     get_transaction_by_id, get_exception_by_id,
     resolve_exception, escalate_exception,
-    get_cash_position_analytics
+    get_cash_position_analytics, get_period_comparison
 )
 from backend.ai_agent import ask_finora_agent
 
@@ -47,6 +47,13 @@ def api_get_transactions(start_date: str = Query(...), end_date: str = Query(...
 @transactions_router.get("/business/{business_id}")
 def api_get_transactions_by_business(business_id: str):
     return get_transactions_by_business(business_id)
+
+@transactions_router.get("/period-comparison")
+def api_get_period_comparison(curr_start: str = Query(...), curr_end: str = Query(...), prev_start: str = Query(...), prev_end: str = Query(...), account_id: Optional[str] = None):
+    try:
+        return get_period_comparison(curr_start, curr_end, prev_start, prev_end, account_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @transactions_router.get("/{tx_id}")
 def api_get_transaction(tx_id: str):

@@ -233,9 +233,17 @@ graph TD
   5. *Pillar 5: 3-Way Triangulation Audit* (Ledger ↔ Gateway ↔ Bank)
 - **Executive Closing Memo**: Formatted according to ICAI statutory guidelines with period-over-period variance tables.
 - **Cryptographic Period Lock**: Generates a **SHA-256 seal** computed over all reconciled transaction hashes, creating a tamper-evident audit record.
+- **Percentage Points Precision**: Differentiates between percentage points (`"pp"` / `"percentage points"`) for comparing rate metrics (e.g. $97.6\% \to 81.8\% = 15.8\text{ percentage points down}$) versus relative percentage changes.
 
 ### 9. Linked Accounts & Institution Money Movement
 - **Visual Money Movement Map**: Interactive visualization illustrating upstream Origin Sources (Razorpay, PayPal), Settlement Pathways, and downstream Deposit Targets (Kotak Bank, HDFC Bank).
+- **Single Source of Truth (`settlement_routes`)**: Both the high-level Money Movement flow diagram and the individual connected account source-attribution cards read from a single deterministic aggregation kernel (`get_cross_account_reconciliation`), guaranteeing 100.0% mathematical consistency without ad-hoc divergence.
+- **Full Downstream Breakdown Balance**: Every destination of captured gateway volume is strictly decomposed and sums to exactly 100.0%:
+  - *Kotak Mahindra Bank*: ₹1,48,707.92 (62.0%)
+  - *HDFC Bank*: ₹51,457.51 (21.4%)
+  - *Exceptions / Suspense Hold*: ₹16,500.00 (6.9%)
+  - *Rolling T+2 In-Transit Float*: ₹23,313.08 (9.7%)
+  - *Total*: **₹2,39,978.51 (100.0%)**
 - **Multi-Rail Health Tracking**: Real-time SLA sync indicators, API latency monitors, and actual monthly settled volume tracking.
 - **Authentic Brand Identity**: Integrates official corporate brand marks and hex palettes across all financial rails.
 

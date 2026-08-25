@@ -25,6 +25,7 @@ import { ReconciliationRunModal } from '../components/ReconciliationRunModal';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { useAI } from '../context/AIContext';
+import { pluralize } from '../utils/formatters';
 
 export type ReconTier = 'exact' | 'fuzzy_batched' | 'discrepancy';
 
@@ -148,16 +149,25 @@ export default function Reconciliation() {
   // Summary Metrics
   const metrics = useMemo(() => {
     const totalGross = scopeAndSearchFiltered.reduce((acc, t) => acc + (t.gross_amount || 0), 0);
-    const totalNet = scopeAndSearchFiltered.reduce((acc, t) => acc + (t.net_amount || 0), 0);
-    const settledGross = scopeAndSearchFiltered.filter(t => t.status === 'settled').reduce((acc, t) => acc + (t.gross_amount || 0), 0);
-    const excCount = tierCounts.discrepancy;
-    const excVal = scopeAndSearchFiltered.filter(t => getTransactionMatchTier(t) === 'discrepancy').reduce((acc, t) => acc + (t.gross_amount || 0), 0);
+    const settledTransactions = scopeAndSearchFiltered.filter(t => t.status === 'settled');
+    const settledGross = settledTransactions.reduce((acc, t) => acc + (t.gross_amount || 0), 0);
+    const settledNet = settledTransactions.reduce((acc, t) => acc + (t.net_amount || 0), 0);
+    const settledFees = settledTransactions.reduce((acc, t) => acc + (t.fee || 0), 0);
+    const settledGst = settledTransactions.reduce((acc, t) => acc + (t.gst || 0), 0);
+    const totalDeductions = settledFees + settledGst;
+    
+    const excTransactions = scopeAndSearchFiltered.filter(t => getTransactionMatchTier(t) === 'discrepancy');
+    const excCount = excTransactions.length;
+    const excVal = excTransactions.reduce((acc, t) => acc + (t.gross_amount || 0), 0);
     const matchRate = totalGross > 0 ? ((settledGross / totalGross) * 100).toFixed(1) : '99.4';
 
     return {
       total_gross: totalGross,
-      total_net: totalNet,
+      total_net: settledNet,
       settled_gross: settledGross,
+      settled_fees: settledFees,
+      settled_gst: settledGst,
+      total_deductions: totalDeductions,
       open_exc_count: excCount,
       exc_val: excVal,
       match_rate: matchRate
@@ -239,7 +249,7 @@ export default function Reconciliation() {
             </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-            <span>{scopeAndSearchFiltered.length} records</span>
+            <span>{pluralize(scopeAndSearchFiltered.length, 'record', 'records')}</span>
             <span className="font-semibold text-slate-600">4 Connected Rails</span>
           </div>
         </div>
@@ -285,7 +295,7 @@ export default function Reconciliation() {
             </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] text-[#B91C1C] pt-2 border-t border-slate-100 font-bold">
-            <span>{metrics.open_exc_count} open items</span>
+            <span>{pluralize(metrics.open_exc_count, 'open item', 'open items')}</span>
             <Link to="/exceptions" className="hover:underline flex items-center gap-0.5">
               <span>Review</span>
               <ChevronRight size={12} />
@@ -293,6 +303,22 @@ export default function Reconciliation() {
           </div>
         </div>
 
+      </div>
+
+      {/* Full Deduction Breakdown & Arithmetic Tie-Out Banner */}
+      <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 text-xs shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-mono text-[11px] text-slate-700 flex-wrap">
+            <span className="font-semibold text-slate-900">Gross: ₹{metrics.total_gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-[#B91C1C] font-semibold">Exceptions: ₹{metrics.exc_val.toLocaleString('en-IN', { minimumFractionDigits: 2 })} ({pluralize(metrics.open_exc_count, 'item', 'items')})</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-slate-600 font-semibold">MDR &amp; GST: ₹{metrics.total_deductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">=</span>
+            <span className="text-[#15803D] font-bold">Net Settled: ₹{metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          </div>
+          <span className="text-[10px] text-slate-400 font-medium font-sans">Deterministic SQLite Tie-Out</span>
+        </div>
       </div>
 
       {/* Scope Selector Ribbon */}

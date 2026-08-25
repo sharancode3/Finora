@@ -37,6 +37,7 @@ import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
+import { pluralize } from '../utils/formatters';
 
 const SYSTEM_ANCHOR_DATE = '2026-08-31';
 
@@ -428,10 +429,35 @@ export default function Dashboard() {
       .sort((a, b) => b.volume - a.volume);
   }, [transactions, selectedAccount, accounts]);
 
-  const renderPoPBadge = (diffPct: number | null, currVal: number, prevVal: number | undefined, isLowerBetter = false, isCurrency = true) => {
-    if (diffPct === null || prevVal === undefined || prevVal <= 0) {
+  const renderPoPBadge = (diffPct: number | null, currVal: number, prevVal: number | undefined, isLowerBetter = false, isCurrency = true, hasPrior = true) => {
+    if (!hasPrior || prevVal === undefined) {
       return <span className="text-slate-400 font-medium">No prior data</span>;
     }
+    
+    // When previous was zero (e.g. baseline zero open exceptions in prior month)
+    if (prevVal === 0) {
+      if (currVal === 0) {
+        return (
+          <span className="font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-[#F0FDF4] text-[#15803D]">
+            0 vs prior (Prior: 0)
+          </span>
+        );
+      }
+      const sign = '+';
+      const text = isCurrency ? `${sign}₹${Math.round(currVal).toLocaleString('en-IN')}` : `${sign}${currVal}`;
+      const badgeColor = isLowerBetter ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-[#F0FDF4] text-[#15803D]';
+      return (
+        <span className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded-md ${badgeColor}`}>
+          <TrendingUp size={12} />
+          {text} vs prior
+        </span>
+      );
+    }
+
+    if (diffPct === null) {
+      return <span className="text-slate-400 font-medium">No prior data</span>;
+    }
+
     const isPositive = isLowerBetter ? diffPct <= 0 : diffPct >= 0;
     const badgeColor = isPositive ? 'bg-[#F0FDF4] text-[#15803D]' : 'bg-[#FEF2F2] text-[#B91C1C]';
     const isExtreme = Math.abs(diffPct) > 300;
@@ -456,7 +482,9 @@ export default function Dashboard() {
           <div className="h-7 w-64 bg-slate-200/80 rounded-xl animate-pulse" />
           <div className="h-4 w-96 bg-slate-100 rounded-lg animate-pulse" />
         </div>
-        <CardSkeleton count={4} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <ChartSkeleton height="h-72" />
@@ -558,13 +586,13 @@ export default function Dashboard() {
           confidence="HIGH"
           confidenceScore={0.98}
           evidenceTrail={[
-            { step_number: 1, tool: 'sqlite_settlements_query', observation: `Retrieved ${dailyBriefing.raw_metrics.new_exceptions_count} exceptions and ₹${dailyBriefing.raw_metrics.yesterday_settled_net?.toLocaleString('en-IN')} settled net volume.` },
+            { step_number: 1, tool: 'sqlite_settlements_query', observation: `Retrieved ${pluralize(dailyBriefing.raw_metrics.new_exceptions_count, 'exception', 'exceptions')} and ₹${dailyBriefing.raw_metrics.yesterday_settled_net?.toLocaleString('en-IN')} settled net volume.` },
             { step_number: 2, tool: 'benford_forensic_verifier', observation: `Verified leading digit distribution: ${dailyBriefing.raw_metrics.benford_status}.` }
           ]}
           metrics={[
             { label: 'Settled Yesterday', value: `₹${dailyBriefing.raw_metrics.yesterday_settled_net?.toLocaleString('en-IN')}`, color: 'text-[#15803D]' },
             { label: 'Match Rate', value: `${dailyBriefing.raw_metrics.period_match_rate_pct}%` },
-            { label: 'New Exceptions', value: `${dailyBriefing.raw_metrics.new_exceptions_count} items`, color: 'text-[#B91C1C]' },
+            { label: 'New Exceptions', value: pluralize(dailyBriefing.raw_metrics.new_exceptions_count, 'item', 'items'), color: 'text-[#B91C1C]' },
             { label: 'Forensic Signal', value: dailyBriefing.raw_metrics.benford_status }
           ]}
         />
@@ -598,8 +626,8 @@ export default function Dashboard() {
             </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
-            <span className="text-slate-400">{transactions.length} records</span>
-            {renderPoPBadge(metrics.diff_processed, metrics.total_processed, metrics.prior_total_processed, false, true)}
+            <span className="text-slate-400">{pluralize(transactions.length, 'record', 'records')}</span>
+            {renderPoPBadge(metrics.diff_processed, metrics.total_processed, metrics.prior_total_processed, false, true, metrics.has_prior_data)}
           </div>
         </div>
         
@@ -628,7 +656,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
             <span className="text-[#15803D] font-medium flex items-center gap-1"><CheckCircle size={12} /> Bank credited</span>
-            {renderPoPBadge(metrics.diff_settled, metrics.settled_amount, metrics.prior_settled_amount, false, true)}
+            {renderPoPBadge(metrics.diff_settled, metrics.settled_amount, metrics.prior_settled_amount, false, true, metrics.has_prior_data)}
           </div>
         </div>
 
@@ -656,8 +684,8 @@ export default function Dashboard() {
             </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
-            <span className="text-[#B91C1C] font-medium">{exceptions.filter(e => e.status !== 'resolved').length} open items</span>
-            {renderPoPBadge(metrics.diff_exceptions, metrics.unreconciled_amount, metrics.prior_unreconciled, true, true)}
+            <span className="text-[#B91C1C] font-medium">{pluralize(exceptions.filter(e => e.status !== 'resolved').length, 'open item', 'open items')}</span>
+            {renderPoPBadge(metrics.diff_exceptions, metrics.unreconciled_amount, metrics.prior_unreconciled, true, true, metrics.has_prior_data)}
           </div>
         </div>
 
@@ -685,8 +713,8 @@ export default function Dashboard() {
                 <AnimatedNumber value={metrics.match_rate * 100} format={(v) => `${v.toFixed(1)}%`} duration={600} />
               </AskableMetric>
             </div>
-            {metrics.diff_match_rate !== null ? (
-              <div className="text-[11px] font-bold text-[#15803D]">{metrics.diff_match_rate >= 0 ? `+${metrics.diff_match_rate}%` : `${metrics.diff_match_rate}%`} vs prior</div>
+            {metrics.diff_match_rate !== null && metrics.has_prior_data ? (
+              <div className="text-[11px] font-bold text-[#15803D]">{metrics.diff_match_rate >= 0 ? `+${metrics.diff_match_rate} pts` : `${metrics.diff_match_rate} pts`} vs prior</div>
             ) : (
               <div className="text-[11px] font-medium text-slate-400">No prior data</div>
             )}
@@ -942,7 +970,7 @@ export default function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          askAI(`What happened on ${day.date} — walk me through that day's ${day.count} transactions and settlement status.`);
+                          askAI(`What happened on ${day.date} — walk me through that day's ${pluralize(day.count, 'transaction', 'transactions')} and settlement status.`);
                         }}
                         title={`Ask Controller: What happened on ${day.date}?`}
                         className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
@@ -966,7 +994,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${heatmapData.days.find(d => d?.date === expandedDay)?.count || 0} transaction settlements and any variances.`)}
+                    onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${pluralize(heatmapData.days.find(d => d?.date === expandedDay)?.count || 0, 'transaction settlement', 'transaction settlements')} and any variances.`)}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
                     title={`Ask Controller to analyze settlements on ${expandedDay}`}
                   >
@@ -1227,7 +1255,7 @@ export default function Dashboard() {
                   <div className="my-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-800 leading-relaxed font-medium flex items-start gap-1.5">
                     <div className="w-3.5 h-3.5 rounded bg-[#1E293B] text-white flex items-center justify-center font-bold text-[8px] font-mono shrink-0 mt-0.5">F</div>
                     <span>
-                      {forensicNarration?.isolation_forest?.ai_narration || `${mlAnomalies.length} transactions flagged by Isolation Forest model based on fee-to-gross ratio and transit duration.`}
+                      {forensicNarration?.isolation_forest?.ai_narration || `${pluralize(mlAnomalies.length, 'transaction', 'transactions')} flagged by Isolation Forest model based on fee-to-gross ratio and transit duration.`}
                     </span>
                   </div>
                 )}
