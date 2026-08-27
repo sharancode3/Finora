@@ -32,8 +32,7 @@ import {
 import { AmountDisplay } from '../components/ui/AmountDisplay';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { AIInsightCard } from '../components/ui/AIInsightCard';
-import { CardSkeleton } from '../components/ui/Skeleton';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Line, ComposedChart, ReferenceLine } from 'recharts';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
@@ -251,6 +250,53 @@ export default function MonthEndClose() {
     }
   }, [loading, metrics, targetMonth, isLocked, readinessScore]);
 
+  const enhancedDailyReadiness = React.useMemo(() => {
+    if (!dailyReadiness || dailyReadiness.length === 0) return [];
+    
+    // Determine last recorded date
+    const lastPoint = dailyReadiness[dailyReadiness.length - 1];
+    const lastRate = lastPoint.match_rate || 97.4;
+    const lastDate = lastPoint.date; // e.g. "2026-08-25"
+    
+    const parts = lastDate.split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const lastDay = parseInt(parts[2], 10);
+    const daysInMonth = new Date(year, month, 0).getDate(); // 31 for Aug
+
+    // Map historical items
+    const result: any[] = dailyReadiness.map((d: any) => ({
+      date: d.date,
+      match_rate: d.match_rate,
+      projected_rate: null,
+      is_projected: false
+    }));
+
+    // Connect historical series smoothly to forward projection
+    if (lastDay < daysInMonth) {
+      result[result.length - 1].projected_rate = lastRate;
+
+      const remainingDays = daysInMonth - lastDay;
+      const targetPace = Math.min(99.2, Math.max(96.0, lastRate + 0.35 * remainingDays));
+      
+      for (let day = lastDay + 1; day <= daysInMonth; day++) {
+        const stepPct = (day - lastDay) / remainingDays;
+        const projectedVal = Math.round((lastRate + (targetPace - lastRate) * stepPct) * 10) / 10;
+        const dayStr = day < 10 ? `0${day}` : `${day}`;
+        const dateStr = `${parts[0]}-${parts[1]}-${dayStr}`;
+
+        result.push({
+          date: dateStr,
+          match_rate: null,
+          projected_rate: projectedVal,
+          is_projected: true
+        });
+      }
+    }
+
+    return result;
+  }, [dailyReadiness]);
+
   return (
     <div className="space-y-8 pb-20 max-w-6xl mx-auto">
       
@@ -298,7 +344,7 @@ export default function MonthEndClose() {
         </div>
       </div>
 
-      {/* Daily Readiness Tracking (Continuous Close Sparkline) */}
+      {/* Daily Readiness Tracking (Continuous Close Sparkline with Forward Projection) */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -309,26 +355,40 @@ export default function MonthEndClose() {
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Day-by-day statutory value match rate tracking throughout {targetMonth} to catch discrepancies incrementally.
+              Day-by-day statutory value match rate tracking throughout {targetMonth} with forward trend projection to month-end close.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 self-start sm:self-auto">
-            <span className="text-xs font-bold text-slate-500">Readiness Score:</span>
-            <span className="text-base font-mono font-extrabold text-[#15803D]">{readinessScore}%</span>
-            <span className="text-[11px] text-slate-400">({readyDays}/{totalDays} days &gt;95% SLA)</span>
+          <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+            {/* Visual Legend */}
+            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+              <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+              <span>Historical Solid</span>
+              <span className="text-slate-300">|</span>
+              <span className="w-2.5 h-0.5 border-t-2 border-dashed border-[#6366F1]"></span>
+              <span className="text-[#6366F1]">Dashed Pace to SLA</span>
+            </div>
+
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5">
+              <span className="text-xs font-bold text-slate-500">Readiness Score:</span>
+              <span className="text-base font-mono font-extrabold text-[#15803D]">{readinessScore}%</span>
+              <span className="text-[11px] text-slate-400">({readyDays}/{totalDays} days &gt;95% SLA)</span>
+            </div>
           </div>
         </div>
 
-        {/* Daily Progression Chart */}
+        {/* Daily Progression Composed Chart with SLA Target */}
         <div className="h-44 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dailyReadiness} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+            <ComposedChart data={enhancedDailyReadiness} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#262D38" : "#f1f5f9"} />
-              <XAxis dataKey="date" tickFormatter={(v) => v.split('-')[2]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} />
+              <XAxis dataKey="date" tickFormatter={(v) => v ? v.split('-')[2] : ''} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} />
               <YAxis domain={[75, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#94a3b8' }} tickFormatter={(v) => `${v}%`} />
               <Tooltip 
-                formatter={(val: any) => [`${val}%`, 'Cumulative MTD Close Readiness']}
+                formatter={(val: any, name: any) => [
+                  `${val}%`, 
+                  name === 'match_rate' ? 'Historical Match Rate' : 'Forward Projected Pace'
+                ]}
                 labelFormatter={(label) => `Date: ${label}`}
                 contentStyle={{ 
                   backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
@@ -338,8 +398,32 @@ export default function MonthEndClose() {
                   boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
                 }}
               />
-              <Area type="monotone" dataKey="match_rate" stroke={isDark ? "#4ADE80" : "#15803D"} strokeWidth={2} fill={isDark ? "#4ADE80" : "#15803D"} fillOpacity={isDark ? 0.25 : 0.15} />
-            </AreaChart>
+              
+              {/* 95% SLA Close Readiness Benchmark Line */}
+              <ReferenceLine y={95} stroke="#D97706" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: '95% SLA Target', position: 'insideTopRight', fill: '#D97706', fontSize: 10, fontWeight: 700 }} />
+
+              {/* Historical Solid Area Curve */}
+              <Area 
+                type="monotone" 
+                dataKey="match_rate" 
+                stroke={isDark ? "#4ADE80" : "#15803D"} 
+                strokeWidth={2} 
+                fill={isDark ? "#4ADE80" : "#15803D"} 
+                fillOpacity={isDark ? 0.25 : 0.15} 
+                name="match_rate"
+              />
+
+              {/* Forward Projected Dashed Continuation Curve */}
+              <Line 
+                type="monotone" 
+                dataKey="projected_rate" 
+                stroke="#6366F1" 
+                strokeWidth={2} 
+                strokeDasharray="4 4" 
+                dot={{ r: 3, fill: '#6366F1' }} 
+                name="projected_rate"
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>
