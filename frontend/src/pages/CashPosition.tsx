@@ -168,12 +168,19 @@ export default function CashPosition() {
   const trappedExceptions = leakage?.trapped_exceptions || scenario?.trapped_in_exceptions || 11700.00;
   const dailyNetMean = baseNet / 28;
 
-  // Compute live headline figures for the 4 explicit scenario cards
+  // Compute live headline figures for the 5 explicit scenario cards
   const scenarioCardsData = useMemo(() => {
     const baseAmount = baseNet;
     const recoverAllAmount = baseNet + trappedExceptions;
     const recoverHalfAmount = baseNet + (trappedExceptions * 0.5);
     const delayStressAmount = Math.max(0, baseNet - (dailyNetMean * 3));
+    
+    // Dynamic 5th Custom Card Amount
+    const customAmount = Math.max(
+      0, 
+      baseNet + ((exceptionRecovery / 100) * trappedExceptions) - ((settlementDelay / 28) * baseNet) + ((volumeShift / 100) * baseNet)
+    );
+    const customDelta = customAmount - baseNet;
 
     return [
       {
@@ -215,9 +222,19 @@ export default function CashPosition() {
         badge: `-₹${Math.round(dailyNetMean * 3).toLocaleString('en-IN')}`,
         badgeColor: 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]',
         description: 'Simulates a 3-day webhook payout delay extending transit DSO to 6.0 days.'
+      },
+      {
+        id: 'custom' as ScenarioPreset,
+        title: 'Custom What-If',
+        subtitle: `${exceptionRecovery}% Recov • +${settlementDelay}d`,
+        amount: customAmount,
+        delta: customDelta,
+        badge: customDelta >= 0 ? `+₹${Math.round(customDelta).toLocaleString('en-IN')}` : `-₹${Math.round(Math.abs(customDelta)).toLocaleString('en-IN')}`,
+        badgeColor: customDelta >= 0 ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]',
+        description: 'Interactive parameters: drag sliders below to model custom working capital dynamics.'
       }
     ];
-  }, [baseNet, trappedExceptions, dailyNetMean]);
+  }, [baseNet, trappedExceptions, dailyNetMean, exceptionRecovery, settlementDelay, volumeShift]);
 
   // Current active display amount
   const displayNet = useMemo(() => {
@@ -528,8 +545,8 @@ export default function CashPosition() {
           </button>
         </div>
 
-        {/* 4 Explicit Scenario Cards with Live Headline Numbers */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 5 Explicit Scenario Cards with Live Headline Numbers */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {scenarioCardsData.map(card => {
             const isSelected = selectedScenarioPreset === card.id;
             return (
