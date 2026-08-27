@@ -239,11 +239,11 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {/* User Profile */}
           <Link to="/settings" className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100 transition-colors">
             <div className="text-right hidden sm:block">
-              <div className="text-xs font-bold text-slate-900 leading-tight">Razorpay Corp</div>
-              <div className="text-[10px] font-semibold text-slate-400 leading-tight">Finance Admin</div>
+              <div className="text-xs font-bold text-slate-900 leading-tight">Sharan</div>
+              <div className="text-[10px] font-semibold text-slate-400 leading-tight">Finance Controller</div>
             </div>
             <div className="w-8 h-8 rounded-xl bg-[#1E293B] border border-slate-300 flex items-center justify-center text-xs font-bold text-white shadow-xs">
-              RA
+              S
             </div>
           </Link>
         </div>

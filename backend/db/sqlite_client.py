@@ -103,15 +103,15 @@ def init_db():
         cursor.execute('''
             INSERT INTO audit_logs (id, user, trigger_type, action, target, previous_value, new_value, notes, timestamp, ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('log-1', 'Sarah Jenkins, CPA', 'Controller Sign-Off', 'Authorized Period Close', 'August 2026 Books', 'Status: Pre-Close Review', 'Status: Certified & Signed', 'Closed all statutory Ind AS ledger balances', '2026-08-28 17:05:00 IST', '103.21.14.82 (Corporate VPN)'))
+        ''', ('log-1', 'Sharan, Finance Controller', 'Controller Sign-Off', 'Authorized Period Close', 'August 2026 Books', 'Status: Pre-Close Review', 'Status: Certified & Signed', 'Closed all statutory Ind AS ledger balances', '2026-08-28 17:05:00 IST', '103.21.14.82 (Corporate VPN)'))
         cursor.execute('''
             INSERT INTO audit_logs (id, user, trigger_type, action, target, previous_value, new_value, notes, timestamp, ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('log-2', 'Finance Admin', 'Human Controller Manual Approval', 'Connected Bank Feed', 'HDFC Corporate Current', 'Feed: Disconnected', 'Feed: Active Webhook SLA', 'Configured automated MT940 daily statement ingestion', '2026-08-28 16:52:00 IST', '103.21.14.82 (Corporate VPN)'))
+        ''', ('log-2', 'Sharan, Finance Controller', 'Human Controller Manual Approval', 'Connected Bank Feed', 'HDFC Corporate Current', 'Feed: Disconnected', 'Feed: Active Webhook SLA', 'Configured automated MT940 daily statement ingestion', '2026-08-28 16:52:00 IST', '103.21.14.82 (Corporate VPN)'))
         cursor.execute('''
             INSERT INTO audit_logs (id, user, trigger_type, action, target, previous_value, new_value, notes, timestamp, ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('log-3', 'Sarah Jenkins, CPA', 'AI Recommendation Applied', 'Resolved Exception', 'exc_6d04c6c1f2b8 (₹2,100.00)', 'Status: Open (Fee Discrepancy)', 'Status: Resolved (MDR Auto-Adjustment)', 'Applied Fino deterministic fee tolerance adjustment (2.0% MDR verified)', '2026-08-28 14:15:00 IST', '103.21.14.82 (Corporate VPN)'))
+        ''', ('log-3', 'Sharan, Finance Controller', 'AI Recommendation Applied', 'Resolved Exception', 'exc_6d04c6c1f2b8 (₹2,100.00)', 'Status: Open (Fee Discrepancy)', 'Status: Resolved (MDR Auto-Adjustment)', 'Applied Fino deterministic fee tolerance adjustment (2.0% MDR verified)', '2026-08-28 14:15:00 IST', '103.21.14.82 (Corporate VPN)'))
         cursor.execute('''
             INSERT INTO audit_logs (id, user, trigger_type, action, target, previous_value, new_value, notes, timestamp, ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -139,15 +139,15 @@ def init_db():
         cursor.execute('''
             INSERT INTO resolution_memory (id, category, vendor, amount_min, amount_max, reason, note, user, resolved_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('mem-1', 'fee_variance', 'Razorpay Gateway', 1000.0, 5000.0, 'Contracted MDR rate applied late (2.0% SLA adjusted via credit note)', 'Verified against annual MSA fee annexure.', 'Sarah Jenkins, CPA', '2026-08-12 14:30:00 IST', '2026-08-12 14:30:00 IST'))
+        ''', ('mem-1', 'fee_variance', 'Razorpay Gateway', 1000.0, 5000.0, 'Contracted MDR rate applied late (2.0% SLA adjusted via credit note)', 'Verified against annual MSA fee annexure.', 'Sharan, Finance Controller', '2026-08-12 14:30:00 IST', '2026-08-12 14:30:00 IST'))
         cursor.execute('''
             INSERT INTO resolution_memory (id, category, vendor, amount_min, amount_max, reason, note, user, resolved_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('mem-2', 'timing_delay', 'Kotak Mahindra Bank', 10000.0, 50000.0, 'T+2 Bank Nodal Settlement Window Float', 'Confirmed credit settled on following business day.', 'Finance Admin', '2026-08-18 11:15:00 IST', '2026-08-18 11:15:00 IST'))
+        ''', ('mem-2', 'timing_delay', 'Kotak Mahindra Bank', 10000.0, 50000.0, 'T+2 Bank Nodal Settlement Window Float', 'Confirmed credit settled on following business day.', 'Sharan, Finance Controller', '2026-08-18 11:15:00 IST', '2026-08-18 11:15:00 IST'))
         cursor.execute('''
             INSERT INTO resolution_memory (id, category, vendor, amount_min, amount_max, reason, note, user, resolved_at, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('mem-3', 'tax_itc_blocked', 'Delhivery Supply Chain', 2000.0, 6000.0, 'Vendor GSTR-1 filed in subsequent statutory return period', 'Verified supplier compliance certificate.', 'Sarah Jenkins, CPA', '2026-08-20 16:45:00 IST', '2026-08-20 16:45:00 IST'))
+        ''', ('mem-3', 'tax_itc_blocked', 'Delhivery Supply Chain', 2000.0, 6000.0, 'Vendor GSTR-1 filed in subsequent statutory return period', 'Verified supplier compliance certificate.', 'Sharan, Finance Controller', '2026-08-20 16:45:00 IST', '2026-08-20 16:45:00 IST'))
 
     # Copilot Query Telemetry table (Phase 5 Self-Reported AI Accuracy & Transparency)
     cursor.execute('''
@@ -2786,7 +2786,7 @@ def draft_month_end_closing_memo(target_month: str = "2026-08") -> Dict[str, Any
     memo_text = f"""MEMORANDUM FOR RECORD
 
 TO:         Chief Financial Officer & Statutory Audit Committee
-FROM:       Sarah Jenkins, CPA — Financial Controller & Treasury Operations
+FROM:       Sharan — Financial Controller & Treasury Operations
 DATE:       {memo_date_str}
 SUBJECT:    Statutory Month-End Ledger Close & Reconciliation Summary — {cur['month']}
 STATUS:     {period_status} ({readiness_score:.0f}% Continuous Close Readiness)
@@ -3036,7 +3036,7 @@ def get_available_reconciliation_scopes() -> List[Dict[str, Any]]:
         }
     ]
 
-def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "all", user: str = "Sarah Jenkins, CPA") -> Dict[str, Any]:
+def execute_reconciliation_pipeline(scope: str = "2026-08", account_id: str = "all", user: str = "Sharan, Finance Controller") -> Dict[str, Any]:
     """
     Executes the deterministic 3-way reconciliation pipeline across the selected scope.
     Returns real, grounded metrics and logs an immutable audit trail entry.
@@ -3398,7 +3398,7 @@ def record_resolution_memory(
     amount: float,
     reason: str,
     note: str = "",
-    user: str = "Sarah Jenkins, CPA"
+    user: str = "Sharan, Finance Controller"
 ) -> Dict[str, Any]:
     mem_id = f"mem_{uuid.uuid4().hex[:8]}"
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')

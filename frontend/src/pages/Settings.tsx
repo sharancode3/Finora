@@ -63,10 +63,10 @@ export default function Settings() {
 
   // Team & Governance State
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { id: '1', name: 'Finance Controller', email: 'controller@company.demo', role: 'Finance Controller', status: 'Active' },
-    { id: '2', name: 'Treasury Lead', email: 'treasury@company.demo', role: 'Finance Controller', status: 'Active' },
+    { id: '1', name: 'Sharan (Finance Controller)', email: 'sharan@finora.demo', role: 'Finance Controller', status: 'Active' },
+    { id: '2', name: 'Treasury Lead', email: 'treasury@finora.demo', role: 'Finance Controller', status: 'Active' },
     { id: '3', name: 'Statutory Auditor', email: 'auditor@kpmg.demo', role: 'Viewer / Auditor', status: 'Active' },
-    { id: '4', name: 'DevOps / Admin', email: 'admin@company.demo', role: 'Organization Admin', status: 'Active' },
+    { id: '4', name: 'DevOps / Admin', email: 'admin@finora.demo', role: 'Organization Admin', status: 'Active' },
   ]);
 
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -280,7 +280,7 @@ export default function Settings() {
               
               <div className="flex items-center gap-5">
                 <div className="w-16 h-16 rounded-2xl bg-[#F1F5F9] text-[#1E293B] font-bold text-xl flex items-center justify-center border border-[#E2E8F0] font-mono">
-                  FA
+                  S
                 </div>
                 <div>
                   <Button variant="outline" size="sm" className="mb-1.5 text-xs">Upload Photo</Button>
@@ -291,15 +291,15 @@ export default function Settings() {
               <div className="grid grid-cols-2 gap-4 max-w-xl">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">First Name</label>
-                  <input type="text" defaultValue="Finance" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
+                  <input type="text" defaultValue="Sharan" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Last Name</label>
-                  <input type="text" defaultValue="Admin" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
+                  <input type="text" defaultValue="Controller" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
-                  <input type="email" defaultValue="finance@razorpay.demo" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
+                  <input type="email" defaultValue="sharan@finora.demo" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#1E293B]" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Theme &amp; Appearance</label>

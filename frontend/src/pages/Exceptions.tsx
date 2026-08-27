@@ -227,7 +227,7 @@ export default function Exceptions() {
       await api.post(`/exceptions/${id}/resolve`, { 
         reason,
         note,
-        user: 'Sarah Jenkins, CPA',
+        user: 'Sharan, Finance Controller',
         trigger_type: triggerType
       });
       setAction(id, null);

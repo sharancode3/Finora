@@ -83,7 +83,7 @@ export function ReconciliationRunModal(props?: ReconciliationRunModalProps) {
       const res = await api.post('/reconciliation/run', {
         scope: selectedScope,
         account_id: selectedAccount,
-        user: "Sarah Jenkins, CPA (Finance Controller)"
+        user: "Sharan, Finance Controller"
       });
       const data = res.data;
       setResultData(data);

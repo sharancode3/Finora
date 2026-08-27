@@ -189,7 +189,7 @@ export default function RecordDetail() {
       await api.post(`/exceptions/${id}/resolve`, {
         reason: customReason || actionReason || 'Manual Accounting Adjustment',
         note: customNote || actionNote || 'Direct resolution from Record Detail audit page',
-        user: 'Sarah Jenkins, CPA',
+        user: 'Sharan, Finance Controller',
         trigger_type: triggerType
       });
       setActionSuccess('Exception marked as explained and successfully resolved.');

@@ -266,7 +266,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-slate-400">
                 <FinoraMark size={48} />
                 <div className="space-y-1">
-                  <h4 className="font-bold text-sm text-slate-700">Hi Finance, how can Fino assist your review?</h4>
+                  <h4 className="font-bold text-sm text-slate-700">Hi Sharan, how can Fino assist your review?</h4>
                   <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
                     I have live read-only context of this <strong className="text-slate-800">{pageContext?.page_name || 'ledger'}</strong> view. Ask about variances, anomalies, or cash metrics.
                   </p>

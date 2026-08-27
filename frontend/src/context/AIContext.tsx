@@ -145,7 +145,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const conversationHistory = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
       
       const freshContext: PageContext = {
-        user_name: 'Finance',
+        user_name: 'Sharan',
         page_name: activePageName,
         route: currentPath,
         screen: currentPath.replace('/', '') || 'dashboard',
@@ -160,7 +160,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       };
 
       // Explicitly enforce current page_name and route to prevent any stale bleed
-      freshContext.user_name = 'Finance';
+      freshContext.user_name = 'Sharan';
       freshContext.page_name = activePageName;
       freshContext.route = currentPath;
       freshContext.screen = currentPath.replace('/', '') || 'dashboard';

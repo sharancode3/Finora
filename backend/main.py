@@ -96,12 +96,12 @@ def api_get_exception(exc_id: str):
 class ResolveReq(BaseModel):
     reason: str
     note: str = ""
-    user: Optional[str] = "Sarah Jenkins, CPA"
+    user: Optional[str] = "Sharan, Finance Controller"
     trigger_type: Optional[str] = "Human Controller Manual Approval"
 
 class EscalateReq(BaseModel):
     note: str = ""
-    user: Optional[str] = "Finance Admin"
+    user: Optional[str] = "Sharan, Finance Controller"
     trigger_type: Optional[str] = "Human Controller Manual Approval"
 
 @exceptions_router.post("/{exc_id}/resolve")
@@ -448,7 +448,7 @@ month_end_router = APIRouter(prefix="/api/v1/month-end", tags=["Month-End Close"
 
 class SignOffReq(BaseModel):
     target_month: str = "2026-08"
-    signer_name: str = "Sarah Jenkins, CPA"
+    signer_name: str = "Sharan, Finance Controller"
     signer_role: str = "Finance Controller"
     note: str = ""
 
@@ -477,7 +477,7 @@ reconciliation_router = APIRouter(prefix="/api/v1/reconciliation", tags=["Reconc
 class RunReconciliationReq(BaseModel):
     scope: str = "2026-08"
     account_id: Optional[str] = "all"
-    user: Optional[str] = "Sarah Jenkins, CPA"
+    user: Optional[str] = "Sharan, Finance Controller"
 
 @reconciliation_router.get("/scopes")
 def api_get_reconciliation_scopes():
@@ -490,7 +490,7 @@ def api_run_reconciliation(req: RunReconciliationReq):
     return execute_reconciliation_pipeline(
         scope=req.scope,
         account_id=req.account_id or "all",
-        user=req.user or "Sarah Jenkins, CPA"
+        user=req.user or "Sharan, Finance Controller"
     )
 
 # --- Phase 6: Document Assistant (Bank Statement Upload & Explainer) ---
@@ -610,7 +610,7 @@ def api_tax_re_run(req: TaxReRunReq):
     data = TaxMatcherEngine.run_reconciliation(req.scope_period, force_refresh=True)
     from backend.db.sqlite_client import record_audit_log
     record_audit_log(
-        user="Sarah Jenkins, CPA (Finance Controller)",
+        user="Sharan, Finance Controller",
         trigger_type="Tax Reconciliation",
         action="Executed 3-Stage Tax-Line Matching Pipeline",
         target=f"{req.scope_period} GST & TDS Returns",
@@ -626,7 +626,7 @@ def api_tax_resolve_exception(req: TaxResolveReq):
         res = TaxMatcherEngine.resolve_exception(req.match_id, req.action, req.note, req.scope_period)
         from backend.db.sqlite_client import record_audit_log
         record_audit_log(
-            user="Sarah Jenkins, CPA (Finance Controller)",
+            user="Sharan, Finance Controller",
             trigger_type="Tax Exception Resolution",
             action=f"Remediated Tax Break {req.match_id}",
             target=req.match_id,

@@ -164,7 +164,7 @@ export default function MonthEndClose() {
     setSteps(steps.map(s => s.id === 5 ? { ...s, status: 'completed' } : s));
     try {
       await api.post('/audit-logs/', {
-        user: signOff.name || 'Sarah Jenkins, CPA',
+        user: signOff.name || 'Sharan, Finance Controller',
         trigger_type: 'Controller Sign-Off',
         action: 'Applied Cryptographic Period Lock',
         target: `${targetMonth} Statutory Ledger`,
@@ -748,7 +748,7 @@ export default function MonthEndClose() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Sarah Jenkins, CPA"
+                    placeholder="e.g. Sharan, Finance Controller"
                     value={signerName}
                     onChange={e => setSignerName(e.target.value)}
                     className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-[#1E293B]"
