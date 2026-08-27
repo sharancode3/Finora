@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
-  X, Send, RotateCcw, ChevronDown, ChevronUp, 
+  X, Send, RotateCcw, ChevronDown, ChevronUp, ChevronRight,
   AlertTriangle, CheckCircle, Database,
   ArrowRight, Loader2, Calendar, CheckCircle2,
-  BookOpen, HelpCircle, ShieldCheck, Info
+  BookOpen, HelpCircle, ShieldCheck, Info, Brain
 } from 'lucide-react';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
@@ -306,6 +306,44 @@ export const LedgerCopilotPanel: React.FC = () => {
                           </span>
                         </div>
                         <span className="text-[10px] text-slate-400 font-medium">Deterministic Tool Execution</span>
+                      </div>
+                    )}
+
+                    {/* Authentic AI Thought Process Accordion (DeepSeek R1 / OpenAI o3 Pattern) */}
+                    {msg.role === 'ai' && (msg.metadata?.thought_process || msg.metadata?.reasoning_trail?.length > 0) && (
+                      <div className="mb-2 rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExpandedReasoningMap(prev => ({ ...prev, [idx]: prev[idx] === false ? true : false }));
+                          }}
+                          className="w-full px-2.5 py-1.5 flex items-center justify-between text-left hover:bg-slate-100/70 transition-colors cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-1.5 text-slate-700 font-semibold text-[10px]">
+                            <Brain size={12} className="text-indigo-600 shrink-0" />
+                            <span>
+                              Thought for {msg.metadata?.thought_duration_sec || '1.2'}s • {(msg.metadata?.thought_process || msg.metadata?.reasoning_trail || []).length} steps
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[9px] text-slate-400 font-medium">
+                            <span>{expandedReasoningMap[idx] === true ? 'Hide' : 'View'}</span>
+                            {expandedReasoningMap[idx] === true ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                          </div>
+                        </button>
+
+                        {expandedReasoningMap[idx] === true && (
+                          <div className="px-2.5 pb-2 pt-1 space-y-1 border-t border-slate-200/60 bg-white">
+                            {(msg.metadata?.thought_process || msg.metadata?.reasoning_trail || []).map((step: any, sIdx: number) => (
+                              <div key={sIdx} className="flex items-start gap-1.5 text-[10px] text-slate-600 leading-tight">
+                                <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0 mt-1" />
+                                <div>
+                                  <strong className="text-slate-800 font-semibold">{step.phase || step.action || `Step ${sIdx + 1}`}:</strong>{' '}
+                                  <span className="text-slate-600">{step.observation || step.detail}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 

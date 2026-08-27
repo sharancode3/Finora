@@ -19,7 +19,8 @@ import {
   BookOpen,
   Sparkles,
   Flame,
-  Activity
+  Activity,
+  Brain
 } from 'lucide-react';
 import { FormattedMarkdown } from '../components/ui/FormattedMarkdown';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -35,7 +36,12 @@ export default function AskYourBooks() {
   const { messages, sendMessage, isLoading, setPageContext } = useAI();
   const [input, setInput] = useState('');
   const [expandedTrails, setExpandedTrails] = useState<Record<number, boolean>>({});
+  const [expandedThoughts, setExpandedThoughts] = useState<Record<number, boolean>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const toggleThought = (idx: number) => {
+    setExpandedThoughts(prev => ({ ...prev, [idx]: prev[idx] === false ? true : false }));
+  };
 
   // Live Grounded Prompt Data for Empty State
   const [livePromptData, setLivePromptData] = useState<{
@@ -270,6 +276,42 @@ export default function AskYourBooks() {
                               <span className="text-[10px] text-slate-400 truncate max-w-xs" title={meta.confidence_rationale}>
                                 {meta.confidence_rationale}
                               </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Authentic AI Thought Process Accordion (DeepSeek R1 / OpenAI o3 Pattern) */}
+                        {msg.role === 'ai' && (meta.thought_process || meta.reasoning_trail?.length > 0) && (
+                          <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50/80 overflow-hidden text-xs">
+                            <button
+                              type="button"
+                              onClick={() => toggleThought(idx)}
+                              className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-slate-100/70 transition-colors cursor-pointer select-none"
+                            >
+                              <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
+                                <Brain size={13} className="text-indigo-600 shrink-0" />
+                                <span>
+                                  Thought for {meta.thought_duration_sec || '1.2'}s • {(meta.thought_process || meta.reasoning_trail || []).length} reasoning steps
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                                <span>{expandedThoughts[idx] === true ? 'Hide reasoning' : 'View reasoning'}</span>
+                                {expandedThoughts[idx] === true ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                              </div>
+                            </button>
+
+                            {expandedThoughts[idx] === true && (
+                              <div className="px-3 pb-2.5 pt-1.5 space-y-1.5 border-t border-slate-200/60 bg-white">
+                                {(meta.thought_process || meta.reasoning_trail || []).map((step: any, sIdx: number) => (
+                                  <div key={sIdx} className="flex items-start gap-2 text-[11px] text-slate-600 leading-snug">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
+                                    <div>
+                                      <strong className="text-slate-800 font-semibold">{step.phase || step.action || `Step ${sIdx + 1}`}:</strong>{' '}
+                                      <span className="text-slate-600">{step.observation || step.detail}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
                         )}
