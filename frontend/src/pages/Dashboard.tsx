@@ -121,6 +121,7 @@ export default function Dashboard() {
   const [mlAnomalies, setMlAnomalies] = useState<any[]>([]);
   const [showBenfordModal, setShowBenfordModal] = useState(false);
   const [showAdvancedSignals, setShowAdvancedSignals] = useState(false);
+  const [showOperationalHistory, setShowOperationalHistory] = useState(false);
 
   // Period-over-Period (PoP) Comparison States
   const [priorTransactions, setPriorTransactions] = useState<any[]>([]);
@@ -300,15 +301,39 @@ export default function Dashboard() {
       unresolved: val_unres_pct
     };
 
-    const dailyMap: Record<string, number> = {};
+    // Dual-Series Settlement Velocity: Actual Settled vs Expected T+2 Schedule
+    const actualDailyMap: Record<string, number> = {};
+    const expectedDailyMap: Record<string, number> = {};
+
     transactions.forEach(t => {
-      const d = t.transaction_date;
-      dailyMap[d] = (dailyMap[d] || 0) + (t.status === 'settled' ? t.net_amount : 0);
+      const origDate = t.transaction_date;
+      const settledDate = t.settlement_date || t.transaction_date;
+
+      // Actual net settled cash on settlement date
+      if (t.status === 'settled') {
+        const d = settledDate;
+        actualDailyMap[d] = (actualDailyMap[d] || 0) + (t.net_amount || (t.gross_amount * 0.9764));
+      }
+
+      // Expected T+2 settlement schedule based on transaction origination date
+      if (origDate) {
+        try {
+          const dt = new Date(origDate);
+          dt.setDate(dt.getDate() + 2); // Projected T+2 delivery
+          const expDStr = dt.toISOString().split('T')[0];
+          const expectedNet = (t.gross_amount || 0) * 0.9764; // Standard net post MDR & GST
+          expectedDailyMap[expDStr] = (expectedDailyMap[expDStr] || 0) + expectedNet;
+        } catch (e) {}
+      }
     });
 
-    const trendData = Object.keys(dailyMap).sort().map(d => ({
+    const allDates = Array.from(new Set([...Object.keys(actualDailyMap), ...Object.keys(expectedDailyMap)])).sort();
+
+    const trendData = allDates.map(d => ({
       date: d.substring(5),
-      amount: dailyMap[d]
+      actual: Math.round(actualDailyMap[d] || 0),
+      expected: Math.round(expectedDailyMap[d] || 0),
+      amount: Math.round(actualDailyMap[d] || 0) // Backward compatibility
     }));
 
     const pieData = [
@@ -832,31 +857,48 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right: Settlement Trend Area Chart (7 cols) */}
+        {/* Right: Settlement Velocity & Variance Curve (7 cols) */}
         <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E4E4E7] shadow-xs p-6 flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <div>
-              <h3 className="text-sm font-bold text-slate-800">Settlement Deposit Trend</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Daily net settled deposits across active gateway and bank channels.</p>
+              <h3 className="text-sm font-bold text-slate-800">Settlement Velocity &amp; Variance Curve</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Actual bank deposits vs. projected T+2 settlement schedule.</p>
             </div>
-            <span className="text-xs font-bold font-mono text-[#15803D] bg-[#F0FDF4] px-2.5 py-1 rounded-lg border border-[#BBF7D0]">
-              Total: ₹{metrics.settled_amount.toLocaleString('en-IN')}
-            </span>
+            <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+                <span>Actual Settled</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                <span className="w-3 h-0.5 border-b-2 border-dashed border-slate-500"></span>
+                <span>Expected T+2</span>
+              </div>
+              <span className="text-xs font-bold font-mono text-[#15803D] bg-[#F0FDF4] px-2.5 py-1 rounded-lg border border-[#BBF7D0]">
+                ₹{metrics.settled_amount.toLocaleString('en-IN')}
+              </span>
+            </div>
           </div>
           
           <div className="h-64 w-full mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={metrics.trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={isDark ? "#60A5FA" : "#1E293B"} stopOpacity={isDark ? 0.35 : 0.15}/>
+                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={isDark ? "#34D399" : "#15803D"} stopOpacity={isDark ? 0.35 : 0.18}/>
+                    <stop offset="95%" stopColor={isDark ? "#34D399" : "#15803D"} stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpected" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={isDark ? "#60A5FA" : "#1E293B"} stopOpacity={isDark ? 0.20 : 0.06}/>
                     <stop offset="95%" stopColor={isDark ? "#60A5FA" : "#1E293B"} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: isDark ? '#9CA3AF' : '#94a3b8' }} dy={10} minTickGap={30} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: isDark ? '#9CA3AF' : '#94a3b8' }} tickFormatter={(val) => `₹${(val/1000).toFixed(0)}k`} />
                 <Tooltip 
-                  formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, 'Settled']}
+                  formatter={(value: any, name: any) => [
+                    `₹${Number(value || 0).toLocaleString('en-IN')}`, 
+                    name === 'actual' ? 'Actual Settled' : 'Expected T+2 Schedule'
+                  ]}
                   contentStyle={{ 
                     backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
                     borderRadius: '12px', 
@@ -865,7 +907,8 @@ export default function Dashboard() {
                     boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
                   }}
                 />
-                <Area type="monotone" dataKey="amount" stroke={isDark ? "#60A5FA" : "#1E293B"} strokeWidth={2.5} fillOpacity={1} fill="url(#colorAmount)" />
+                <Area type="monotone" dataKey="expected" name="expected" stroke={isDark ? "#94A3B8" : "#64748B"} strokeWidth={1.75} strokeDasharray="4 4" fillOpacity={1} fill="url(#colorExpected)" />
+                <Area type="monotone" dataKey="actual" name="actual" stroke={isDark ? "#34D399" : "#15803D"} strokeWidth={2.5} fillOpacity={1} fill="url(#colorActual)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -878,170 +921,217 @@ export default function Dashboard() {
 
       </div>
 
-      {/* OPERATIONAL HISTORY & QUEUE: RECENT EXCEPTIONS + TRANSACTION CALENDAR */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* TIER 3 (COLLAPSED BY DEFAULT): OPERATIONAL HISTORY & QUEUE: RECENT DISCREPANCIES + TRANSACTION CALENDAR */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         
-        {/* Recent Exceptions Table */}
-        <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
-          <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+        {/* Collapsible Accordion Header */}
+        <button 
+          onClick={() => setShowOperationalHistory(!showOperationalHistory)}
+          className="w-full p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors duration-150 ease-out text-left cursor-pointer border-b border-transparent data-[open=true]:border-slate-100"
+          data-open={showOperationalHistory}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#F1F5F9] text-[#1E293B] rounded-xl border border-[#E2E8F0]">
+              <Layers size={18} />
+            </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800">Recent Discrepancies</h3>
-              <p className="text-xs text-slate-500">Settlement items flagged during 3-way matching</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">Operational History &amp; Settlement Calendar</h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                  Granular Queue
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Detailed exception record ledger and daily transaction calendar heatmap.
+              </p>
             </div>
-            <Link to="/exceptions" className="text-xs font-bold text-[#1E293B] hover:underline">View All &rarr;</Link>
           </div>
-          <div className="overflow-x-auto flex-1 max-h-72 overflow-y-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase text-[10px]">
-                <tr>
-                  <th className="py-2.5 px-4">Exception ID</th>
-                  <th className="py-2.5 px-4">Reason</th>
-                  <th className="py-2.5 px-4 text-right">Severity</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {exceptions.slice(0, 8).map((ex) => (
-                  <tr key={ex.id} className="hover:bg-slate-50 transition-colors duration-150 ease-out">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      <Link to={`/record/exception/${ex.id}`} className="hover:text-[#1E293B] hover:underline">{ex.id.substring(0, 10)}...</Link>
-                    </td>
-                    <td className="py-3 px-4 text-slate-700 font-medium">
-                      {formatExceptionReason(ex.reason)}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <SeverityBadge severity={ex.risk_tier || "HIGH"} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        {/* Transaction Calendar Heatmap */}
-        <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
-          <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">Transaction Calendar: {heatmapData.monthName}</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Daily settlement density based on selected scope.</p>
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            {/* Quick Status Chips */}
+            <div className="flex items-center gap-2 text-[10px] font-bold flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+                {exceptions.filter(e => e.status !== 'resolved').length} Open Exceptions
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                {heatmapData.days.filter(d => d && d.count > 0).length} Active Settlement Days
+              </span>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-[#151B24] border border-slate-200 dark:border-[#262D38]"></span> 0 txs</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155]"></span> 1–2</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#1E293B] dark:bg-[#E2E8F0]"></span> 5+</span>
+
+            <div className="p-1 rounded-lg text-slate-400 hover:text-slate-700 transition-colors">
+              {showOperationalHistory ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </div>
           </div>
-          
-          <div className="p-5">
-            <div className="grid grid-cols-7 gap-1.5 mb-2 text-center text-[10px] font-bold text-slate-400 uppercase">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d}>{d}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1.5">
-              {heatmapData.days.map((day, i) => {
-                if (!day) return <div key={`empty-${i}`} className="h-12 rounded-xl bg-slate-50/40"></div>;
-                
-                const hasTxs = day.count > 0;
-                let bgClass = "bg-slate-50 border-slate-200/60 text-slate-400";
-                if (hasTxs) {
-                  if (day.count > 5) bgClass = isDark ? "bg-[#E2E8F0] border-[#F8FAFC] text-[#0B0F17] font-bold shadow-2xs" : "bg-[#1E293B] border-[#0F172A] text-white shadow-2xs";
-                  else if (day.count > 2) bgClass = "bg-[#475569] border-[#334155] text-white";
-                  else bgClass = isDark ? "bg-[#1E293B] border-[#334155] text-slate-200 font-bold" : "bg-[#F1F5F9] border-[#E2E8F0] text-[#1E293B] font-bold";
-                }
+        </button>
 
-                return (
-                  <div key={day.date} className="relative group/day">
-                    <button 
-                      onClick={() => hasTxs && setExpandedDay(expandedDay === day.date ? null : day.date)}
-                      title={hasTxs ? `Day ${day.date}: ${day.count} txs — Click to inspect or ask AI` : `Day ${day.date}: No transactions`}
-                      className={`w-full h-12 rounded-xl border flex flex-col items-center justify-center transition-all duration-150 ease-out ${bgClass} ${hasTxs ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                    >
-                      <span className="text-xs font-bold">{day.date.split('-')[2]}</span>
-                      {hasTxs && (
-                        <span className="text-[9px] mt-0.5 px-1 py-0.2 rounded-full bg-black/10 backdrop-blur-xs font-semibold">
-                          {day.count} txs
-                        </span>
-                      )}
-                    </button>
-                    {hasTxs && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          askAI(`What happened on ${day.date} — walk me through that day's ${pluralize(day.count, 'transaction', 'transactions')} and settlement status.`);
-                        }}
-                        title={`Ask Fino: What happened on ${day.date}?`}
-                        className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
-                      >
-                        F
-                      </button>
-                    )}
+        {showOperationalHistory && (
+          <div className="p-6 border-t border-slate-100 space-y-6 animate-in fade-in duration-200 ease-out bg-slate-50/40">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Recent Exceptions Table */}
+              <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
+                <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Recent Discrepancies</h3>
+                    <p className="text-xs text-slate-500">Settlement items flagged during 3-way matching</p>
                   </div>
-                );
-              })}
+                  <Link to="/exceptions" className="text-xs font-bold text-[#1E293B] hover:underline">View All &rarr;</Link>
+                </div>
+                <div className="overflow-x-auto flex-1 max-h-72 overflow-y-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase text-[10px]">
+                      <tr>
+                        <th className="py-2.5 px-4">Exception ID</th>
+                        <th className="py-2.5 px-4">Reason</th>
+                        <th className="py-2.5 px-4 text-right">Severity</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {exceptions.slice(0, 8).map((ex) => (
+                        <tr key={ex.id} className="hover:bg-slate-50 transition-colors duration-150 ease-out">
+                          <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                            <Link to={`/record/exception/${ex.id}`} className="hover:text-[#1E293B] hover:underline">{ex.id.substring(0, 10)}...</Link>
+                          </td>
+                          <td className="py-3 px-4 text-slate-700 font-medium">
+                            {formatExceptionReason(ex.reason)}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <SeverityBadge severity={ex.risk_tier || "HIGH"} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Transaction Calendar Heatmap */}
+              <div className="bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden flex flex-col justify-between">
+                <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Transaction Calendar: {heatmapData.monthName}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Daily settlement density based on selected scope.</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-[#151B24] border border-slate-200 dark:border-[#262D38]"></span> 0 txs</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155]"></span> 1–2</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#1E293B] dark:bg-[#E2E8F0]"></span> 5+</span>
+                  </div>
+                </div>
+                
+                <div className="p-5">
+                  <div className="grid grid-cols-7 gap-1.5 mb-2 text-center text-[10px] font-bold text-slate-400 uppercase">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                      <div key={d}>{d}</div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {heatmapData.days.map((day, i) => {
+                      if (!day) return <div key={`empty-${i}`} className="h-12 rounded-xl bg-slate-50/40"></div>;
+                      
+                      const hasTxs = day.count > 0;
+                      let bgClass = "bg-slate-50 border-slate-200/60 text-slate-400";
+                      if (hasTxs) {
+                        if (day.count > 5) bgClass = isDark ? "bg-[#E2E8F0] border-[#F8FAFC] text-[#0B0F17] font-bold shadow-2xs" : "bg-[#1E293B] border-[#0F172A] text-white shadow-2xs";
+                        else if (day.count > 2) bgClass = "bg-[#475569] border-[#334155] text-white";
+                        else bgClass = isDark ? "bg-[#1E293B] border-[#334155] text-slate-200 font-bold" : "bg-[#F1F5F9] border-[#E2E8F0] text-[#1E293B] font-bold";
+                      }
+
+                      return (
+                        <div key={day.date} className="relative group/day">
+                          <button 
+                            onClick={() => hasTxs && setExpandedDay(expandedDay === day.date ? null : day.date)}
+                            title={hasTxs ? `Day ${day.date}: ${day.count} txs — Click to inspect or ask AI` : `Day ${day.date}: No transactions`}
+                            className={`w-full h-12 rounded-xl border flex flex-col items-center justify-center transition-all duration-150 ease-out ${bgClass} ${hasTxs ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                          >
+                            <span className="text-xs font-bold">{day.date.split('-')[2]}</span>
+                            {hasTxs && (
+                              <span className="text-[9px] mt-0.5 px-1 py-0.2 rounded-full bg-black/10 backdrop-blur-xs font-semibold">
+                                {day.count} txs
+                              </span>
+                            )}
+                          </button>
+                          {hasTxs && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                askAI(`What happened on ${day.date} — walk me through that day's ${pluralize(day.count, 'transaction', 'transactions')} and settlement status.`);
+                              }}
+                              title={`Ask Fino: What happened on ${day.date}?`}
+                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
+                            >
+                              F
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Inline Day Expansion Panel */}
+                {expandedDay && (
+                  <div className="bg-slate-50 text-slate-900 p-5 border-t border-slate-200 animate-in fade-in duration-150 ease-out">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                      <div>
+                        <h4 className="font-bold text-xs text-slate-900">Daily Transactions: {expandedDay}</h4>
+                        <p className="text-[11px] text-slate-500">All settlement records on this date.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${pluralize(heatmapData.days.find(d => d?.date === expandedDay)?.count || 0, 'transaction settlement', 'transaction settlements')} and any variances.`)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
+                          title={`Ask Fino to analyze settlements on ${expandedDay}`}
+                        >
+                          <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center text-[8px] font-mono font-bold">F</div>
+                          <span>Ask Fino About {expandedDay}</span>
+                        </button>
+                        <button onClick={() => setExpandedDay(null)} className="p-1 rounded-lg hover:bg-white text-slate-400 hover:text-slate-700 transition-colors duration-150 ease-out border border-transparent hover:border-slate-200 cursor-pointer">
+                          <X size={15} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto max-h-48 overflow-y-auto text-xs">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px]">
+                            <th className="pb-1.5">Transaction ID</th>
+                            <th className="pb-1.5">Status</th>
+                            <th className="pb-1.5 text-right">Gross</th>
+                            <th className="pb-1.5 text-right">Net</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-[11px]">
+                          {heatmapData.days.find(d => d?.date === expandedDay)?.txs.map((tx: any) => (
+                            <tr key={tx.transaction_id} className="hover:bg-slate-100/60 transition-colors duration-150 ease-out">
+                              <td className="py-2 font-mono font-medium text-slate-700">
+                                <AskableMetric question={`Audit transaction ${tx.transaction_id} from ${expandedDay}: verify gross ₹${tx.gross_amount?.toLocaleString('en-IN')} vs net ₹${tx.net_amount?.toLocaleString('en-IN')} settlement status.`}>
+                                  {tx.transaction_id}
+                                </AskableMetric>
+                              </td>
+                              <td className="py-2">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${tx.status === 'settled' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]'}`}>
+                                  {tx.status}
+                                </span>
+                              </td>
+                              <td className="py-2 text-right font-medium text-slate-700"><AmountDisplay amount={tx.gross_amount} /></td>
+                              <td className="py-2 text-right font-bold text-slate-900">
+                                <AskableMetric question={`Why is the settled net amount ₹${tx.net_amount?.toLocaleString('en-IN')} for transaction ${tx.transaction_id} (gross: ₹${tx.gross_amount?.toLocaleString('en-IN')})?`}>
+                                  <AmountDisplay amount={tx.net_amount} />
+                                </AskableMetric>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
-
-          {/* Inline Day Expansion Panel */}
-          {expandedDay && (
-            <div className="bg-slate-50 text-slate-900 p-5 border-t border-slate-200 animate-in fade-in duration-150 ease-out">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900">Daily Transactions: {expandedDay}</h4>
-                  <p className="text-[11px] text-slate-500">All settlement records on this date.</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${pluralize(heatmapData.days.find(d => d?.date === expandedDay)?.count || 0, 'transaction settlement', 'transaction settlements')} and any variances.`)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
-                    title={`Ask Fino to analyze settlements on ${expandedDay}`}
-                  >
-                    <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center text-[8px] font-mono font-bold">F</div>
-                    <span>Ask Fino About {expandedDay}</span>
-                  </button>
-                  <button onClick={() => setExpandedDay(null)} className="p-1 rounded-lg hover:bg-white text-slate-400 hover:text-slate-700 transition-colors duration-150 ease-out border border-transparent hover:border-slate-200 cursor-pointer">
-                    <X size={15} />
-                  </button>
-                </div>
-              </div>
-              <div className="overflow-x-auto max-h-48 overflow-y-auto text-xs">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px]">
-                      <th className="pb-1.5">Transaction ID</th>
-                      <th className="pb-1.5">Status</th>
-                      <th className="pb-1.5 text-right">Gross</th>
-                      <th className="pb-1.5 text-right">Net</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-[11px]">
-                    {heatmapData.days.find(d => d?.date === expandedDay)?.txs.map((tx: any) => (
-                      <tr key={tx.transaction_id} className="hover:bg-slate-100/60 transition-colors duration-150 ease-out">
-                        <td className="py-2 font-mono font-medium text-slate-700">
-                          <AskableMetric question={`Audit transaction ${tx.transaction_id} from ${expandedDay}: verify gross ₹${tx.gross_amount?.toLocaleString('en-IN')} vs net ₹${tx.net_amount?.toLocaleString('en-IN')} settlement status.`}>
-                            {tx.transaction_id}
-                          </AskableMetric>
-                        </td>
-                        <td className="py-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${tx.status === 'settled' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' : 'bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]'}`}>
-                            {tx.status}
-                          </span>
-                        </td>
-                        <td className="py-2 text-right font-medium text-slate-700"><AmountDisplay amount={tx.gross_amount} /></td>
-                        <td className="py-2 text-right font-bold text-slate-900">
-                          <AskableMetric question={`Why is the settled net amount ₹${tx.net_amount?.toLocaleString('en-IN')} for transaction ${tx.transaction_id} (gross: ₹${tx.gross_amount?.toLocaleString('en-IN')})?`}>
-                            <AmountDisplay amount={tx.net_amount} />
-                          </AskableMetric>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-
+        )}
       </div>
 
       {/* SECONDARY BELOW-THE-FOLD: FORENSIC INTELLIGENCE & ADVANCED SIGNALS PANEL */}
