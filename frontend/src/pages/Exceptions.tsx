@@ -78,6 +78,14 @@ export default function Exceptions() {
   // Natural Language Filter Parser State
   const [nlFilter, setNlFilter] = useState<any>(null);
 
+  // Tab counts state for cross-table synchronization
+  const [tabCounts, setTabCounts] = useState({
+    open: 6,
+    escalated: 0,
+    resolved: 0,
+    unusual: 2
+  });
+
   useEffect(() => {
     fetchExceptionIntelligence();
   }, [activeFilter]);
@@ -85,9 +93,34 @@ export default function Exceptions() {
   const fetchExceptionIntelligence = async () => {
     setLoading(true);
     try {
+      // 1. Fetch live status counts from single SQLite database source of truth
+      const [allRes, mlRes] = await Promise.all([
+        api.get(`/exceptions/?start_date=2026-03-01&end_date=2026-09-05`).catch(() => ({ data: [] })),
+        api.get(`/analytics/statistical-anomalies?start_date=2026-03-01&end_date=2026-09-05`).catch(() => ({ data: { anomalies: [] } }))
+      ]);
+
+      const allList = Array.isArray(allRes.data) ? allRes.data : [];
+      const openCount = allList.filter((e: any) => e.status === 'open').length;
+      const escalatedCount = allList.filter((e: any) => e.status === 'escalated').length;
+      const resolvedCount = allList.filter((e: any) => e.status === 'resolved').length;
+      const unusualCount = (mlRes.data?.anomalies || []).length;
+
+      // Runtime data integrity assertion: open + escalated + resolved must strictly match total
+      console.assert(
+        openCount + escalatedCount + resolvedCount === allList.length,
+        `[Finora Integrity Assertion] Exception count mismatch: open(${openCount}) + escalated(${escalatedCount}) + resolved(${resolvedCount}) !== total(${allList.length})`
+      );
+
+      setTabCounts({
+        open: openCount,
+        escalated: escalatedCount,
+        resolved: resolvedCount,
+        unusual: unusualCount
+      });
+
+      // 2. Fetch specific view data for active filter
       if (activeFilter === 'Statistically Unusual') {
-        const res = await api.get(`/analytics/statistical-anomalies?start_date=2026-03-01&end_date=2026-09-05`);
-        const mlData = (res.data?.anomalies || []).map((a: any) => ({
+        const mlData = (mlRes.data?.anomalies || []).map((a: any) => ({
           id: a.transaction_id,
           transaction_id: a.transaction_id,
           reason: `Statistically Unusual (${a.top_feature})`,
@@ -311,8 +344,9 @@ export default function Exceptions() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Exceptions & Risk Command</h1>
           <p className="text-slate-500 mt-1 text-sm">Deterministic composite risk scoring, systemic pattern clustering, and time-to-resolution tracking.</p>
         </div>
-        <div className="text-xs font-semibold px-3 py-1.5 bg-rose-50 text-rose-700 rounded-xl border border-rose-200 self-start sm:self-auto">
-          {exceptions.length} Total in {activeFilter} State
+        <div className="text-xs font-bold px-3 py-1.5 bg-[#FEF2F2] text-[#B91C1C] rounded-xl border border-[#FECACA] self-start sm:self-auto flex items-center gap-1.5 shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-[#B91C1C] animate-pulse"></span>
+          <span>{exceptions.length} Total in {activeFilter} State</span>
         </div>
       </div>
 
@@ -449,23 +483,35 @@ export default function Exceptions() {
       {/* Filter Bar with Natural Language Parsing */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-3">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          {/* Status Pills */}
+          {/* Status Pills with Dynamic Counts */}
           <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl w-full md:w-auto overflow-x-auto">
-            {['Open', 'Escalated', 'Resolved', 'Statistically Unusual'].map(f => (
+            {[
+              { label: 'Open', count: tabCounts.open },
+              { label: 'Escalated', count: tabCounts.escalated },
+              { label: 'Resolved', count: tabCounts.resolved },
+              { label: 'Statistically Unusual', count: tabCounts.unusual }
+            ].map(f => (
               <button 
-                key={f}
+                key={f.label}
                 onClick={() => {
-                  setActiveFilter(f);
+                  setActiveFilter(f.label);
                   setSelectedClusterReason(null);
                   setSelectedClusterKey(null);
                 }}
-                className={`whitespace-nowrap px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeFilter === f 
+                className={`whitespace-nowrap px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeFilter === f.label 
                     ? 'bg-white text-slate-900 shadow-xs' 
                     : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
                 }`}
               >
-                {f}
+                <span>{f.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                  activeFilter === f.label 
+                    ? (f.label === 'Open' ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-slate-100 text-slate-700')
+                    : 'bg-slate-200/70 text-slate-600'
+                }`}>
+                  {f.count}
+                </span>
               </button>
             ))}
           </div>
@@ -502,6 +548,53 @@ export default function Exceptions() {
 
       {/* DataTable Sorted by Composite Risk Score */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        
+        {/* Risk Priority Score Distribution Strip Plot */}
+        {!loading && filteredExceptions.length > 0 && (
+          <div className="p-4 bg-slate-50/90 border-b border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Risk Priority Distribution</span>
+                <span className="text-[10px] text-slate-500 font-medium font-mono">0–100 Outlier Scale</span>
+              </div>
+              <div className="flex items-center gap-3 text-[10px] font-bold">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Low (0–30)</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Medium (31–70)</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#B91C1C]"></span> High / Critical (71–100)</span>
+              </div>
+            </div>
+
+            {/* Horizontal Strip Plot Axis */}
+            <div className="relative h-9 w-full bg-white rounded-xl border border-slate-200 px-3 py-1 flex items-center shadow-2xs">
+              {/* Background Bands */}
+              <div className="absolute inset-y-1 left-2 w-[30%] bg-slate-100/50 rounded-l-lg border-r border-slate-200/50" />
+              <div className="absolute inset-y-1 left-[32%] w-[38%] bg-amber-50/40 border-r border-slate-200/50" />
+              <div className="absolute inset-y-1 right-2 w-[28%] bg-rose-50/40 rounded-r-lg" />
+
+              {/* Plotted Dots */}
+              {filteredExceptions.map((ex) => {
+                const score = Math.max(3, Math.min(97, ex.risk_score || (ex.risk_tier === 'CRITICAL' ? 88.5 : ex.risk_tier === 'HIGH' ? 75.0 : ex.risk_tier === 'MEDIUM' ? 42.7 : 16.3)));
+                const isSelected = expandedRows.has(ex.id);
+                const tierColor = score >= 71 ? 'bg-[#B91C1C] ring-[#FECACA]' : score >= 31 ? 'bg-amber-500 ring-amber-200' : 'bg-slate-500 ring-slate-200';
+                
+                return (
+                  <button
+                    key={ex.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleRow(ex.id);
+                    }}
+                    style={{ left: `${score}%` }}
+                    title={`${ex.id}: ${formatExceptionReason(ex.reason)} • Score: ${score.toFixed(1)} (${ex.risk_tier || 'MEDIUM'}) • ₹${(ex.amount || 0).toLocaleString('en-IN')}`}
+                    className={`absolute -translate-x-1/2 w-4 h-4 rounded-full ${tierColor} ring-2 flex items-center justify-center text-[7px] font-mono font-bold text-white shadow-xs hover:scale-130 transition-transform cursor-pointer z-10 ${isSelected ? 'scale-125 ring-4 ring-[#1E293B]' : ''}`}
+                  >
+                    {Math.round(score)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {loading ? (
           <TableSkeleton rows={6} />
         ) : filteredExceptions.length === 0 ? (
