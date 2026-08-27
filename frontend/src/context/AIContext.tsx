@@ -115,7 +115,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         '/cash-position': 'Cash Position & Treasury',
         '/accounts': 'Linked Accounts & Feeds',
         '/month-end-close': 'Continuous Month-End Close',
-        '/ask-your-books': 'Ask Your Books (Conversational Ledger)',
+        '/ask-your-books': 'Ask Fino (Conversational Ledger)',
         '/settings': 'Team & Governance Settings',
         '/reconciliation': '3-Way Reconciliation Ledger'
       };

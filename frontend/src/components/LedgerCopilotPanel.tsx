@@ -31,7 +31,7 @@ export const LedgerCopilotPanel: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Do not show on landing page or full-screen Ask Your Books canvas
+  // Do not show on landing page or full-screen Ask Fino canvas
   const isExcludedRoute = location.pathname === '/' || location.pathname === '/ask-your-books';
 
   useEffect(() => {
