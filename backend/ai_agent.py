@@ -49,7 +49,7 @@ def query_local_gemma3(prompt: str, context: Dict) -> Optional[Dict[str, Any]]:
     user_name = context.get('user_name') or 'Sharan'
     page_name = context.get('page_name') or 'Executive Command Center'
     
-    sys_prompt = f"""You are Fino, the Senior Autonomous AI Financial Controller for {user_name} at Finora.
+    sys_prompt = f"""You are Fino, the Senior Autonomous AI Financial Controller & Treasury Specialist for {user_name} at Finora.
 Active User: {user_name}, Finance Controller
 Active Reporting Scope: August 2026 (Live SQLite ACID Ledger)
 Current Viewport: {page_name}
@@ -57,14 +57,15 @@ Current Viewport: {page_name}
 LIVE LEDGER CONTEXT (August 2026):
 - Gross Processed Volume: ₹2,98,603.50 across 60 transactions
 - Net Settled Bank Cash: ₹2,44,371.19 (84.4% statutory match rate)
-- Trapped in 6 Open Exceptions: ₹46,600.00 (exc_01 Razorpay Fee Variance ₹2,100, exc_02 HDFC Direct ₹5,500, exc_03 Delhivery ITC Blocked ₹3,312, exc_04 Settlement Delay ₹18,400, exc_05 Razorpay Chargeback ₹12,500, exc_06 Suspense ₹4,788)
+- Trapped in 6 Open Exceptions: ₹46,600.00 (exc_01 Razorpay Fee Variance ₹2,100, exc_02 HDFC Direct Deposit ₹5,500, exc_03 Delhivery ITC Blocked ₹3,312, exc_04 Settlement Delay ₹18,400, exc_05 Razorpay Chargeback ₹12,500, exc_06 Suspense ₹4,788)
 - Connected Rails: Kotak Current (₹1,92,913.68), HDFC Corporate (₹56,957.51), PayPal (₹24,500.00), Razorpay Gateway.
 
-INSTRUCTIONS:
-1. Address {user_name}'s question directly, intelligently, and professionally as a senior financial controller.
-2. If the user asks a conceptual, strategic, technical, or exploratory financial question (e.g. revenue-based financing, venture debt, education/JEE fee financing, tax compliance, or ledger architecture), provide a clear, well-structured explanation using markdown bullets or tables, and relate it to treasury management and cash flow.
-3. If referencing currency, format in Indian Rupee format (e.g. ₹2,44,371.19).
-4. Keep the response concise, authoritative, and structured under 250 words."""
+STRICT DOMAIN BOUNDARY & CONTROLLER INSTRUCTIONS:
+1. You are EXCLUSIVELY an AI Financial Controller for Finora. You only assist with corporate finance, accounting, ledger reconciliation, payment rails, statutory taxes (Ind AS, CGST Rule 36(4), TDS), exception resolution, month-end closing, and treasury operations.
+2. If the user asks about ANYTHING unrelated to finance, accounting, taxes, or business operations (e.g. general chit-chat, school/college exam coaching advice, movies, cooking, sports, gaming, creative writing, or non-finance topics):
+   Politely decline and state that your intelligence is strictly dedicated to Finora's financial controller and ledger operations. Invite them to review their August 2026 ledger, open exceptions, or cash position.
+3. For in-domain financial questions (revenue-based financing, venture debt, treasury management, tax withholdings, gateway fees, bank reconciliation):
+   Provide a concise, highly professional controller breakdown using markdown bullets or tables. Format currency in INR (₹). Under 220 words."""
 
     payload = {
         "model": MODEL_NAME,
@@ -485,6 +486,23 @@ def classify_and_normalize_query(question: str, context: Dict = None, history: L
             'confidence': 0.98
         }
 
+    # 8. Out-of-Scope Non-Financial Topic Pre-Filter (Strict Specialization)
+    non_finance_triggers = [
+        'poem', 'joke', 'recipe', 'cooking', 'weather', 'movie', 'song', 'cricket', 'football',
+        'ipl', 'celebrity', 'actor', 'actress', 'video game', 'gaming', 'minecraft', 'pubg',
+        'who is prime minister', 'president of', 'translate this to french', 'tell me a story',
+        'write an essay on', 'who won the match', 'horoscope', 'jee mains coaching', 'jee exam syllabus',
+        'physics formula', 'chemistry reactions', 'jee coaching', 'iit coaching', 'study tips for jee',
+        'how to pass exam', 'general knowledge', 'capital of'
+    ]
+    if any(nft in q for nft in non_finance_triggers):
+        return {
+            'intent': 'out_of_scope_refusal',
+            'normalized_question': 'out_of_scope_non_financial_query',
+            'entities': {'original_query': question},
+            'confidence': 1.0
+        }
+
     return {
         'intent': 'ambiguous',
         'normalized_question': question,
@@ -585,10 +603,42 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
             "verifier_passed": True
         }
 
+    # 1.5 Strict Out-of-Scope Non-Financial Refusal Protocol
+    if stage_a['intent'] == 'out_of_scope_refusal':
+        user_name = context.get('user_name') or 'Sharan'
+        first_name = user_name.split()[0] if user_name else 'Sharan'
+        
+        reasoning_trail.append({
+            "step_number": 1,
+            "action": "Evaluated domain boundary guardrail",
+            "tool": "finance_domain_fence",
+            "input": {"query": question},
+            "observation": "Identified non-financial topic outside corporate treasury scope. Enforced strict controller specialization."
+        })
+
+        return {
+            "answer": (
+                f"Hi {first_name}, I am **Fino**, your Autonomous AI Financial Controller at Finora.\n\n"
+                f"My cognitive reasoning and tool integrations are strictly dedicated to **financial operations, ledger reconciliation, payment rails (Razorpay, Kotak, HDFC, PayPal), statutory compliance (Ind AS, CGST Rule 36(4), TDS), and treasury management**.\n\n"
+                f"I cannot assist with topics outside corporate financial operations. How can I help you analyze your **August 2026 books**, open exceptions, or cash position today?"
+            ),
+            "confidence": "HIGH",
+            "confidence_score": 0.99,
+            "confidence_rationale": "Strict financial domain boundary enforcement adhering to financial controller governance.",
+            "escalation_recommendation": None,
+            "reasoning_trail": reasoning_trail,
+            "suggested_questions": [
+                "Why is my pay less than last month?",
+                "Kotak vs HDFC which got more this month?",
+                "Explain the 6 open exceptions"
+            ],
+            "verifier_passed": True
+        }
+
     # 2. Greeting & Capabilities
     if stage_a['intent'] == 'greeting':
-        user_name = context.get('user_name') or 'Sarah'
-        first_name = user_name.split()[0] if user_name else 'Sarah'
+        user_name = context.get('user_name') or 'Sharan'
+        first_name = user_name.split()[0] if user_name else 'Sharan'
         return {
             "answer": (
                 f"Hi {first_name}! I'm **Fino**, your Autonomous AI Financial Controller.\n\n"
