@@ -725,32 +725,65 @@ export default function Settings() {
               </div>
 
               {/* 2. Registered Agent Tool Catalog */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-5">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2 text-slate-900 font-bold">
                     <Layers size={16} className="text-[#1E293B]" />
-                    <h4 className="text-xs uppercase tracking-wider">Registered Agent Tool Catalog (6 Tools)</h4>
+                    <h4 className="text-xs uppercase tracking-wider">Registered Agent Tool Catalog (10 Operational Tools)</h4>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">Direct SQLite &amp; Python Bindings</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Direct SQLite, ML &amp; Python Bindings</span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    { name: 'sqlite_settlements_query', desc: 'Queries raw gateway settlement feeds, bank UTR records, and ledger credits to verify cash settlement velocity.', category: 'Ledger Retrieval' },
-                    { name: 'deterministic_variance_detector', desc: 'Executes 4-factor root-cause audit check (refund offsets, 2% MDR fee variance, T+3 float latency, duplicate records).', category: 'Exception Audit' },
-                    { name: 'stochastic_monte_carlo_engine', desc: 'Runs 1,000 empirical geometric Brownian path trials to project day-7 P10, P50, and P90 cash liquidity ranges.', category: 'Probabilistic Forecasting' },
-                    { name: 'benford_law_inspector', desc: 'Calculates leading-digit distribution across ledger amounts and flags anomalous deviations (Z-score > 2.5).', category: 'Forensic Compliance' },
-                    { name: 'segregation_of_duties_evaluator', desc: 'Deterministic rule engine evaluating capability bundles against internal dual-custody internal controls.', category: 'Governance & SoD' },
-                    { name: 'month_end_close_memo_synthesizer', desc: 'Compiles grounded statutory closing memorandum from verified period gross volumes and pre-lock checklist state.', category: 'Continuous Accounting' }
-                  ].map((tool, tIdx) => (
-                    <div key={tIdx} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-xs text-slate-900">{tool.name}</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 bg-white text-slate-600 rounded border border-slate-200">{tool.category}</span>
+                {/* Section A: Core Ledger & Reconciliation Tools */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">A. Core Ledger &amp; Reconciliation Tools (6)</span>
+                    <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">ACID Storage</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      { name: 'sqlite_settlements_query', desc: 'Queries raw gateway settlement feeds, bank UTR records, and ledger credits to verify cash settlement velocity.', category: 'Ledger Retrieval' },
+                      { name: 'deterministic_variance_detector', desc: 'Executes 4-factor root-cause audit check (refund offsets, 2% MDR fee variance, T+3 float latency, duplicate records).', category: 'Exception Audit' },
+                      { name: 'stochastic_monte_carlo_engine', desc: 'Runs 1,000 empirical geometric Brownian path trials to project day-7 P10, P50, and P90 cash liquidity ranges.', category: 'Probabilistic Forecasting' },
+                      { name: 'benford_law_inspector', desc: 'Calculates leading-digit distribution across ledger amounts and flags anomalous deviations (MAD = 0.0903).', category: 'Forensic Compliance' },
+                      { name: 'isolation_forest_ml_anomaly_detector', desc: 'Multi-dimensional machine learning detection analyzing amount z-scores, velocity, and timing drift.', category: 'ML Risk Intelligence' },
+                      { name: 'segregation_of_duties_evaluator', desc: 'Deterministic rule engine evaluating capability bundles against internal dual-custody internal controls.', category: 'Governance & SoD' }
+                    ].map((tool, tIdx) => (
+                      <div key={tIdx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-xs text-slate-900">{tool.name}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 bg-white text-slate-600 rounded border border-slate-200">{tool.category}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">{tool.desc}</p>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">{tool.desc}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section B: Statutory, Compliance & Document Intelligence Tools */}
+                <div className="space-y-2.5 pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">B. Statutory, Compliance &amp; Document Intelligence Tools (4)</span>
+                    <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]">Grounded Rules</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      { name: 'curated_glossary_lookup', desc: 'Retrieves authoritative statutory definitions and merchant impact for RBI, Ind AS 115, Section 194C/J/H/Q TDS rules.', category: 'Statutory Standards' },
+                      { name: 'gstr2b_tax_line_matcher', desc: 'Reconciles purchase register against GSTN portal feeds, evaluating Input Tax Credit (ITC) eligibility under CGST Rule 36(4).', category: 'Tax Compliance' },
+                      { name: 'document_sandbox_extractor', desc: 'Ingests and parses unstructured PDF/CSV/XLSX bank statements into structured sandboxed memory lines with 0 ledger mutation.', category: 'Document AI' },
+                      { name: 'month_end_close_memo_synthesizer', desc: 'Compiles grounded statutory closing memorandum from verified period gross volumes and pre-lock checklist state.', category: 'Continuous Accounting' }
+                    ].map((tool, tIdx) => (
+                      <div key={tIdx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-bold text-xs text-slate-900">{tool.name}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 bg-white text-slate-600 rounded border border-slate-200">{tool.category}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">{tool.desc}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 

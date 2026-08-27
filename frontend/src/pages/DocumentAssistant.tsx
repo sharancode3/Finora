@@ -572,11 +572,41 @@ export default function DocumentAssistant() {
                             <span className="block text-[10px] font-mono text-slate-400 truncate">Ref: {row.reference_no}</span>
                           )}
                         </td>
-                        <td className={`py-2.5 px-3 text-right ${row.debit > 0 ? (isBankFee ? 'text-amber-700 font-bold' : 'text-[#B91C1C]') : 'text-slate-300'}`}>
-                          {row.debit > 0 ? `₹${row.debit.toLocaleString('en-IN')}` : '-'}
+                        <td className="py-2.5 px-3 text-right">
+                          {row.debit > 0 ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendMessage(`Explain the debit charge of ₹${row.debit.toLocaleString('en-IN')} on line #${row.line_number} (${row.description}): what fee or tariff rule applies?`);
+                              }}
+                              className={`px-1.5 py-0.5 rounded hover:bg-rose-100/70 hover:underline transition-all cursor-pointer font-mono font-bold ${
+                                isBankFee ? 'text-amber-700 bg-amber-50/50' : 'text-[#B91C1C]'
+                              }`}
+                              title={`Click to ask Fino specifically about ₹${row.debit.toLocaleString('en-IN')} on line #${row.line_number}`}
+                            >
+                              ₹{row.debit.toLocaleString('en-IN')}
+                            </button>
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
                         </td>
-                        <td className={`py-2.5 px-3 text-right ${row.credit > 0 ? (isGateway ? 'text-[#15803D] font-bold' : 'text-emerald-600') : 'text-slate-300'}`}>
-                          {row.credit > 0 ? `₹${row.credit.toLocaleString('en-IN')}` : '-'}
+                        <td className="py-2.5 px-3 text-right">
+                          {row.credit > 0 ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendMessage(`Explain the credit deposit of ₹${row.credit.toLocaleString('en-IN')} on line #${row.line_number} (${row.description}): verify the gateway settlement batch and UTR.`);
+                              }}
+                              className={`px-1.5 py-0.5 rounded hover:bg-emerald-100/70 hover:underline transition-all cursor-pointer font-mono font-bold ${
+                                isGateway ? 'text-[#15803D] bg-emerald-50/50' : 'text-emerald-600'
+                              }`}
+                              title={`Click to ask Fino specifically about ₹${row.credit.toLocaleString('en-IN')} on line #${row.line_number}`}
+                            >
+                              ₹{row.credit.toLocaleString('en-IN')}
+                            </button>
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
                         </td>
                         <td className="py-2.5 px-3 font-sans">
                           <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${

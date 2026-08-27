@@ -343,89 +343,161 @@ export default function LinkedAccounts() {
                   </div>
                 </div>
 
-                {/* FLOW ROUTE ARROWS (4 cols) */}
-                <div className="lg:col-span-4 space-y-2.5 px-2">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-center">
-                    Settlement Routes
+                {/* FLOW ROUTE SANKEY VISUAL STREAM (4 cols) */}
+                <div className="lg:col-span-4 space-y-3 px-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Settlement Stream Pipeline</span>
+                    <span className="text-[10px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded border border-[#BBF7D0]">
+                      Sankey Flow
+                    </span>
                   </div>
 
-                  {/* Route 1: Razorpay -> Kotak */}
-                  <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <InstitutionLogo name="Razorpay" size="xs" />
-                      <span className="text-slate-400">→</span>
-                      <InstitutionLogo name="Kotak" size="xs" />
-                      <span className="font-semibold text-slate-700 text-[11px]">Razorpay → Kotak</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                      <AskableMetric question={`Why did ₹${routes.rzp_to_kotak.amount.toLocaleString('en-IN')} (${routes.rzp_to_kotak.percentage_of_source}% of Razorpay volume) settle into Kotak Mahindra Bank?`}>
-                        <span>₹{routes.rzp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_kotak.percentage_of_source}%)</span>
-                      </AskableMetric>
-                    </div>
+                  {/* SVG Sankey Connecting Bands */}
+                  <div className="relative bg-white rounded-xl border border-slate-200 p-2 shadow-2xs">
+                    <svg viewBox="0 0 320 180" className="w-full h-36 overflow-visible">
+                      <defs>
+                        <linearGradient id="grad-rzp-kotak" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#0B72E7" stopOpacity="0.7" />
+                          <stop offset="100%" stopColor="#15803D" stopOpacity="0.7" />
+                        </linearGradient>
+                        <linearGradient id="grad-rzp-hdfc" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#0B72E7" stopOpacity="0.7" />
+                          <stop offset="100%" stopColor="#004B87" stopOpacity="0.7" />
+                        </linearGradient>
+                        <linearGradient id="grad-pp-kotak" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#003087" stopOpacity="0.7" />
+                          <stop offset="100%" stopColor="#15803D" stopOpacity="0.7" />
+                        </linearGradient>
+                        <linearGradient id="grad-rzp-suspense" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#0B72E7" stopOpacity="0.7" />
+                          <stop offset="100%" stopColor="#B91C1C" stopOpacity="0.7" />
+                        </linearGradient>
+                        <linearGradient id="grad-rzp-transit" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#0B72E7" stopOpacity="0.7" />
+                          <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.7" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Path 1: Razorpay (y=40) -> Kotak (y=30), ₹1,48,707.92 */}
+                      <path
+                        d="M 10 40 C 120 40, 200 30, 310 30"
+                        fill="none"
+                        stroke="url(#grad-rzp-kotak)"
+                        strokeWidth="18"
+                        strokeLinecap="round"
+                        className="hover:opacity-100 opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <title>Razorpay → Kotak: ₹1,48,707.92 (62.0% of Razorpay, 77.1% of Kotak)</title>
+                      </path>
+
+                      {/* Path 2: Razorpay (y=55) -> HDFC (y=90), ₹51,457.51 */}
+                      <path
+                        d="M 10 55 C 120 55, 200 90, 310 90"
+                        fill="none"
+                        stroke="url(#grad-rzp-hdfc)"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        className="hover:opacity-100 opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <title>Razorpay → HDFC: ₹51,457.51 (21.4% of Razorpay, 90.3% of HDFC)</title>
+                      </path>
+
+                      {/* Path 3: PayPal (y=140) -> Kotak (y=45), ₹44,205.76 */}
+                      <path
+                        d="M 10 140 C 120 140, 200 45, 310 45"
+                        fill="none"
+                        stroke="url(#grad-pp-kotak)"
+                        strokeWidth="7"
+                        strokeLinecap="round"
+                        className="hover:opacity-100 opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <title>PayPal → Kotak: ₹44,205.76 (100% of PayPal, 22.9% of Kotak)</title>
+                      </path>
+
+                      {/* Path 4: Razorpay (y=65) -> In-Transit Float (y=135), ₹23,313.08 */}
+                      <path
+                        d="M 10 65 C 120 65, 200 135, 310 135"
+                        fill="none"
+                        stroke="url(#grad-rzp-transit)"
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                        strokeDasharray="4 2"
+                        className="hover:opacity-100 opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <title>Razorpay → In-Transit Float (T+2): ₹23,313.08 (9.7% of Razorpay)</title>
+                      </path>
+
+                      {/* Path 5: Razorpay (y=72) -> Suspense Hold (y=165), ₹16,500.00 */}
+                      <path
+                        d="M 10 72 C 120 72, 200 165, 310 165"
+                        fill="none"
+                        stroke="url(#grad-rzp-suspense)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray="3 2"
+                        className="hover:opacity-100 opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <title>Razorpay → Suspense Hold: ₹16,500.00 (6.9% of Razorpay)</title>
+                      </path>
+
+                      {/* Node Labels */}
+                      <text x="14" y="24" fontSize="9" fontWeight="bold" fill="#0B72E7">Razorpay</text>
+                      <text x="14" y="160" fontSize="9" fontWeight="bold" fill="#003087">PayPal</text>
+                      <text x="260" y="20" fontSize="9" fontWeight="bold" fill="#15803D" textAnchor="end">Kotak (77.1%)</text>
+                      <text x="260" y="82" fontSize="9" fontWeight="bold" fill="#004B87" textAnchor="end">HDFC (90.3%)</text>
+                      <text x="260" y="128" fontSize="8" fontWeight="bold" fill="#3B82F6" textAnchor="end">T+2 Float</text>
+                      <text x="260" y="172" fontSize="8" fontWeight="bold" fill="#B91C1C" textAnchor="end">Suspense</text>
+                    </svg>
                   </div>
 
-                  {/* Route 2: Razorpay -> HDFC */}
-                  <div className="p-2.5 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <InstitutionLogo name="Razorpay" size="xs" />
-                      <span className="text-slate-400">→</span>
-                      <InstitutionLogo name="HDFC" size="xs" />
-                      <span className="font-semibold text-slate-700 text-[11px]">Razorpay → HDFC</span>
+                  {/* Route Summary Chips */}
+                  <div className="space-y-1.5 pt-1 text-xs">
+                    {/* Route 1: Razorpay -> Kotak */}
+                    <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <InstitutionLogo name="Razorpay" size="xs" />
+                        <span className="text-slate-400">→</span>
+                        <InstitutionLogo name="Kotak" size="xs" />
+                        <span className="font-medium text-slate-700">Rzp → Kotak</span>
+                      </div>
+                      <div className="font-mono font-bold text-slate-900">
+                        <AskableMetric question={`Why did ₹${routes.rzp_to_kotak.amount.toLocaleString('en-IN')} (${routes.rzp_to_kotak.percentage_of_source}% of Razorpay volume) settle into Kotak Mahindra Bank?`}>
+                          <span>₹{routes.rzp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_kotak.percentage_of_source}%)</span>
+                        </AskableMetric>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                      <AskableMetric question={`Why did ₹${routes.rzp_to_hdfc.amount.toLocaleString('en-IN')} (${routes.rzp_to_hdfc.percentage_of_source}% of Razorpay volume) settle into HDFC Bank?`}>
-                        <span>₹{routes.rzp_to_hdfc.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_hdfc.percentage_of_source}%)</span>
-                      </AskableMetric>
-                    </div>
-                  </div>
 
-                  {/* Route 3: PayPal -> Kotak */}
-                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <InstitutionLogo name="PayPal" size="xs" />
-                      <span className="text-slate-400">→</span>
-                      <InstitutionLogo name="Kotak" size="xs" />
-                      <span className="font-semibold text-slate-700 text-[11px]">PayPal → Kotak</span>
+                    {/* Route 2: Razorpay -> HDFC */}
+                    <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <InstitutionLogo name="Razorpay" size="xs" />
+                        <span className="text-slate-400">→</span>
+                        <InstitutionLogo name="HDFC" size="xs" />
+                        <span className="font-medium text-slate-700">Rzp → HDFC</span>
+                      </div>
+                      <div className="font-mono font-bold text-slate-900">
+                        <AskableMetric question={`Why did ₹${routes.rzp_to_hdfc.amount.toLocaleString('en-IN')} (${routes.rzp_to_hdfc.percentage_of_source}% of Razorpay volume) settle into HDFC Bank?`}>
+                          <span>₹{routes.rzp_to_hdfc.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">({routes.rzp_to_hdfc.percentage_of_source}%)</span>
+                        </AskableMetric>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-slate-900 text-[11px]">
-                      <AskableMetric question={`Why did all ₹${routes.pp_to_kotak.amount.toLocaleString('en-IN')} from PayPal settle into Kotak Mahindra Bank?`}>
-                        <span>₹{routes.pp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(100%)</span>
-                      </AskableMetric>
-                    </div>
-                  </div>
 
-                  {/* Route 4: Razorpay -> Suspense */}
-                  <div className="p-2 bg-amber-50 rounded-xl border border-amber-200/80 shadow-2xs flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <InstitutionLogo name="Razorpay" size="xs" />
-                      <span className="text-slate-400">→</span>
-                      <span className="w-4 h-4 rounded-md bg-[#B91C1C] text-white flex items-center justify-center font-bold text-[8px]">!</span>
-                      <span className="font-semibold text-amber-900 text-[11px]">Razorpay → Suspense</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-amber-950 text-[11px]">
-                      <AskableMetric question={`Why is ₹${routes.rzp_to_suspense.amount.toLocaleString('en-IN')} routed to Suspense / Audit Hold from Razorpay?`}>
-                        <span>₹{routes.rzp_to_suspense.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] font-sans font-normal text-amber-700 ml-1">({routes.rzp_to_suspense.percentage_of_source}%)</span>
-                      </AskableMetric>
-                    </div>
-                  </div>
-
-                  {/* Route 5: Razorpay -> In-Transit Float */}
-                  <div className="p-2 bg-blue-50/70 rounded-xl border border-blue-200/80 shadow-2xs flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <InstitutionLogo name="Razorpay" size="xs" />
-                      <span className="text-slate-400">→</span>
-                      <span className="w-4 h-4 rounded-md bg-[#0B72E7] text-white flex items-center justify-center font-bold text-[8px]">~</span>
-                      <span className="font-semibold text-blue-950 text-[11px]">In-Transit Float (T+2)</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-blue-950 text-[11px]">
-                      <AskableMetric question={`Why is ₹${routes.rzp_in_transit.amount.toLocaleString('en-IN')} in rolling T+2 transit float?`}>
-                        <span>₹{routes.rzp_in_transit.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] font-sans font-normal text-blue-700 ml-1">({routes.rzp_in_transit.percentage_of_source}%)</span>
-                      </AskableMetric>
+                    {/* Route 3: PayPal -> Kotak */}
+                    <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <InstitutionLogo name="PayPal" size="xs" />
+                        <span className="text-slate-400">→</span>
+                        <InstitutionLogo name="Kotak" size="xs" />
+                        <span className="font-medium text-slate-700">PayPal → Kotak</span>
+                      </div>
+                      <div className="font-mono font-bold text-slate-900">
+                        <AskableMetric question={`Why did all ₹${routes.pp_to_kotak.amount.toLocaleString('en-IN')} from PayPal settle into Kotak Mahindra Bank?`}>
+                          <span>₹{routes.pp_to_kotak.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span className="text-[10px] font-sans font-normal text-slate-500 ml-1">(100%)</span>
+                        </AskableMetric>
+                      </div>
                     </div>
                   </div>
                 </div>
