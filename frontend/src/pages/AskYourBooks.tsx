@@ -151,7 +151,7 @@ export default function AskYourBooks() {
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+    <div className="h-[calc(100vh-120px)] flex flex-col lg:flex-row gap-6 max-w-[1600px] w-full mx-auto">
       
       {/* Left 70%: AI Visual Canvas & Chat Stream */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl border border-[#E4E4E7] shadow-xs overflow-hidden">
@@ -233,7 +233,7 @@ export default function AskYourBooks() {
               const steps = meta.reasoning_trail || [];
 
               return (
-                <div key={idx} className={`flex gap-3 max-w-[90%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+                <div key={idx} className={`flex gap-3 w-full max-w-[98%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
                   {msg.role === 'user' ? (
                     <div className="w-8 h-8 rounded-full bg-[#1E293B] text-white flex items-center justify-center shrink-0">
                       <User size={14} />
@@ -250,7 +250,7 @@ export default function AskYourBooks() {
                         <span className="text-white text-xs font-medium whitespace-pre-wrap">{msg.content}</span>
                       </div>
                     ) : (
-                      <div className="bg-white border border-[#E4E4E7] text-slate-800 rounded-2xl rounded-tl-xs p-4.5 text-xs leading-relaxed shadow-xs w-full max-w-2xl space-y-3">
+                      <div className="bg-white border border-[#E4E4E7] text-slate-800 rounded-2xl rounded-tl-xs p-5 text-xs leading-relaxed shadow-xs w-full max-w-4xl space-y-3">
                         {/* AI Confidence Header (Single Status Badge) */}
                         {conf && !meta.is_greeting && (
                           <div className="flex items-center justify-between gap-3 pb-2.5 mb-1 border-b border-slate-100">
@@ -430,7 +430,7 @@ export default function AskYourBooks() {
                     
                     {/* Grounded Evidence Trail Section */}
                     {msg.role === 'ai' && steps.length > 0 && !meta.is_greeting && (
-                      <div className="w-full max-w-xl">
+                      <div className="w-full max-w-4xl">
                         <button 
                           onClick={() => toggleTrail(idx)}
                           className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-[#1E293B] transition-colors py-1 cursor-pointer"

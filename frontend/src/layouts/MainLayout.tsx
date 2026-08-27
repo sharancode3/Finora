@@ -360,7 +360,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 h-full overflow-y-auto bg-[#FAFAFA] relative z-10">
           <div 
             key={location.pathname} 
-            className="max-w-7xl mx-auto p-6 md:p-8 animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out"
+            className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-6 animate-in fade-in slide-in-from-bottom-2 duration-200 ease-out"
           >
             {children}
           </div>

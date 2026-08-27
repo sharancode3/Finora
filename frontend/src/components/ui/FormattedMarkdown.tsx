@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, BookOpen, TrendingUp, Info, AlertTriangle, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ShieldCheck, BookOpen, TrendingUp, Info, AlertTriangle, CheckCircle2, ChevronRight, Lightbulb } from 'lucide-react';
 
 interface FormattedMarkdownProps {
   content: string;
@@ -21,6 +21,23 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
   const rawLines = content.split('\n');
   const blocks: React.ReactNode[] = [];
   let i = 0;
+
+  const isTableRow = (str: string) => {
+    const t = str.trim();
+    return t.startsWith('|') && t.endsWith('|') && t.includes('|');
+  };
+
+  const isTableSeparator = (str: string) => {
+    const t = str.trim();
+    return isTableRow(t) && /^\|([\s:]*-+[\s:]*\|)+$/.test(t);
+  };
+
+  const extractCells = (rowStr: string) => {
+    const raw = rowStr.split('|');
+    if (raw.length > 0 && raw[0].trim() === '') raw.shift();
+    if (raw.length > 0 && raw[raw.length - 1].trim() === '') raw.pop();
+    return raw.map(c => c.trim());
+  };
 
   while (i < rawLines.length) {
     const line = rawLines[i];
@@ -55,25 +72,38 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 4. Markdown Table Detection (| Header 1 | Header 2 | ...)
-    if (trimmed.startsWith('|') && trimmed.endsWith('|') && i + 1 < rawLines.length && rawLines[i + 1].includes('|-')) {
+    // 4. Controller Realization Callout (💡 *Controller Realization Note* / 💡 ...)
+    if (trimmed.startsWith('💡') || trimmed.includes('Controller Realization Note')) {
+      const cleanNote = trimmed.replace(/^💡\s*/, '');
+      blocks.push(
+        <div key={`tip-${i}`} className="my-2.5 p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-950 flex items-start gap-2.5 text-xs shadow-2xs">
+          <span className="text-base shrink-0 mt-0.5">💡</span>
+          <div className="leading-relaxed flex-1">
+            {renderInlineTokens(cleanNote, isUser)}
+          </div>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // 5. Markdown Table Detection (| Header 1 | Header 2 | ...)
+    if (isTableRow(trimmed) && i + 1 < rawLines.length && isTableSeparator(rawLines[i + 1])) {
       const tableLines: string[] = [];
-      while (i < rawLines.length && rawLines[i].trim().startsWith('|')) {
+      while (i < rawLines.length && isTableRow(rawLines[i])) {
         tableLines.push(rawLines[i].trim());
         i++;
       }
 
       if (tableLines.length >= 2) {
-        const headerCells = tableLines[0].split('|').map(c => c.trim()).filter(c => c.length > 0);
-        // tableLines[1] is separator |---|---|
-        const dataRows = tableLines.slice(2).map(row => 
-          row.split('|').map(c => c.trim()).filter(c => c.length > 0)
-        );
+        const headerCells = extractCells(tableLines[0]);
+        // Skip separator row tableLines[1]
+        const dataRows = tableLines.slice(2).map(row => extractCells(row));
 
         blocks.push(
-          <div key={`table-${i}`} className="my-3 overflow-x-auto rounded-xl border border-slate-200 shadow-xs bg-white">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-50 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+          <div key={`table-${i}`} className="my-3.5 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-2xs w-full">
+            <table className="w-full text-left text-xs border-collapse min-w-[480px]">
+              <thead className="bg-slate-100/80 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
                   {headerCells.map((h, hIdx) => (
                     <th key={hIdx} className="py-2.5 px-3.5 whitespace-nowrap">
@@ -82,14 +112,30 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+              <tbody className="divide-y divide-slate-100 text-[11px]">
                 {dataRows.map((row, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-slate-50/70 transition-colors">
-                    {row.map((cell, cIdx) => (
-                      <td key={cIdx} className="py-2.5 px-3.5 whitespace-nowrap text-slate-800">
-                        {renderInlineTokens(cell, isUser)}
-                      </td>
-                    ))}
+                  <tr key={rIdx} className="hover:bg-slate-50/80 transition-colors">
+                    {row.map((cell, cIdx) => {
+                      // Check for positive/negative delta formatting
+                      const isNeg = cell.includes('-₹') || cell.includes('(-');
+                      const isPos = cell.includes('+₹') || cell.includes('(+');
+
+                      return (
+                        <td key={cIdx} className="py-2.5 px-3.5 whitespace-nowrap text-slate-800 font-mono">
+                          {isNeg ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded font-semibold text-rose-700 bg-rose-50 border border-rose-200/60">
+                              {renderInlineTokens(cell, isUser)}
+                            </span>
+                          ) : isPos ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60">
+                              {renderInlineTokens(cell, isUser)}
+                            </span>
+                          ) : (
+                            renderInlineTokens(cell, isUser)
+                          )}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -100,7 +146,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       }
     }
 
-    // 5. Header 1 (# Title)
+    // 6. Header 1 (# Title)
     if (trimmed.startsWith('# ')) {
       const text = trimmed.replace(/^#\s+/, '');
       blocks.push(
@@ -112,7 +158,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 6. Header 2 (## Section)
+    // 7. Header 2 (## Section)
     if (trimmed.startsWith('## ')) {
       const text = trimmed.replace(/^##\s+/, '');
       blocks.push(
@@ -124,7 +170,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 7. Header 3 (### Topic / Major Component)
+    // 8. Header 3 (### Topic / Major Component)
     if (trimmed.startsWith('### ')) {
       const text = trimmed.replace(/^###\s+/, '');
       blocks.push(
@@ -137,7 +183,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 8. Header 4 (#### Plain-Language Definition / Why It Matters / Best Practice)
+    // 9. Header 4 (#### Plain-Language Definition / Why It Matters / Best Practice)
     if (trimmed.startsWith('#### ')) {
       const text = trimmed.replace(/^####\s+/, '');
       const lower = text.toLowerCase();
@@ -148,9 +194,9 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       if (lower.includes('definition') || lower.includes('what is')) {
         icon = <BookOpen size={13} className="text-[#1E293B] shrink-0" />;
         badgeColor = 'text-slate-900';
-      } else if (lower.includes('why it matters') || lower.includes('impact') || lower.includes('operational')) {
+      } else if (lower.includes('why it matters') || lower.includes('impact') || lower.includes('operational') || lower.includes('causes') || lower.includes('breakdown')) {
         icon = <TrendingUp size={13} className="text-[#15803D] shrink-0" />;
-        badgeColor = 'text-[#15803D]';
+        badgeColor = 'text-slate-900';
       } else if (lower.includes('best practice') || lower.includes('tip') || lower.includes('actionable')) {
         icon = <ShieldCheck size={13} className="text-[#1D4ED8] shrink-0" />;
         badgeColor = 'text-[#1D4ED8]';
@@ -166,11 +212,43 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 9. Key-Value Metadata Bullet Item (e.g. • Domain Category: Cash & Working Capital)
+    // 10. Numbered List Item or Circled Numbers (1. ... or ① ... or [1] ...)
+    const circledMatch = trimmed.match(/^([①②③④⑤⑥⑦⑧⑨⑩]|\d+\.|\(\d+\)|\[\d+\])\s*(.*)/);
+    if (circledMatch) {
+      const numSymbol = circledMatch[1].replace(/[^0-9①②③④⑤⑥⑦⑧⑨⑩]/g, '');
+      const itemText = circledMatch[2];
+
+      blocks.push(
+        <div key={`num-${i}`} className="flex items-start gap-2.5 p-2 bg-slate-50 border border-slate-200/70 rounded-xl my-1 text-xs">
+          <span className="w-5 h-5 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+            {numSymbol}
+          </span>
+          <div className={`flex-1 leading-relaxed ${isUser ? 'text-white' : 'text-slate-800'}`}>
+            {renderInlineTokens(itemText, isUser)}
+          </div>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // 11. Key-Value Metadata Bullet Item (e.g. • Domain Category: Cash & Working Capital)
     const isBullet = trimmed.startsWith('* ') || trimmed.startsWith('- ') || trimmed.startsWith('• ');
     if (isBullet) {
       const itemText = trimmed.replace(/^(\*|-|•)\s+/, '');
       
+      // Check if this bullet is actually a section heading like "• Categorized Financial Breakdown:"
+      if (itemText.endsWith(':') && itemText.length < 50) {
+        blocks.push(
+          <div key={`bhead-${i}`} className="flex items-center gap-2 pt-2.5 pb-0.5 text-xs font-bold text-slate-900">
+            <span className="w-2 h-2 rounded-full bg-[#1E293B] shrink-0" />
+            <span className="font-bold">{renderInlineTokens(itemText, isUser)}</span>
+          </div>
+        );
+        i++;
+        continue;
+      }
+
       // Check if it is a structured key-value line: "Domain Category: ..." or "Statutory Reference: ..."
       const colonIdx = itemText.indexOf(':');
       if (colonIdx > 0 && colonIdx < 35 && !itemText.startsWith('http')) {
@@ -208,30 +286,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 10. Numbered List Item (1. Step one)
-    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
-    if (numMatch) {
-      const num = numMatch[1];
-      const itemText = numMatch[2];
-      blocks.push(
-        <div key={`num-${i}`} className="flex items-start gap-2 pl-1.5 py-0.5 text-xs">
-          <span className={`w-4 h-4 rounded-full text-[9px] font-mono font-bold flex items-center justify-center shrink-0 mt-0.5 border ${
-            isUser 
-              ? 'bg-slate-800 text-white border-slate-700' 
-              : 'bg-slate-100 text-slate-700 border-slate-200'
-          }`}>
-            {num}
-          </span>
-          <div className={`flex-1 leading-relaxed ${isUser ? 'text-white' : 'text-slate-800'}`}>
-            {renderInlineTokens(itemText, isUser)}
-          </div>
-        </div>
-      );
-      i++;
-      continue;
-    }
-
-    // 11. Blockquote (> Note)
+    // 12. Blockquote (> Note)
     if (trimmed.startsWith('> ')) {
       const quoteText = trimmed.replace(/^>\s+/, '');
       blocks.push(
@@ -247,7 +302,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
       continue;
     }
 
-    // 12. Standard Paragraph Text
+    // 13. Standard Paragraph Text
     blocks.push(
       <p key={`p-${i}`} className={`leading-relaxed text-xs ${isUser ? 'text-white font-medium' : 'text-slate-800'}`}>
         {renderInlineTokens(trimmed, isUser)}
@@ -267,8 +322,7 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
  * Parses bold (**text**), italic (*text* / _text_), code (`code`), and currency figures safely into React nodes.
  */
 function renderInlineTokens(text: string, isUser: boolean = false): React.ReactNode[] {
-  // Regex splitting by bold (**...**), code (`...`), and italic (*...* or _..._)
-  const parts = text.split(/(\*[\s\S]*?\*|`[\s\S]*?`|_[\s\S]*?_)/g);
+  const parts = text.split(/(\*\*[\s\S]*?\*\*|`[\s\S]*?`|\*[\s\S]*?\*|_[\s\S]*?_)/g);
 
   return parts.map((part, idx) => {
     // Bold: **text**
