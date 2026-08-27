@@ -194,9 +194,14 @@ graph TD
 - **1-Click Accounting Resolution**: Posts auditable adjustment journals with automated reason classification (*Gateway Fee Adjustment*, *Timing Difference*, *Chargeback Offset*).
 
 ### 4. Conversational Ledger ("Ask Fino") & Multi-Turn Copilot
-- **Live Grounded Prompt Chips**: Pre-computed chips referencing real open exception IDs and rupee amounts directly on the empty-state screen.
-- **Multi-Turn Conversation Memory Indicator**: Visual chip confirming active conversation context (*"🧠 Active Session Context • Continuing from: [Previous Topic]"*).
-- **Personalized System Context**: Fino addresses the logged-in controller by name (*"Hi Sarah..."*).
+- **Local Gemma 3 (4B) On-Device Neural Execution**: Directly integrates Google's **Gemma 3 (4B)** model running 100% locally on-device via Ollama (`http://127.0.0.1:11434`), guaranteeing strict corporate privacy with zero third-party cloud data leakage.
+- **DeepSeek R1 / OpenAI o3-Style Thought Deliberation**:
+  - Live animated **Progressive Reasoning Ticker** displaying active cognitive execution phases (*Context Ingestion $\to$ Multi-Rail Database Query $\to$ Zero Mental Math Verifier $\to$ Senior Controller Synthesis*).
+  - Expandable **Thought Process Accordion** with live deliberation stopwatch allowing finance controllers to inspect Fino's internal multi-step tool reasoning chain before reading the grounded answer.
+- **Strict Financial Controller Domain Fence**: Hardened guardrail protocol ensuring Fino strictly operates as a corporate finance and treasury specialist. Any unrelated non-financial inquiries are politely declined and redirected back to active books.
+- **Universal Financial Markdown Table & Delta Parser**: Renders structured financial tables with automatic green (`+₹`) and red (`-₹`) period delta badges, numbered cause cards, and institutional golden realization callouts.
+- **Context-Aware Multi-Turn Follow-Up Routing**: Intelligently resolves contextual continuations (e.g. *"Why is my pay less than last month?"* $\to$ *"What about the month before that?"* $\to$ *"And just for Kotak?"*).
+- **Personalized Controller Experience**: Fully tailored to **Sharan, Finance Controller**, injecting active August 2026 SQLite ACID figures and live viewport parameters.
 - **Curated Statutory Knowledge Base**: 20+ statutory definitions covering RBI payment aggregator guidelines, GST rules, TDS withholding sections, and Ind AS accounting standards.
 
 ### 5. Treasury Intelligence & Monte Carlo Cash Simulation
