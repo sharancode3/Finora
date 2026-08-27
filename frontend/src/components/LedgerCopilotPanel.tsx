@@ -149,17 +149,17 @@ export const LedgerCopilotPanel: React.FC = () => {
 
   return (
     <>
-      {/* 1. PERSISTENT "ASK CONTROLLER" TRIGGER BUTTON */}
+      {/* 1. PERSISTENT "ASK FINO" TRIGGER BUTTON */}
       {!isCopilotOpen && (
         <button
           onClick={() => setIsCopilotOpen(true)}
           className="fixed bottom-6 right-6 z-40 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-150 ease-out border border-[#E4E4E7] hover:border-slate-300 group"
-          title="Open Ask Controller Panel"
+          title="Open Ask Fino Panel"
         >
           <div className="w-4 h-4 rounded bg-[#1E293B] text-white flex items-center justify-center text-[9px] font-mono font-bold shrink-0">
             F
           </div>
-          <span className="text-xs font-semibold text-slate-900">Ask Controller</span>
+          <span className="text-xs font-semibold text-slate-900">Ask Fino</span>
         </button>
       )}
 
@@ -176,7 +176,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino • AI Controller</h3>
+                  <h3 className="font-bold text-sm text-slate-900 tracking-tight">Fino</h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#1E293B] border border-[#E2E8F0] font-mono">
                     Grounded
                   </span>
@@ -266,7 +266,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3 text-slate-400">
                 <FinoraMark size={48} />
                 <div className="space-y-1">
-                  <h4 className="font-bold text-sm text-slate-700">How can Fino assist your review?</h4>
+                  <h4 className="font-bold text-sm text-slate-700">Hi Finance, how can Fino assist your review?</h4>
                   <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
                     I have live read-only context of this <strong className="text-slate-800">{pageContext?.page_name || 'ledger'}</strong> view. Ask about variances, anomalies, or cash metrics.
                   </p>
@@ -348,12 +348,12 @@ export const LedgerCopilotPanel: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Recommended Controller Action Callout */}
+                    {/* Recommended Action Callout */}
                     {msg.metadata?.escalation_recommendation && (
                       <div className="p-2.5 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl flex items-start gap-2 text-[11px] text-[#B45309]">
                         <AlertTriangle size={13} className="text-[#B45309] shrink-0 mt-0.5" />
                         <div>
-                          <strong className="font-bold block text-slate-900">Recommended Controller Action:</strong>
+                          <strong className="font-bold block text-slate-900">Recommended Action:</strong>
                           <span className="text-slate-700">{msg.metadata.escalation_recommendation}</span>
                         </div>
                       </div>

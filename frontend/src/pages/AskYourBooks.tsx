@@ -95,7 +95,7 @@ export default function AskYourBooks() {
           <div className="flex items-center gap-3">
             <FinoraMark size={32} />
             <div>
-              <h2 className="font-bold text-sm text-slate-900 leading-tight">Fino — Financial Controller</h2>
+              <h2 className="font-bold text-sm text-slate-900 leading-tight">Fino</h2>
               <p className="text-[11px] text-slate-500">Multi-Step Tool Orchestration • Auditable Reasoning Chains</p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function AskYourBooks() {
               <div className="mb-4">
                 <FinoraMark size={56} />
               </div>
-              <h3 className="font-bold text-base text-slate-800 mb-1">Ask Fino About Your Books</h3>
+              <h3 className="font-bold text-base text-slate-800 mb-1">Hi Finance, ask Fino anything about your books</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
                 Ask Fino questions about match rates, gateway fee leakage, delayed settlements, or multi-step period comparisons. Every conclusion produces a linked evidence trail and paired confidence rating.
               </p>
@@ -175,116 +175,116 @@ export default function AskYourBooks() {
                         )}
 
                         <FormattedMarkdown content={msg.content} isUser={false} className="font-normal text-slate-800" />
-
-                      {/* Low/Medium Confidence Escalation Path Banner */}
-                      {msg.role === 'ai' && meta.escalation_recommendation && !meta.is_greeting && (
-                        <div className="mt-3 p-3 rounded-xl bg-[#FFFBEB] border border-[#FEF3C7] text-[#B45309] space-y-2">
-                          <div className="flex items-center gap-1.5 font-bold text-[11px] text-[#B45309]">
-                            <UserCheck size={14} /> Recommended Controller Action
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-snug">
-                            {meta.escalation_recommendation}
-                          </p>
-                          <div className="pt-1 flex gap-2">
-                            <Link 
-                              to="/exceptions" 
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-[#E4E4E7] shadow-xs hover:bg-slate-50 transition-colors"
-                            >
-                              Open Reconciliation Queue <ArrowUpRight size={11} />
-                            </Link>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Rendered Chart Visual */}
-                      {msg.role === 'ai' && meta.visual_data && (
-                        <div className="mt-4 pt-3 border-t border-slate-100 w-full min-w-[280px]">
-                          <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            {meta.visual_data.type === 'pie' ? <PieChartIcon size={13} /> : <BarChart3 size={13} />}
-                            {meta.visual_data.title}
-                          </h4>
-                          
-                          <div className="h-44 w-full bg-slate-50 rounded-xl p-2 border border-[#E4E4E7]">
-                            <ResponsiveContainer width="100%" height="100%">
-                              {meta.visual_data.type === 'pie' ? (
-                                <PieChart>
-                                  <Pie data={meta.visual_data.data} innerRadius={35} outerRadius={60} paddingAngle={2} dataKey="value">
-                                    {meta.visual_data.data.map((entry: any, i: number) => (
-                                      <Cell key={`cell-${i}`} fill={entry.color || '#1E293B'} />
-                                    ))}
-                                  </Pie>
-                                  <Tooltip 
-                                    contentStyle={{ 
-                                      backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
-                                      borderRadius: '12px', 
-                                      border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
-                                      color: isDark ? '#F3F4F6' : '#111827',
-                                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
-                                    }}
-                                  />
-                                </PieChart>
-                              ) : (
-                                <BarChart data={meta.visual_data.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#262D38" : "#e2e8f0"} />
-                                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
-                                  <YAxis tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
-                                  <Tooltip 
-                                    contentStyle={{ 
-                                      backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
-                                      borderRadius: '12px', 
-                                      border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
-                                      color: isDark ? '#F3F4F6' : '#111827',
-                                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
-                                    }}
-                                  />
-                                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                    {meta.visual_data.data.map((entry: any, i: number) => (
-                                      <Cell key={`cell-bar-${i}`} fill={entry.color || '#1E293B'} />
-                                    ))}
-                                  </Bar>
-                                </BarChart>
-                              )}
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-                      )}
-                      {/* Curated Finance Knowledge Citation Card */}
-                      {meta.knowledge_citation && (
-                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
-                          <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-1.5">
-                            <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                              <BookOpen size={13} className="text-[#1E293B]" />
-                              <span>{meta.knowledge_citation.canonical_name}</span>
+                        
+                        {/* Low/Medium Confidence Escalation Path Banner */}
+                        {msg.role === 'ai' && meta.escalation_recommendation && !meta.is_greeting && (
+                          <div className="mt-3 p-3 rounded-xl bg-[#FFFBEB] border border-[#FEF3C7] text-[#B45309] space-y-2">
+                            <div className="flex items-center gap-1.5 font-bold text-[11px] text-[#B45309]">
+                              <UserCheck size={14} /> Recommended Action
                             </div>
-                            <span className="text-[10px] font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
-                              {meta.knowledge_citation.category}
-                            </span>
+                            <p className="text-[11px] text-slate-700 leading-snug">
+                              {meta.escalation_recommendation}
+                            </p>
+                            <div className="pt-1 flex gap-2">
+                              <Link 
+                                to="/exceptions" 
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-[#E4E4E7] shadow-xs hover:bg-slate-50 transition-colors"
+                              >
+                                Open Reconciliation Queue <ArrowUpRight size={11} />
+                              </Link>
+                            </div>
                           </div>
-                          
-                          <div className="text-[10px] text-slate-500 font-medium">
-                            <span>Statutory Standard: </span>
-                            <strong className="text-slate-700">{meta.knowledge_citation.statutory_reference}</strong>
-                          </div>
+                        )}
 
-                          {/* Related Concepts Quick Click Tags */}
-                          {meta.knowledge_citation.related_terms && meta.knowledge_citation.related_terms.length > 0 && (
-                            <div className="pt-1 border-t border-slate-200/60 flex items-center gap-1 flex-wrap">
-                              <span className="text-[10px] font-semibold text-slate-500">Related Concepts:</span>
-                              {meta.knowledge_citation.related_terms.map((rt: string, rIdx: number) => (
+                        {/* Rendered Chart Visual */}
+                        {msg.role === 'ai' && meta.visual_data && (
+                          <div className="mt-4 pt-3 border-t border-slate-100 w-full min-w-[280px]">
+                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                              {meta.visual_data.type === 'pie' ? <PieChartIcon size={13} /> : <BarChart3 size={13} />}
+                              {meta.visual_data.title}
+                            </h4>
+                            
+                            <div className="h-44 w-full bg-slate-50 rounded-xl p-2 border border-[#E4E4E7]">
+                              <ResponsiveContainer width="100%" height="100%">
+                                {meta.visual_data.type === 'pie' ? (
+                                  <PieChart>
+                                    <Pie
+                                      data={meta.visual_data.data}
+                                      dataKey="value"
+                                      nameKey="name"
+                                      cx="50%"
+                                      cy="50%"
+                                      innerRadius={30}
+                                      outerRadius={55}
+                                      paddingAngle={3}
+                                    >
+                                      {meta.visual_data.data.map((entry: any, i: number) => (
+                                        <Cell key={`cell-${i}`} fill={entry.color || '#1E293B'} />
+                                      ))}
+                                    </Pie>
+                                    <Tooltip 
+                                      contentStyle={{ 
+                                        backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                                        borderRadius: '12px', 
+                                        border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                                        color: isDark ? '#F3F4F6' : '#111827',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                                      }}
+                                    />
+                                  </PieChart>
+                                ) : (
+                                  <BarChart data={meta.visual_data.data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#64748b' }} axisLine={false} tickLine={false} />
+                                    <Tooltip 
+                                      contentStyle={{ 
+                                        backgroundColor: isDark ? '#151B24' : '#FFFFFF', 
+                                        borderRadius: '12px', 
+                                        border: `1px solid ${isDark ? '#262D38' : '#e4e4e7'}`, 
+                                        color: isDark ? '#F3F4F6' : '#111827',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)' 
+                                      }}
+                                    />
+                                    <Bar dataKey="value" fill="#1E293B" radius={[4, 4, 0, 0]} />
+                                  </BarChart>
+                                )}
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Statutory Knowledge Citation Box */}
+                        {msg.role === 'ai' && meta.knowledge_citation && (
+                          <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+                            <span className="font-bold text-[10px] uppercase tracking-wider text-slate-500 block">
+                              Statutory Reference Standard
+                            </span>
+                            <p className="font-semibold text-slate-900">{meta.knowledge_citation.term}: {meta.knowledge_citation.definition}</p>
+                            {meta.knowledge_citation.governing_rule && (
+                              <span className="text-[10px] text-slate-500 font-mono block">Rule: {meta.knowledge_citation.governing_rule}</span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Follow-up Proactive Questions */}
+                        {msg.role === 'ai' && meta.suggested_questions && meta.suggested_questions.length > 0 && (
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Suggested Next Questions:</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {meta.suggested_questions.map((sq: string, sqIdx: number) => (
                                 <button
-                                  key={rIdx}
-                                  onClick={() => handleSuggestedAsk(`What is ${rt.replace(/_/g, ' ')}?`)}
-                                  className="text-[10px] px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700 hover:bg-[#1E293B] hover:text-white hover:border-[#1E293B] transition-colors cursor-pointer"
+                                  key={sqIdx}
+                                  onClick={() => handleSuggestedAsk(sq)}
+                                  className="text-[11px] font-medium bg-slate-50 hover:bg-[#1E293B] text-slate-700 hover:text-white border border-slate-200 hover:border-[#1E293B] px-2.5 py-1 rounded-lg transition-all text-left cursor-pointer shadow-2xs"
                                 >
-                                  {rt.replace(/_/g, ' ')}
+                                  {sq}
                                 </button>
                               ))}
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Grounded Evidence Trail Section */}
                     {msg.role === 'ai' && steps.length > 0 && !meta.is_greeting && (
@@ -304,6 +304,19 @@ export default function AskYourBooks() {
                               <span>Numbered Ledger Evidence Trail</span>
                               <span className="text-[#15803D] font-bold">Grounded Execution</span>
                             </div>
+
+                            {/* Specialist Brains Consulted Pill Row */}
+                            {meta.brains_consulted && meta.brains_consulted.length > 0 && (
+                              <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">Consulted:</span>
+                                {meta.brains_consulted.map((brain: string, bIdx: number) => (
+                                  <span key={bIdx} className="text-[10px] font-semibold bg-white text-slate-800 border border-slate-200 px-2 py-0.5 rounded-full shadow-2xs">
+                                    🧠 {brain}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
                             {steps.map((s: any, sIdx: number) => (
                               <div key={sIdx} className="flex gap-2.5 items-start bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                                 <span className="w-4 h-4 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-[9px] shrink-0 mt-0.5">

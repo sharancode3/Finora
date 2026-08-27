@@ -162,10 +162,10 @@ def api_get_exception_multi_cause_scores(exc_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @analytics_router.get("/proactive-nudges")
-def api_get_proactive_nudges():
+def api_get_proactive_nudges(start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None):
     try:
         from backend.db.sqlite_client import get_proactive_anomaly_nudges
-        return get_proactive_anomaly_nudges()
+        return get_proactive_anomaly_nudges(start_date, end_date, account_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

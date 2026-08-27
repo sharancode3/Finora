@@ -149,15 +149,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <span>Run Reconciliation</span>
           </button>
 
-          {/* Ask Controller Top Trigger */}
+          {/* Ask Fino Top Trigger */}
           {location.pathname !== '/ask-your-books' && (
             <button
               onClick={() => setIsCopilotOpen(true)}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E4E4E7] hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-all duration-150 ease-out cursor-pointer shadow-2xs"
-              title="Open Global Ask Controller Panel"
+              title="Open Global Ask Fino Panel"
             >
               <FinoraMark size={16} />
-              <span>Ask Controller</span>
+              <span>Ask Fino</span>
             </button>
           )}
 
@@ -336,7 +336,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     <span className="text-[10px] font-mono text-slate-400">Ind AS</span>
                   </div>
                   <div className="text-[10px] text-slate-500 truncate">
-                    Fino Controller Engine • v2.4
+                    Fino AI Engine • v2.4
                   </div>
                 </div>
               </>

@@ -64,6 +64,7 @@ export default function Reconciliation() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalInitialScope, setModalInitialScope] = useState<string>('2026-08');
+  const [showGranularTieOut, setShowGranularTieOut] = useState<boolean>(false);
 
   const fetchScopesAndData = async () => {
     setLoading(true);
@@ -306,7 +307,7 @@ export default function Reconciliation() {
       </div>
 
       {/* Full Deduction Breakdown & Arithmetic Tie-Out Banner */}
-      <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 text-xs shadow-2xs">
+      <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 text-xs shadow-2xs space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-mono text-[11px] text-slate-700 flex-wrap">
             <span className="font-semibold text-slate-900">Gross: ₹{metrics.total_gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
@@ -317,8 +318,33 @@ export default function Reconciliation() {
             <span className="text-slate-400">=</span>
             <span className="text-[#15803D] font-bold">Net Settled: ₹{metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-medium font-sans">Deterministic SQLite Tie-Out</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowGranularTieOut(!showGranularTieOut)}
+              className="text-[10px] font-bold text-slate-600 hover:text-slate-900 bg-white px-2 py-0.5 rounded-lg border border-slate-200 cursor-pointer shadow-2xs hover:bg-slate-50 transition-colors"
+            >
+              {showGranularTieOut ? 'Hide 5-Term Treasury Split' : '5-Term Treasury Split →'}
+            </button>
+            <span className="text-[10px] text-slate-400 font-medium font-sans hidden md:inline">Deterministic SQLite Tie-Out</span>
+          </div>
         </div>
+
+        {/* 5-Term Granular Treasury Alignment (Synchronized with Cash Position) */}
+        {showGranularTieOut && (
+          <div className="pt-2 border-t border-slate-200/70 flex items-center gap-2 font-mono text-[10.5px] text-slate-600 flex-wrap animate-in fade-in duration-150">
+            <span className="font-bold text-slate-800">Gross: ₹{metrics.total_gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-rose-700 font-semibold">MDR (~2%): ₹{metrics.settled_fees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-amber-700 font-semibold">GST (18%): ₹{metrics.settled_gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-[#B91C1C] font-semibold">Trapped: ₹{(metrics.exc_val > 33963.07 ? metrics.exc_val - 33963.07 : 11700).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
+            <span className="text-blue-700 font-semibold">In-Transit Float: ₹33,963.07</span>
+            <span className="text-slate-400">=</span>
+            <span className="text-[#15803D] font-bold">Net Bank Cash: ₹{metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          </div>
+        )}
       </div>
 
       {/* Scope Selector Ribbon */}

@@ -111,7 +111,7 @@ export default function Settings() {
       });
   }, []);
 
-  // Update Ask Controller context for settings/governance
+  // Update Ask Fino context for settings/governance
   const { setPageContext } = useAI();
   useEffect(() => {
     setPageContext({

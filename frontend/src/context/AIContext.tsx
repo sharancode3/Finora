@@ -145,6 +145,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const conversationHistory = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
       
       const freshContext: PageContext = {
+        user_name: 'Finance',
         page_name: activePageName,
         route: currentPath,
         screen: currentPath.replace('/', '') || 'dashboard',
@@ -159,6 +160,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       };
 
       // Explicitly enforce current page_name and route to prevent any stale bleed
+      freshContext.user_name = 'Finance';
       freshContext.page_name = activePageName;
       freshContext.route = currentPath;
       freshContext.screen = currentPath.replace('/', '') || 'dashboard';
@@ -183,7 +185,9 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           reasoning_trail: data.reasoning_trail,
           evidence_record_ids: data.evidence_ids,
           suggested_questions: data.suggested_questions,
+          brains_consulted: data.brains_consulted,
           visual_data: data.visual_data,
+          knowledge_citation: data.knowledge_citation,
           debug_page_context: freshContext
         }
       };

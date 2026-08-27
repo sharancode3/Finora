@@ -1925,6 +1925,24 @@ def ask_finora_agent(question: str, context: Dict) -> Dict:
     if "reasoning_trail" in result and "evidence_trail" not in result:
         result["evidence_trail"] = result["reasoning_trail"]
     
+    # Identify specialist brains consulted during this multi-stage inference
+    trail = result.get("reasoning_trail") or result.get("evidence_trail") or []
+    tools_used = [step.get("tool", "") for step in trail]
+    
+    brains = ["Conversational Brain"]
+    recon_tools = {"get_transactions", "get_match_rate", "get_exceptions_summary", "get_exception_intelligence_data", "get_cross_account_flow", "get_exception_detail", "sqlite_settlements_query", "variance_calculator"}
+    forecast_tools = {"get_cash_position", "get_statistical_anomalies", "monte_carlo_simulator", "cash_scenario_simulation", "get_period_comparison"}
+    compliance_tools = {"lookup_finance_term", "get_checklist_item_assistance", "draft_month_end_closing_memo", "evaluate_sod_conflict", "get_notification_rule_explanation", "benford_forensic_verifier"}
+
+    if any(t in recon_tools for t in tools_used) or "match" in question.lower() or "exception" in question.lower():
+        brains.append("Reconciliation Brain")
+    if any(t in forecast_tools for t in tools_used) or "cash" in question.lower() or "float" in question.lower() or "forecast" in question.lower():
+        brains.append("Forecast Brain")
+    if any(t in compliance_tools for t in tools_used) or "tax" in question.lower() or "gst" in question.lower() or "rule" in question.lower() or "memo" in question.lower():
+        brains.append("Compliance Brain")
+
+    result["brains_consulted"] = brains
+
     # Record live telemetry for self-reported AI accuracy & audit tracking
     try:
         from backend.db.sqlite_client import record_query_telemetry
@@ -1932,7 +1950,7 @@ def ask_finora_agent(question: str, context: Dict) -> Dict:
         record_query_telemetry(
             query_text=question,
             intent=result.get("intent", "query_copilot"),
-            tool_used=result.get("tool_used") or (result.get("reasoning_trail", [{}])[0].get("tool") if result.get("reasoning_trail") else "analytical_dal"),
+            tool_used=result.get("tool_used") or (trail[0].get("tool") if trail else "analytical_dal"),
             confidence_score=conf_score,
             verifier_passed=result.get("verifier_passed", True),
             was_fallback=bool(result.get("is_fallback", False)),

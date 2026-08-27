@@ -371,7 +371,7 @@ export default function Dashboard() {
         suggested_inquiries: [
           `Explain why Gross Volume is ₹${grossK}k while Settled Cash is ₹${netK}k`,
           `Analyze the ${excCount} open exceptions detected in this period`,
-          `Evaluate the Benford's Law forensic check (MAD = ${benfordData?.mad || '0.0076'})`
+          benfordData?.mad ? `Evaluate the Benford's Law forensic check (MAD = ${benfordData.mad})` : `Evaluate the Benford's Law forensic check`
         ]
       });
     }
@@ -580,7 +580,7 @@ export default function Dashboard() {
       {/* TODAY'S AI DAILY BRIEFING (Standardized AI Insight Card) */}
       {dailyBriefing && (
         <AIInsightCard
-          title="Today's AI Controller Briefing"
+          title="Today's AI Financial Briefing"
           subtitle="Trailing 24-hour reconciliation posture"
           asOfTimestamp={dailyBriefing.as_of_timestamp}
           narration={dailyBriefing.ai_narration}
@@ -728,8 +728,10 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
             <span className="text-slate-500">Forensic Trust:</span>
-            <span className="inline-flex items-center gap-1 font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0]">
-              <ShieldCheck size={10} /> Benford: Conforming
+            <span className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full border ${
+              benfordData?.is_compliant !== false ? 'text-[#15803D] bg-[#F0FDF4] border-[#BBF7D0]' : 'text-[#B45309] bg-[#FFFBEB] border-[#FEF3C7]'
+            }`}>
+              <ShieldCheck size={10} /> Benford: {benfordData?.status || 'Conforming'}
             </span>
           </div>
         </div>
@@ -912,6 +914,12 @@ export default function Dashboard() {
                         ? 'Possible Duplicate Entry' 
                         : ex.reason === 'timing_delay'
                         ? 'Timing Difference (T+2 Settlement)'
+                        : ex.reason === 'ledger_only'
+                        ? 'Unsettled Order — Internal checkout without gateway settlement'
+                        : ex.reason === 'bank_only'
+                        ? 'Unmatched Direct Credit — Direct bank inward remittance'
+                        : ex.reason === 'amount_mismatch_only' || ex.reason === 'amount_mismatch'
+                        ? 'Amount Mismatch — Net bank credit differs from settlement schedule'
                         : ex.reason.replace(/_/g, ' ')}
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -976,7 +984,7 @@ export default function Dashboard() {
                           e.stopPropagation();
                           askAI(`What happened on ${day.date} — walk me through that day's ${pluralize(day.count, 'transaction', 'transactions')} and settlement status.`);
                         }}
-                        title={`Ask Controller: What happened on ${day.date}?`}
+                        title={`Ask Fino: What happened on ${day.date}?`}
                         className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
                       >
                         F
@@ -1000,10 +1008,10 @@ export default function Dashboard() {
                   <button
                     onClick={() => askAI(`What happened on ${expandedDay} — walk me through that day's ${pluralize(heatmapData.days.find(d => d?.date === expandedDay)?.count || 0, 'transaction settlement', 'transaction settlements')} and any variances.`)}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-[11px] font-bold shadow-2xs transition-all cursor-pointer"
-                    title={`Ask Controller to analyze settlements on ${expandedDay}`}
+                    title={`Ask Fino to analyze settlements on ${expandedDay}`}
                   >
                     <div className="w-3.5 h-3.5 rounded bg-white text-[#1E293B] flex items-center justify-center text-[8px] font-mono font-bold">F</div>
-                    <span>Ask Controller About {expandedDay}</span>
+                    <span>Ask Fino About {expandedDay}</span>
                   </button>
                   <button onClick={() => setExpandedDay(null)} className="p-1 rounded-lg hover:bg-white text-slate-400 hover:text-slate-700 transition-colors duration-150 ease-out border border-transparent hover:border-slate-200 cursor-pointer">
                     <X size={15} />

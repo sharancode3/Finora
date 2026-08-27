@@ -20,7 +20,7 @@ export interface AskableMetricProps {
 /**
  * Reusable Universal "Ask AI About This" Click-to-Ask Component (Phase 4 Spec)
  * Renders a quiet, subtle hover affordance (subtle dotted/dashed underline and micro "F" monogram)
- * On click, opens global Ask Controller Copilot panel and pre-fills & auto-submits a grounded inquiry.
+ * On click, opens global Ask Fino Copilot panel with the contextual inquiry.
  */
 export const AskableMetric: React.FC<AskableMetricProps> = ({
   children,
@@ -58,7 +58,7 @@ export const AskableMetric: React.FC<AskableMetricProps> = ({
     askAI(resolvedQuestion);
   };
 
-  const hoverTitle = title || `Ask Controller: "${resolvedQuestion}"`;
+  const hoverTitle = title || `Ask Fino: "${resolvedQuestion}"`;
 
   const Tag = inline ? 'span' : 'div';
 

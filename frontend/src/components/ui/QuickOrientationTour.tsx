@@ -29,10 +29,10 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 3,
-    title: 'Universal Ask Controller & Copilot',
+    title: 'Universal Ask Fino & Copilot',
     badge: '3 of 3 • Contextual Intelligence',
     description: 'Hover and click any figure or finance term anywhere in Finora to ask grounded audit questions with statutory evidence citations.',
-    actionHint: 'Ask about MDR rules, TDS compliance, or click "Ask Controller" on the top bar.',
+    actionHint: 'Ask about MDR rules, TDS compliance, or click "Ask Fino" on the top bar.',
     icon: MessageSquare
   }
 ];

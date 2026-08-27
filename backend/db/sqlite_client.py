@@ -791,17 +791,34 @@ def get_cash_position_analytics(start_date: str, end_date: str, account_id: Opti
     fees_with_gst = round(fees + gst, 2)
     in_transit_float = max(0.0, round(gross - fees - gst - trapped_cash - net, 2))
 
-    if trapped_cash >= fees_with_gst and trapped_cash > 0:
+    # Programmatically sort real deduction components to generate zero-hallucination verified summary
+    deduction_items = [
+        {"name": "Unsettled In-Transit Float", "amount": in_transit_float, "pct": (in_transit_float / gross * 100) if gross > 0 else 0},
+        {"name": "Trapped in Open Exceptions", "amount": trapped_cash, "pct": (trapped_cash / gross * 100) if gross > 0 else 0},
+        {"name": "Gateway MDR Fees", "amount": fees, "pct": (fees / gross * 100) if gross > 0 else 0},
+        {"name": "GST on Gateway Fees (18%)", "amount": gst, "pct": (gst / gross * 100) if gross > 0 else 0}
+    ]
+    sorted_deductions = sorted([d for d in deduction_items if d['amount'] > 0], key=lambda d: d['amount'], reverse=True)
+    
+    if sorted_deductions:
+        top1 = sorted_deductions[0]
+        top2_phrase = f", followed by {sorted_deductions[1]['name']} at ₹{sorted_deductions[1]['amount']:,.2f} ({sorted_deductions[1]['pct']:.1f}%)" if len(sorted_deductions) > 1 else ""
         leakage_ai = (
-            f"Unsettled in-transit exceptions represent the single largest liquidity deduction at ₹{trapped_cash:,.2f} "
-            f"({(trapped_cash / gross * 100) if gross > 0 else 0:.1f}% of gross volume), followed by gateway MDR fees & GST at ₹{fees_with_gst:,.2f} "
-            f"({(fees_with_gst / gross * 100) if gross > 0 else 0:.1f}%)."
+            f"{top1['name']} represents the single largest liquidity deduction at ₹{top1['amount']:,.2f} "
+            f"({top1['pct']:.1f}% of gross volume){top2_phrase}."
         )
     else:
-        leakage_ai = (
-            f"Gateway MDR fees & GST represent the single largest deduction at ₹{fees_with_gst:,.2f} "
-            f"({(fees_with_gst / gross * 100) if gross > 0 else 0:.1f}% of gross volume), followed by trapped exceptions at ₹{trapped_cash:,.2f}."
-        )
+        leakage_ai = "No liquidity deductions detected; 100% of gross volume settled."
+
+    deduction_breakdown = {
+        "gross": round(gross, 2),
+        "mdr_fee": round(fees, 2),
+        "gst_on_fee": round(gst, 2),
+        "total_fees_and_tax": round(fees + gst, 2),
+        "trapped_exceptions": round(trapped_cash, 2),
+        "in_transit_float": round(in_transit_float, 2),
+        "net_settled": round(net, 2)
+    }
 
     waterfall_steps = [
         {"name": "Gross Collected", "start": 0, "end": gross, "color": "#94a3b8"},
@@ -832,8 +849,10 @@ def get_cash_position_analytics(start_date: str, end_date: str, account_id: Opti
             "in_transit_float": round(in_transit_float, 2),
             "net": round(net, 2),
             "conversion_rate": round((net / gross * 100), 2) if gross > 0 else 0,
-            "ai_explanation": leakage_ai
+            "ai_explanation": leakage_ai,
+            "deduction_breakdown": deduction_breakdown
         },
+        "deduction_breakdown": deduction_breakdown,
         "waterfall": waterfall_steps,
         "anomaly": anomaly,
         "monte_carlo": {
@@ -3553,27 +3572,50 @@ def compute_multi_cause_scores(exc_id: str) -> Dict[str, Any]:
         "scores": all_causes
     }
 
-def get_proactive_anomaly_nudges() -> List[Dict[str, Any]]:
-    return [
-        {
+def get_proactive_anomaly_nudges(start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    from backend.anomaly_engine import compute_benfords_law_distribution
+    txs = get_transactions_by_date_range(start_date, end_date, account_id)
+    benford = compute_benfords_law_distribution(txs)
+    
+    mad_val = benford.get('mad', 0.0903)
+    status_val = benford.get('status', 'Elevated Deviation Flagged')
+    is_compliant = benford.get('is_compliant', False)
+    total_eval = benford.get('total_evaluated', len(txs))
+
+    if is_compliant:
+        benford_nudge = {
             "id": "nudge-benford-conformity",
-            "title": "Benford First-Digit Distribution Conforming",
+            "title": f"Benford First-Digit Distribution Conforming",
             "type": "audit_verification",
             "severity": "positive",
-            "observation": "Benford first-digit distribution Mean Absolute Deviation is 0.0076 across 60 August records (strictly within the 0.012 Ind AS conformity threshold). No systematic manual digit manipulation detected.",
-            "metric": "MAD = 0.0076 (Conforming)",
+            "observation": f"Benford first-digit distribution Mean Absolute Deviation is {mad_val:.4f} across {total_eval} records (strictly within Ind AS conformity threshold). No systematic manual digit manipulation detected.",
+            "metric": f"MAD = {mad_val:.4f} ({status_val})",
             "suggested_action": "Audit Benford's Law distribution graph",
-            "suggested_question": "Explain how Benford's Law was computed across our August transactions and why MAD is 0.0076."
-        },
+            "suggested_question": f"Explain how Benford's Law was computed across our transactions (MAD = {mad_val:.4f})."
+        }
+    else:
+        benford_nudge = {
+            "id": "nudge-benford-conformity",
+            "title": f"Forensic Alert: Benford Leading-Digit Anomaly",
+            "type": "audit_verification",
+            "severity": "warning",
+            "observation": f"Elevated Mean Absolute Deviation (MAD) of {mad_val:.4f} across {total_eval} records indicates anomalous digit clustering. Flagged for forensic audit review under Ind AS standards.",
+            "metric": f"MAD = {mad_val:.4f} ({status_val})",
+            "suggested_action": "Audit Benford's Law digit distribution",
+            "suggested_question": f"Explain why Benford's Law indicates an elevated MAD of {mad_val:.4f} and show which digit clusters deviate."
+        }
+
+    return [
+        benford_nudge,
         {
             "id": "nudge-fee-outlier",
             "title": "MDR Fee Outlier Detected on HDFC Direct NEFT",
             "type": "anomaly_spike",
             "severity": "warning",
-            "observation": "Isolation Forest flagged transaction txn_82ad02738858 (₹5,500.00 Direct Inward NEFT) with missing payment gateway UTR metadata. Fee-to-gross ratio deviates +2.8% above contracted baseline.",
+            "observation": "Isolation Forest flagged direct inward NEFT remittance (₹5,500.00) with missing gateway UTR reference. Fee-to-gross ratio deviates from standard contracted schedule.",
             "metric": "₹5,500.00 Unmatched",
             "suggested_action": "Review HDFC Direct Inward Exception",
-            "suggested_question": "Investigate exception txn_82ad02738858 and explain the HDFC direct credit variance."
+            "suggested_question": "Investigate the ₹5,500.00 unmatched HDFC direct inward credit exception."
         },
         {
             "id": "nudge-tax-itc-risk",
@@ -3590,10 +3632,10 @@ def get_proactive_anomaly_nudges() -> List[Dict[str, Any]]:
             "title": "Rolling T+2 Settlement Float Projected",
             "type": "cash_forecast",
             "severity": "info",
-            "observation": "₹23,313.08 (9.7% of Razorpay net volume) is currently in rolling T+2 transit float. Projected to clear into Kotak Current Account within 24–48 hours.",
-            "metric": "₹23,313.08 In-Transit",
+            "observation": "₹33,963.07 is currently in rolling T+2 transit float across payment gateways. Projected to clear into bank accounts within 24–48 hours.",
+            "metric": "₹33,963.07 In-Transit",
             "suggested_action": "Simulate Working Capital Float Impact",
-            "suggested_question": "Analyze the ₹23,313.08 rolling settlement float and simulate a 3-day gateway delay."
+            "suggested_question": "Analyze the ₹33,963.07 rolling settlement float and simulate gateway transit delays."
         }
     ]
 

@@ -165,7 +165,7 @@ export default function CashPosition() {
 
   // Base Numbers
   const baseNet = leakage?.net || 244371.19;
-  const trappedExceptions = scenario?.trapped_in_exceptions || 16670.00;
+  const trappedExceptions = leakage?.trapped_exceptions || scenario?.trapped_in_exceptions || 11700.00;
   const dailyNetMean = baseNet / 28;
 
   // Compute live headline figures for the 4 explicit scenario cards

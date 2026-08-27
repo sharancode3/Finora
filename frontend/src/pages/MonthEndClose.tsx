@@ -402,8 +402,8 @@ export default function MonthEndClose() {
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Exceptions</p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xl font-bold text-slate-900 font-mono">
-                        <AskableMetric label="Total Open Exceptions" value={current.exceptions_total || 0} context={`close period ${targetMonth}`}>
-                          <AnimatedNumber value={current.exceptions_total || 0} duration={600} /> Open
+                        <AskableMetric label="Total Open Exceptions" value={current.exceptions_open ?? current.exceptions_total ?? 0} context={`close period ${targetMonth}`}>
+                          <AnimatedNumber value={current.exceptions_open ?? current.exceptions_total ?? 0} duration={600} /> Open
                         </AskableMetric>
                       </span>
                       <span className="text-xs text-slate-500 font-medium">
