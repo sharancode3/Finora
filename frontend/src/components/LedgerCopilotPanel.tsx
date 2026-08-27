@@ -279,8 +279,8 @@ export const LedgerCopilotPanel: React.FC = () => {
                 
                 {/* User Message */}
                 {msg.role === 'user' ? (
-                  <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-semibold shadow-xs leading-relaxed tracking-normal">
-                    <FormattedMarkdown content={msg.content} isUser={true} className="text-white" />
+                  <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4 py-2.5 max-w-[85%] text-xs font-medium shadow-xs leading-relaxed tracking-normal">
+                    <span className="text-white text-xs font-medium whitespace-pre-wrap">{msg.content}</span>
                   </div>
                 ) : (
                   /* AI Grounded Response Card */

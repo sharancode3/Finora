@@ -240,8 +240,8 @@ export default function AskYourBooks() {
                     
                     {/* Primary Content Bubble */}
                     {msg.role === 'user' ? (
-                      <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4 py-3 shadow-xs text-xs font-semibold leading-relaxed tracking-normal max-w-2xl">
-                        <FormattedMarkdown content={msg.content} isUser={true} className="text-white" />
+                      <div className="bg-[#1E293B] text-white rounded-2xl rounded-tr-xs px-4.5 py-3 shadow-xs text-xs font-medium leading-relaxed tracking-normal max-w-2xl">
+                        <span className="text-white text-xs font-medium whitespace-pre-wrap">{msg.content}</span>
                       </div>
                     ) : (
                       <div className="bg-white border border-[#E4E4E7] text-slate-800 rounded-2xl rounded-tl-xs p-4.5 text-xs leading-relaxed shadow-xs w-full max-w-2xl space-y-3">
