@@ -13,7 +13,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     id: 1,
-    title: 'Daily AI Controller Briefing',
+    title: 'Daily AI Financial Briefing',
     badge: '1 of 3 • Start Here',
     description: 'Your 60-second executive summary synthesizing gross processed volume (₹2,39,978.51), settled bank cash, and active exceptions.',
     actionHint: 'Review key variance drivers & timing float at a glance on the Dashboard.',

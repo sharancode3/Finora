@@ -37,7 +37,7 @@ import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
-import { pluralize } from '../utils/formatters';
+import { pluralize, formatExceptionReason } from '../utils/formatters';
 import { ProactiveAnomalyNudges } from '../components/ui/ProactiveAnomalyNudges';
 
 const SYSTEM_ANCHOR_DATE = '2026-08-31';
@@ -906,21 +906,7 @@ export default function Dashboard() {
                       <Link to={`/record/exception/${ex.id}`} className="hover:text-[#1E293B] hover:underline">{ex.id.substring(0, 10)}...</Link>
                     </td>
                     <td className="py-3 px-4 text-slate-700 font-medium">
-                      {(ex.reason === 'fee_variance' || ex.reason === 'fee_variance_explained')
-                        ? 'Fee Rate Mismatch — 2.0% contracted MDR vs. higher rate applied' 
-                        : ex.reason === 'no_bank_credit_found' 
-                        ? 'Missing Bank Credit (Timing / Float)' 
-                        : ex.reason === 'possible_duplicate' 
-                        ? 'Possible Duplicate Entry' 
-                        : ex.reason === 'timing_delay'
-                        ? 'Timing Difference (T+2 Settlement)'
-                        : ex.reason === 'ledger_only'
-                        ? 'Unsettled Order — Internal checkout without gateway settlement'
-                        : ex.reason === 'bank_only'
-                        ? 'Unmatched Direct Credit — Direct bank inward remittance'
-                        : ex.reason === 'amount_mismatch_only' || ex.reason === 'amount_mismatch'
-                        ? 'Amount Mismatch — Net bank credit differs from settlement schedule'
-                        : ex.reason.replace(/_/g, ' ')}
+                      {formatExceptionReason(ex.reason)}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <SeverityBadge severity={ex.risk_tier || "HIGH"} />

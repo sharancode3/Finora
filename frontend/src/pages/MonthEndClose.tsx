@@ -388,11 +388,11 @@ export default function MonthEndClose() {
                 <>
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Volume</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1">
+                    <div className="text-xl font-bold text-slate-900 mt-1">
                       <AskableMetric label="Gross Processed Volume" value={current.volume || 0} context={`close period ${targetMonth}`}>
                         <AmountDisplay amount={current.volume || 0} animated={true} />
                       </AskableMetric>
-                    </p>
+                    </div>
                     <p className="text-xs text-slate-500 mt-1">
                       Prior: ₹{prevVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
@@ -431,11 +431,11 @@ export default function MonthEndClose() {
 
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Statutory Match Rate</p>
-                    <p className="text-xl font-bold text-[#15803D] mt-1 font-mono">
+                    <div className="text-xl font-bold text-[#15803D] mt-1 font-mono">
                       <AskableMetric label="Statutory Value Match Rate" value={`${(current.match_rate || 97.7).toFixed(1)}%`} context={`close period ${targetMonth}`}>
                         <AnimatedNumber value={current.match_rate || 97.7} format={v => `${v.toFixed(1)}%`} duration={600} />
                       </AskableMetric>
-                    </p>
+                    </div>
                     <p className="text-xs text-slate-500 mt-1">
                       Prior: {prevMatchRate.toFixed(1)}%
                     </p>

@@ -37,7 +37,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Link } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
-import { pluralize } from '../utils/formatters';
+import { pluralize, formatExceptionReason } from '../utils/formatters';
 import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
 import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
 import { FinoraMark } from '../components/ui/FinoraMark';
@@ -573,8 +573,8 @@ export default function Exceptions() {
                         
                         <td className="py-3.5 px-4">
                           <AskableMetric question={`Explain the root cause behind exception reason '${ex.reason?.replace(/_/g, ' ')}' for record ${ex.id} (amount: ₹${amount?.toLocaleString('en-IN')}).`}>
-                            <span className="font-semibold text-slate-800 capitalize">
-                              {ex.reason.replace(/_/g, ' ')}
+                            <span className="font-semibold text-slate-800">
+                              {formatExceptionReason(ex.reason)}
                             </span>
                           </AskableMetric>
                           {ex.ml_explanation && (

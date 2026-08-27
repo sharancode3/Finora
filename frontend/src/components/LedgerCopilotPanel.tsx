@@ -93,7 +93,7 @@ export const LedgerCopilotPanel: React.FC = () => {
       return [
         "Why is our statutory match rate at its current level?",
         "Breakdown the ₹16.5k trapped in open exceptions",
-        "Summarize today's controller briefing and anomalies"
+        "Summarize today's financial briefing and anomalies"
       ];
     }
     if (path.includes('reconciliation')) {

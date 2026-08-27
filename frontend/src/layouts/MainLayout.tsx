@@ -39,7 +39,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard', isPrimary: true },
       { to: '/reconciliation', icon: Layers, label: 'Reconciliation', isPrimary: true },
       { to: '/exceptions', icon: AlertTriangle, label: 'Exceptions', isPrimary: true },
-      { to: '/ask_your_books', icon: MessageSquare, label: 'Ask Your Books', isPrimary: true },
+      { to: '/ask_your_books', icon: MessageSquare, label: 'Ask Fino', isPrimary: true },
     ]
   },
   {

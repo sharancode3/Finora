@@ -1,6 +1,6 @@
 import requests
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL_NAME = "gemma3:4b"

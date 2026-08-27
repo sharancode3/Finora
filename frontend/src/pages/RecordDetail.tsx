@@ -32,6 +32,7 @@ import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
 import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
+import { formatExceptionReason } from '../utils/formatters';
 
 export default function RecordDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -507,13 +508,17 @@ export default function RecordDetail() {
             </h3>
             
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
-              <span className="font-bold text-slate-900 block capitalize">
-                Discrepancy Signature: {record.reason?.replace(/_/g, ' ')}
+              <span className="font-bold text-slate-900 block">
+                Discrepancy Signature: {formatExceptionReason(record.reason)}
               </span>
               <p className="text-slate-600 leading-relaxed">
-                {record.reason === 'fee_variance' ? 'Gateway deducted MDR fees higher than contractual standard. Ind AS adjustment is recommended to post variance to suspense.' : 
+                {record.reason === 'fee_variance' || record.reason === 'fee_variance_explained' ? 'Gateway deducted MDR fees higher than contractual 2.0% standard. Ind AS adjustment is recommended to post variance to suspense.' : 
                  record.reason === 'no_bank_credit_found' ? 'Settlement transit delay exceeds expected T+2 window. Check gateway batch logs or escalate if delay exceeds 5 business days.' :
-                 'Discrepancy identified in transaction valuation or duplicate ledger record.'}
+                 record.reason === 'possible_duplicate' ? 'Duplicate transaction ID or payload detected across multiple incoming webhook events.' :
+                 record.reason === 'amount_mismatch_only' || record.reason === 'amount_mismatch' ? 'Net bank credit received does not match scheduled payout amount. Partial settlement or gateway debit hold detected.' :
+                 record.reason === 'ledger_only' ? 'Internal checkout order was created in order ledger without corresponding payment gateway transaction event.' :
+                 record.reason === 'bank_only' ? 'Direct inward remittance credit received in bank account without a matching gateway settlement batch reference.' :
+                 'Discrepancy identified in transaction valuation or ledger record.'}
               </p>
             </div>
           </div>

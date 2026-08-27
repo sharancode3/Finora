@@ -94,14 +94,15 @@ export default function Settings() {
 
   useEffect(() => {
     // Fetch live audit logs from backend SQLite
-    api.get('/audit-trail')
+    api.get('/audit-logs')
       .then((res: any) => {
-        if (res.data?.logs) {
-          setAuditLogs(res.data.logs);
+        const logs = Array.isArray(res.data) ? res.data : (res.data?.logs || []);
+        if (logs.length > 0) {
+          setAuditLogs(logs);
         }
       })
       .catch((e: any) => {
-        console.error('Audit trail load err:', e);
+        console.error('Audit logs load err:', e);
         // Fallback demo items
         setAuditLogs([
           { id: 'aud_1', user: 'Finance Controller', action: 'Resolved Exception', target: 'exc_003_chargeback', timestamp: '2026-08-24 14:32:10 UTC', ip: '10.0.1.42', trigger_type: 'AI Recommendation Applied' },

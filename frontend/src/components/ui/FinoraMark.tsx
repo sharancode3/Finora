@@ -58,7 +58,7 @@ export const FinoraMark: React.FC<FinoraMarkProps> = ({
   }
 
   return (
-    <div
+    <span
       style={{
         width: size,
         height: size,
@@ -91,7 +91,7 @@ export const FinoraMark: React.FC<FinoraMarkProps> = ({
         {/* shorter middle arm */}
         <rect x="20" y="28" width="18" height="7" rx="1.5" fill={effectiveGlyphColor} />
       </svg>
-    </div>
+    </span>
   );
 };
 

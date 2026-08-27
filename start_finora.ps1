@@ -1,4 +1,4 @@
-﻿# Finora Server Startup Script
+# Finora Server Startup Script
 # Runs both backend and frontend independently as separate processes.
 # These survive AI sandbox restarts because they are OS-level processes.
 
@@ -37,7 +37,7 @@ Start-Sleep -Seconds 3
 
 # --- Start Frontend (Vite dev server) ---
 $frontendArgs = @{
-    FilePath         = "npm"
+    FilePath         = "npm.cmd"
     ArgumentList     = "run dev -- --host 127.0.0.1 --port 5173"
     WorkingDirectory = "C:\SHARAN PROJECTS\Finora\frontend"
     WindowStyle      = "Normal"
