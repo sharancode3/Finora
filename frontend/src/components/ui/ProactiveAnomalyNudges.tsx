@@ -17,6 +17,7 @@ export interface AnomalyNudge {
 export const ProactiveAnomalyNudges: React.FC = () => {
   const [nudges, setNudges] = useState<AnomalyNudge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const { askAboutElement } = useAI();
 
   useEffect(() => {
@@ -49,8 +50,6 @@ export const ProactiveAnomalyNudges: React.FC = () => {
         return { bg: 'bg-blue-50 text-blue-800 border-blue-200', icon: Info };
     }
   };
-
-  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
