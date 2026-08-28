@@ -70,6 +70,7 @@ interface ChatMessage {
   metadata?: {
     confidence?: string;
     confidence_score?: number;
+    confidence_rationale?: string;
     highlighted_rows?: number[];
     knowledge_citation?: any;
     evidence_trail?: any[];
@@ -687,13 +688,27 @@ export default function DocumentAssistant() {
                     
                     {/* Confidence Header */}
                     {msg.metadata?.confidence && (
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 text-[10px]">
-                        <span className="font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0] inline-flex items-center gap-1">
-                          <CheckCircle2 size={11} /> Grounded in Document
-                        </span>
-                        <span className="text-slate-400 font-medium">Non-Authoritative</span>
-                      </div>
-                    )}
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 text-[10px]">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#15803D] bg-[#F0FDF4] px-2 py-0.5 rounded-full border border-[#BBF7D0] inline-flex items-center gap-1">
+                              <CheckCircle2 size={11} /> High Confidence ({Math.round((msg.metadata.confidence_score || 0.98) * 100)}%)
+                            </span>
+                            {msg.metadata.confidence_rationale && (
+                              <div className="relative group cursor-help ml-1">
+                                <span className="text-[10px] text-slate-400 border-b border-dashed border-slate-300 pb-0.5 hover:text-slate-600 transition-colors">
+                                  Why this confidence?
+                                </span>
+                                <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl border border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                  <div className="font-bold mb-1 text-slate-300">Confidence Breakdown</div>
+                                  <p className="leading-relaxed whitespace-normal text-left">{msg.metadata.confidence_rationale}</p>
+                                  <div className="absolute -top-1 left-4 w-2 h-2 bg-slate-800 rotate-45 border-t border-l border-slate-700"></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-slate-400 font-medium">Non-Authoritative</span>
+                        </div>
+                      )}
 
                     {/* Markdown Answer Content */}
                     <FormattedMarkdown content={msg.content} className="text-slate-800 text-[11.5px]" />

@@ -485,7 +485,7 @@ export default function Reconciliation() {
       {/* Scope Selector Ribbon */}
       <div className="bg-white rounded-2xl border border-[#E4E4E7] p-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Scope:</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Find a specific transaction:</span>
           {scopes.map(s => {
             const isFullHistory = s.id === 'full_history';
             const isSelected = selectedScope === s.id;

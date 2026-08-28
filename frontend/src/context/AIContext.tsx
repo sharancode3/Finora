@@ -190,7 +190,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           reasoning_trail: data.reasoning_trail,
           evidence_record_ids: data.evidence_ids,
           suggested_questions: data.suggested_questions,
-          brains_consulted: data.brains_consulted,
+          modules_consulted: data.modules_consulted,
           visual_data: data.visual_data,
           knowledge_citation: data.knowledge_citation,
           debug_page_context: freshContext

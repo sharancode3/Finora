@@ -608,7 +608,9 @@ def classify_and_normalize_query(question: str, context: Dict = None, history: L
         'who is prime minister', 'president of', 'translate this to french', 'tell me a story',
         'write an essay on', 'who won the match', 'horoscope', 'jee mains coaching', 'jee exam syllabus',
         'physics formula', 'chemistry reactions', 'jee coaching', 'iit coaching', 'study tips for jee',
-        'how to pass exam', 'general knowledge', 'capital of'
+        'how to pass exam', 'general knowledge', 'capital of', 'c program', 'fibonacci', 'fibonici',
+        'write code', 'python', 'java ', 'c++', 'javascript', 'html', 'css', 'sql query', 'react',
+        'angular', 'debug this', 'programming', 'code for', 'algorithm', 'how to code'
     ]
     if any(nft in q for nft in non_finance_triggers):
         return {
@@ -687,7 +689,7 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
             "answer": (
                 "Finora integrates **6 core AI, Machine Learning, and Stochastic Engines** across the reconciliation pipeline:\n\n"
                 "1. **Autonomous Read-Only Agent (Fino)**:\n"
-                "   • *Technology*: Context-aware LLM query planner with dynamic function calling over SQLite.\n"
+                "   • *Technology*: Context-aware LLM query planner with multi-step tool orchestration over SQLite.\n"
                 "   • *Role*: Answers plain-language questions with verified evidence trails and self-verifying checks against hallucination.\n\n"
                 "2. **Deterministic 4-Factor Root-Cause Investigator**:\n"
                 "   • *Technology*: Automated sequential audit verifier (contract MDR fee rates, T+2 transit latency, GST/TDS tax calculations, and UTR settlement credits).\n"
@@ -1041,7 +1043,7 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
             "reasoning_trail": [
                 {
                     "step_number": 1,
-                    "brain": "Conversational Brain",
+                    "brain": "Conversational Module",
                     "action": f"Personalized session greeting for {first_name}",
                     "observation": "Active scope: August 2026 (₹2.44L Net Settled, 4 Open Exceptions totaling ₹26.9k, 2 Cleared)"
                 }
@@ -1602,7 +1604,7 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
 
         answer = (
             f"### **Gross-to-Net Payout Reconciliation Analysis**\n\n"
-            f"For the active period (**{start} to {end}**), your bank deposit is lower than gross checkout sales due to **4 distinct, verified deductions** compliant with **Ind AS 115** and RBI Nodal Settlement guidelines:\n\n"
+            f"For the active period (**{start} to {end}**), your bank deposit is lower than gross checkout sales due to **4 distinct, verified deductions** aligned with **Ind AS 115** and RBI Nodal Settlement guidelines:\n\n"
             f"| Step | Component | Amount | Impact Description |\n"
             f"| :--- | :--- | :--- | :--- |\n"
             f"| 1 | **Gross Processed Volume** | **₹{gross:,.2f}** | Total checkout revenue captured from customer cards, UPI, & netbanking |\n"
@@ -2458,12 +2460,96 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
         "verifier_passed": True
     }
 
+
+def compute_dynamic_confidence(result: dict) -> dict:
+    '''
+    Compute an authentic rule-based confidence score based on:
+    - Number of tools used and success rate
+    - Verifier status (first attempt vs fallback)
+    - Sample size (record count)
+    - Period comparison validity
+    '''
+    score = 1.00
+    rationale_parts = []
+    
+    # Analyze tools
+    trail = result.get('reasoning_trail') or result.get('evidence_trail') or []
+    tool_count = len(trail)
+    if tool_count > 0:
+        # Determine success rate: if observation implies empty/failure
+        success_count = sum(1 for step in trail if 'error' not in str(step.get('observation', '')).lower() and 'no data' not in str(step.get('observation', '')).lower() and 'fallback' not in str(step.get('observation', '')).lower())
+        
+        if success_count == tool_count:
+            rationale_parts.append(f"{success_count} of {tool_count} tool queries returned matching data.")
+        elif success_count > 0:
+            score -= 0.10
+            rationale_parts.append(f"{success_count} of {tool_count} tool queries returned partial data.")
+        else:
+            score -= 0.20
+            rationale_parts.append(f"0 of {tool_count} tool queries returned valid data.")
+    else:
+        # Static reports
+        score -= 0.05
+        rationale_parts.append("Derived from static ledger snapshot (no active tools).")
+        
+    # Analyze verifier status
+    if result.get('is_fallback'):
+        score -= 0.30
+        rationale_parts.append("Fallback to insufficient-information response.")
+    elif result.get('verifier_passed') is False:
+        score -= 0.08
+        rationale_parts.append("Verifier required regeneration to tie out numbers.")
+    else:
+        rationale_parts.append("Verifier passed on first attempt.")
+        
+    # Analyze sample size
+    records = result.get('evidence_data', [])
+    record_count = len(records) if isinstance(records, list) else 0
+    ans_text = str(result.get('answer', '')).lower()
+    
+    # Try to parse counts if evidence_data is missing
+    import re
+    if record_count == 0:
+        m = re.search(r'([0-9]+)\s+(transaction|record|item)s?', ans_text)
+        if m:
+            record_count = int(m.group(1))
+            
+    if record_count > 0 and record_count < 30:
+        score -= 0.12
+        rationale_parts.append(f"Small sample size ({record_count} records) — treat with caution.")
+    elif record_count >= 30:
+        rationale_parts.append(f"Robust {record_count}-record sample.")
+        
+    # Period comparison check
+    if 'vs' in ans_text or 'prior period' in ans_text or 'previous' in ans_text:
+        if 'initial reconciliation' in ans_text or 'baseline active' in ans_text:
+            score -= 0.15
+            rationale_parts.append("No genuine prior period data existed for comparison.")
+        else:
+            rationale_parts.append("Genuine prior-period baseline applied.")
+            
+    # Clamp score
+    score = max(0.35, min(0.99, score))
+    
+    if score >= 0.90:
+        tier = "HIGH"
+    elif score >= 0.70:
+        tier = "MEDIUM"
+    else:
+        tier = "LOW"
+        
+    result['confidence'] = tier
+    result['confidence_score'] = round(score, 2)
+    result['confidence_rationale'] = " ".join(rationale_parts)
+    
+    return result
+
 def ask_finora_agent(question: str, context: Dict) -> Dict:
     """Entry point for the AI Assistant with authentic reasoning and deliberate agentic execution."""
     import time
     start_time = time.time()
     
-    # 1. Deliberate cognitive execution (multi-brain tool resolution)
+    # 1. Deliberate cognitive execution (multi-step tool orchestration)
     result = orchestrate_agent_workflow(question, context)
     
     # If not already executed via on-device LLM (which takes ~15-25s), add deliberate agent pacing (1.15s)
@@ -2479,19 +2565,19 @@ def ask_finora_agent(question: str, context: Dict) -> Dict:
     trail = result.get("reasoning_trail") or result.get("evidence_trail") or []
     tools_used = [step.get("tool", "") for step in trail]
     
-    brains = ["Conversational Brain"]
+    brains = ["Conversational Module"]
     recon_tools = {"get_transactions", "get_match_rate", "get_exceptions_summary", "get_exception_intelligence_data", "get_cross_account_flow", "get_exception_detail", "sqlite_settlements_query", "variance_calculator"}
     forecast_tools = {"get_cash_position", "get_statistical_anomalies", "monte_carlo_simulator", "cash_scenario_simulation", "get_period_comparison"}
     compliance_tools = {"lookup_finance_term", "get_checklist_item_assistance", "draft_month_end_closing_memo", "evaluate_sod_conflict", "get_notification_rule_explanation", "benford_forensic_verifier"}
 
     if any(t in recon_tools for t in tools_used) or "match" in question.lower() or "exception" in question.lower():
-        brains.append("Reconciliation Brain")
+        brains.append("Reconciliation Module")
     if any(t in forecast_tools for t in tools_used) or "cash" in question.lower() or "float" in question.lower() or "forecast" in question.lower():
-        brains.append("Forecast Brain")
+        brains.append("Forecast Module")
     if any(t in compliance_tools for t in tools_used) or "tax" in question.lower() or "gst" in question.lower() or "rule" in question.lower() or "memo" in question.lower():
-        brains.append("Compliance Brain")
+        brains.append("Compliance Module")
 
-    result["brains_consulted"] = brains
+    result["modules_consulted"] = brains
 
     # Construct authentic thought process trace for transparent agentic reasoning
     page_name = context.get('page_name') or context.get('screen') or 'General Ledger'
@@ -2579,6 +2665,7 @@ def ask_finora_agent(question: str, context: Dict) -> Dict:
     except Exception:
         pass
 
+    result = compute_dynamic_confidence(result)
     return result
 
 def generate_month_end_summary(target_month: str) -> Dict:
@@ -2662,4 +2749,4 @@ def generate_month_end_summary(target_month: str) -> Dict:
     metrics['evidence_trail'] = evidence_trail
     metrics['reasoning_trail'] = evidence_trail
     metrics['verifier_passed'] = True
-    return metrics
+    return compute_dynamic_confidence(metrics)

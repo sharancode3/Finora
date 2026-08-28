@@ -431,7 +431,7 @@ export default function Exceptions() {
       )}
 
       {/* Systemic Pattern Clustering Alert */}
-      {patternClusters.length > 0 && activeFilter === 'Open' && (
+      {activeFilter === 'Open' && (
         <div className="bg-white text-slate-900 rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -441,7 +441,7 @@ export default function Exceptions() {
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Systemic Root-Cause Intelligence</h3>
                 <p className="text-sm font-bold text-slate-900 mt-0.5">
-                  {patternClusters.length} Systemic Exception {patternClusters.length === 1 ? 'Cluster' : 'Clusters'} Detected • Click any card for Root-Cause Analysis
+                  {patternClusters.length} Systemic Exception {patternClusters.length === 1 ? 'Cluster' : 'Clusters'} Detected {patternClusters.length > 0 && '• Click any card for Root-Cause Analysis'}
                 </p>
               </div>
             </div>
@@ -456,7 +456,17 @@ export default function Exceptions() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div className="pt-1">
+            {patternClusters.length === 0 ? (
+              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-slate-400 mb-3">
+                    <CheckCircle size={18} />
+                  </div>
+                <span className="text-sm font-bold text-slate-900 block mb-1">No Systemic Patterns Found</span>
+                <span className="text-xs text-slate-500">No systemic patterns found — all open exceptions are isolated anomalies.</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
             {patternClusters.map((cl, i) => {
               const isSelected = selectedClusterReason === cl.reason;
               return (
@@ -490,7 +500,9 @@ export default function Exceptions() {
               );
             })}
           </div>
-
+            )}
+          </div>
+          
           {/* AI Cluster Common-Thread Explanation Drawer */}
           {selectedClusterKey && clusterWhyData[selectedClusterKey] && (
             <AIInsightCard
@@ -986,7 +998,7 @@ export default function Exceptions() {
                                 </div>
 
                                 <span className="text-xs text-slate-500">
-                                  Ind AS compliant audit trail entry will be generated
+                                  Ind AS-aligned audit trail entry will be generated
                                 </span>
                               </div>
 

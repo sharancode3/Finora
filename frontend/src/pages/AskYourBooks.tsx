@@ -110,7 +110,7 @@ export default function AskYourBooks() {
       route: '/ask-your-books',
       visible_metrics: {
         interface_mode: 'interactive_chat',
-        connected_capabilities: 'gemma3_local_inference,zero_hallucination_verifier,multi_brain_architecture'
+        connected_capabilities: 'gemma3_local_inference,zero_hallucination_verifier,multi_step_orchestration'
       },
       suggested_inquiries: [
         "What is our statutory value match rate for August 2026?",
@@ -163,7 +163,7 @@ export default function AskYourBooks() {
             <FinoraMark size={32} />
             <div>
               <h2 className="font-bold text-sm text-slate-900 leading-tight">Ask Fino</h2>
-              <p className="text-[11px] text-slate-500">Multi-Brain Internal Routing • Grounded Local Ollama Execution</p>
+              <p className="text-[11px] text-slate-500">Multi-Step Tool Orchestration • Grounded Local Ollama Execution</p>
             </div>
           </div>
           
@@ -296,9 +296,16 @@ export default function AskYourBooks() {
                             </div>
                             
                             {meta.confidence_rationale && (
-                              <span className="text-[10px] text-slate-400 truncate max-w-xs" title={meta.confidence_rationale}>
-                                {meta.confidence_rationale}
-                              </span>
+                              <div className="relative group cursor-help ml-2">
+                                <span className="text-[10px] text-slate-400 border-b border-dashed border-slate-300 pb-0.5 hover:text-slate-600 transition-colors">
+                                  Why this confidence?
+                                </span>
+                                <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl border border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                  <div className="font-bold mb-1 text-slate-300">Confidence Breakdown</div>
+                                  <p className="leading-relaxed whitespace-normal text-left">{meta.confidence_rationale}</p>
+                                  <div className="absolute -top-1 right-8 w-2 h-2 bg-slate-800 rotate-45 border-t border-l border-slate-700"></div>
+                                </div>
+                              </div>
                             )}
                           </div>
                         )}
@@ -472,11 +479,11 @@ export default function AskYourBooks() {
                               <span className="text-[#15803D] font-bold">Grounded Execution</span>
                             </div>
 
-                            {/* Specialist Brains Consulted Pill Row */}
-                            {meta.brains_consulted && meta.brains_consulted.length > 0 && (
+                            {/* Specialist Modules Consulted Pill Row */}
+                            {meta.modules_consulted && meta.modules_consulted.length > 0 && (
                               <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase">Consulted:</span>
-                                {meta.brains_consulted.map((brain: string, bIdx: number) => (
+                                {meta.modules_consulted.map((brain: string, bIdx: number) => (
                                   <span key={bIdx} className="text-[10px] font-semibold bg-white text-slate-800 border border-slate-200 px-2 py-0.5 rounded-full shadow-2xs">
                                     🧠 {brain}
                                   </span>
@@ -574,7 +581,7 @@ export default function AskYourBooks() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Orchestrator:</span>
-              <span className="font-semibold text-[#1E293B]">Multi-Step Function Calling</span>
+              <span className="font-semibold text-[#1E293B]">Multi-Step Tool Orchestration</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Knowledge Base:</span>

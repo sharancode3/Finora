@@ -1109,18 +1109,7 @@ export default function Dashboard() {
                               </span>
                             )}
                           </button>
-                          {hasTxs && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                askAI(`What happened on ${day.date} — walk me through that day's ${pluralize(day.count, 'transaction', 'transactions')} and settlement status.`);
-                              }}
-                              title={`Ask Fino: What happened on ${day.date}?`}
-                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-[#1E293B] text-white dark:bg-[#E2E8F0] dark:text-[#0B0F17] text-[7.5px] font-mono font-bold items-center justify-center opacity-0 group-hover/day:opacity-100 transition-opacity shadow-2xs z-10 hidden sm:flex cursor-pointer hover:scale-110"
-                            >
-                              F
-                            </button>
-                          )}
+                          
                         </div>
                       );
                     })}

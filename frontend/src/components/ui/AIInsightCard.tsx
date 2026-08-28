@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ShieldCheck, Database, CheckCircle2 } from 'lucide-react';
 import { pluralize } from '../../utils/formatters';
 import { FinoraMark } from './FinoraMark';
+import { FormattedMarkdown } from './FormattedMarkdown';
 
 export interface EvidenceStep {
   step_number?: number;
@@ -19,6 +20,7 @@ export interface AIInsightCardProps {
   narration: string;
   confidence?: 'HIGH' | 'MEDIUM' | 'LOW' | string;
   confidenceScore?: number;
+  confidenceRationale?: string;
   evidenceTrail?: EvidenceStep[];
   recommendedAction?: string;
   metrics?: Array<{
@@ -42,6 +44,7 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
   narration,
   confidence = "HIGH",
   confidenceScore = 0.98,
+    confidenceRationale,
   evidenceTrail = [],
   recommendedAction,
   metrics = [],
@@ -79,9 +82,18 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-sm text-slate-900 tracking-tight">{title}</h3>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getConfidenceBadgeColor()}`}>
-                {formatConfidence()}
-              </span>
+              <div className="relative group">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border cursor-help flex items-center gap-1 ${getConfidenceBadgeColor()}`}>
+                  {formatConfidence()}
+                </span>
+                {confidenceRationale && (
+                  <div className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-full mt-2 w-64 p-3 bg-slate-800 text-white text-xs rounded-xl shadow-xl border border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <div className="font-bold mb-1 text-slate-300">Why this confidence?</div>
+                    <p className="leading-relaxed">{confidenceRationale}</p>
+                    <div className="absolute -top-1 left-4 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 border-t border-l border-slate-700"></div>
+                  </div>
+                )}
+              </div>
             </div>
             {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
           </div>
@@ -98,9 +110,9 @@ export const AIInsightCard: React.FC<AIInsightCardProps> = ({
       <div className="p-5 space-y-4">
         
         {/* Grounded AI Narration Box */}
-        <p className="text-sm leading-relaxed text-slate-800 font-medium whitespace-pre-line p-4 bg-slate-50 rounded-xl border border-[#E4E4E7]">
-          {narration}
-        </p>
+        <div className="p-4 bg-slate-50 rounded-xl border border-[#E4E4E7]">
+          <FormattedMarkdown content={narration} className="text-slate-800 text-sm font-medium" />
+        </div>
 
         {/* Optional Headline Metric Pills */}
         {metrics.length > 0 && (

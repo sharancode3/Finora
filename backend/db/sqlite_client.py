@@ -1644,7 +1644,7 @@ def get_exception_intelligence(start_date: str = "2026-03-01", end_date: str = "
     # 3. Pattern Clustering Detection
     pattern_clusters = []
     for reason, items in clusters_by_reason.items():
-        if len(items) >= 1:
+        if len(items) >= 2:
             total_cluster_amount = sum(it['amount'] for it in items)
             item_cnt = len(items)
             tx_word = "transaction" if item_cnt == 1 else "transactions"
@@ -3627,7 +3627,7 @@ def get_proactive_anomaly_nudges(start_date: str = "2026-08-01", end_date: str =
             "suggested_question": f"Explain why Benford's Law indicates an elevated MAD of {mad_val:.4f} and show which digit clusters deviate."
         }
 
-    return [
+    nudges = [
         benford_nudge,
         {
             "id": "nudge-fee-outlier",
@@ -3774,3 +3774,26 @@ init_db()
 
 
 
+
+
+def dismiss_nudge(nudge_id: str) -> Dict[str, Any]:
+    _run_query('''
+        CREATE TABLE IF NOT EXISTS nudge_state (
+            nudge_id TEXT PRIMARY KEY,
+            status TEXT NOT NULL
+        )
+    ''')
+    _run_query('INSERT OR REPLACE INTO nudge_state (nudge_id, status) VALUES (?, ?)', (nudge_id, 'reviewed'))
+    
+    # Write entry to existing audit log
+    record_audit_log(
+        user="Sharan, Finance Controller",
+        trigger_type="Human Controller Manual Action",
+        action="Dismissed Proactive Signal",
+        target=nudge_id,
+        previous_value="Status: Live",
+        new_value="Status: Reviewed",
+        notes="Controller acknowledged and dismissed signal without resolving."
+    )
+    
+    return {"status": "success"}

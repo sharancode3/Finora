@@ -237,12 +237,12 @@ export default function AppInfoGuide() {
                     <Brain size={18} />
                   </div>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-[#1E293B] border border-slate-200 font-mono">
-                    LLM Function Calling
+                    Multi-Step Tool Orchestration
                   </span>
                 </div>
                 <h4 className="font-bold text-sm text-slate-900">1. Autonomous Ledger Copilot (Fino)</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Natural language question-answering powered by dynamic function calling over read-only SQLite ledger tables with route-aware page context and automated hallucination verification.
+                  Natural language question-answering powered by multi-step tool orchestration over read-only SQLite ledger tables with route-aware page context and automated hallucination verification.
                 </p>
               </div>
               <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
@@ -471,7 +471,7 @@ export default function AppInfoGuide() {
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />
-                <span><strong>Ind AS &amp; Statutory Audit Compliance:</strong> Generate certified month-end closing memos and freeze accounting periods with cryptographic logs.</span>
+                <span><strong>Ind AS–Aligned &amp; Statutory Audit Compliant:</strong> Generate certified month-end closing memos and freeze accounting periods with cryptographic logs.</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={15} className="text-[#15803D] shrink-0 mt-0.5" />

@@ -12,12 +12,29 @@ export interface AnomalyNudge {
   metric: string;
   suggested_action: string;
   suggested_question: string;
+  status?: 'live' | 'reviewed';
 }
 
 export const ProactiveAnomalyNudges: React.FC = () => {
   const [nudges, setNudges] = useState<AnomalyNudge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState<'live' | 'reviewed'>('live');
+
+  const handleDismiss = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/analytics/proactive-nudges/${id}/dismiss`);
+      setNudges(prev => prev.map(n => n.id === id ? { ...n, status: 'reviewed' } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const liveNudges = nudges.filter(n => n.status !== 'reviewed');
+  const reviewedNudges = nudges.filter(n => n.status === 'reviewed');
+  const displayNudges = activeTab === 'live' ? liveNudges : reviewedNudges;
+
   const { askAboutElement } = useAI();
 
   useEffect(() => {
@@ -84,7 +101,7 @@ export const ProactiveAnomalyNudges: React.FC = () => {
       {/* Grid of Proactive Signal Cards */}
       {isExpanded && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {nudges.map((nudge) => {
+          {displayNudges.map((nudge) => {
             const badge = getSeverityBadge(nudge.severity);
             const IconComponent = badge.icon;
 

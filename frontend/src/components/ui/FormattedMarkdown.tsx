@@ -255,17 +255,21 @@ export const FormattedMarkdown: React.FC<FormattedMarkdownProps> = ({
         const key = itemText.slice(0, colonIdx).trim();
         const val = itemText.slice(colonIdx + 1).trim();
 
+        // Strip ** from key since the span is already bold, and strip ** from val for clean pills
+        const cleanKey = key.replace(/\*\*/g, '');
+        const cleanVal = val.replace(/\*\*/g, '').replace(/^"|"$/g, '');
+
         blocks.push(
           <div key={`kv-${i}`} className="flex items-center gap-2 py-0.5 pl-2 text-xs flex-wrap">
             <span className={`font-bold ${isUser ? 'text-slate-300' : 'text-slate-600'}`}>
-              {key}:
+              {cleanKey}:
             </span>
             <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold border ${
               isUser 
                 ? 'bg-slate-800 text-white border-slate-700' 
                 : 'bg-slate-100 text-slate-800 border-slate-200'
             }`}>
-              {val.replace(/^"|"$/g, '')}
+              {cleanVal}
             </span>
           </div>
         );

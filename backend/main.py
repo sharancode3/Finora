@@ -182,6 +182,15 @@ def api_get_proactive_nudges(start_date: str = "2026-08-01", end_date: str = "20
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@analytics_router.post("/proactive-nudges/{nudge_id}/dismiss")
+def api_dismiss_nudge(nudge_id: str):
+    try:
+        from backend.db.sqlite_client import dismiss_nudge
+        return dismiss_nudge(nudge_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @analytics_router.get("/ai-accuracy-telemetry")
 def api_get_ai_accuracy_telemetry():
     try:

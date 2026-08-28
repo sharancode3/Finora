@@ -250,6 +250,12 @@ export default function RecordDetail() {
   const isResolved = record.status === 'resolved';
   const isEscalated = record.status === 'escalated';
 
+  // Computed expected exact values
+  const baseGross = tx?.gross_amount || ud?.gateway_gross || record.gross_amount || record.amount || 0;
+  const expectedMdr = Math.round((baseGross * 0.02) * 100) / 100;
+  const expectedGst = Math.round((expectedMdr * 0.18) * 100) / 100;
+  const expectedNet = Math.round((baseGross - expectedMdr - expectedGst) * 100) / 100;
+
   return (
     <div className="space-y-6 pb-20 max-w-6xl mx-auto">
       
@@ -464,7 +470,7 @@ export default function RecordDetail() {
                 <div className="flex justify-between items-baseline mt-2">
                   <span className="text-xs text-slate-500">Expected Net (Post 2%+GST):</span>
                   <span className="font-mono font-bold text-base text-slate-900">
-                    <AmountDisplay amount={ud.calculated_net || (tx?.gross_amount ? tx.gross_amount * 0.976 : 0)} />
+                    <AmountDisplay amount={expectedNet} />
                   </span>
                 </div>
                 {ud.actual_fee && (
@@ -613,8 +619,8 @@ export default function RecordDetail() {
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Gross Transaction Value</span>
                 <span className="font-mono font-bold text-slate-900">
-                  <AskableMetric question={`Explain gross customer payment value of ₹${(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')} on record ${id}.`}>
-                    ₹{(tx?.gross_amount || record.amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Explain gross customer payment value of ₹${baseGross.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} on record ${id}.`}>
+                    ₹{baseGross.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   </AskableMetric>
                 </span>
               </div>
@@ -622,8 +628,8 @@ export default function RecordDetail() {
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Contractual MDR Fee</span>
                 <span className="font-mono font-semibold text-slate-800">
-                  <AskableMetric question={`Verify MDR fee rate and ₹${(tx?.fee_amount || 0).toLocaleString('en-IN')} deduction on record ${id}.`}>
-                    ₹{(tx?.fee_amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Verify contractual 2.0% MDR fee of ₹${expectedMdr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} on record ${id}.`}>
+                    ₹{expectedMdr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   </AskableMetric>
                 </span>
               </div>
@@ -631,8 +637,8 @@ export default function RecordDetail() {
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">GST on Fee (18%)</span>
                 <span className="font-mono font-semibold text-slate-800">
-                  <AskableMetric question={`Verify 18% GST tax rate of ₹${(tx?.tax_amount || 0).toLocaleString('en-IN')} on gateway fees for record ${id}.`}>
-                    ₹{(tx?.tax_amount || 0).toLocaleString('en-IN')}
+                  <AskableMetric question={`Verify 18% GST tax (₹${expectedGst.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}) on gateway fees for record ${id}.`}>
+                    ₹{expectedGst.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   </AskableMetric>
                 </span>
               </div>
@@ -640,8 +646,8 @@ export default function RecordDetail() {
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-medium">Calculated Net Bank Deposit</span>
                 <span className="font-mono font-bold text-[#15803D]">
-                  <AskableMetric question={`Trace net settled bank credit of ₹${(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')} for record ${id}.`}>
-                    ₹{(tx?.net_amount || (record.amount ? record.amount - (tx?.fee_amount || 0) : 0)).toLocaleString('en-IN')}
+                  <AskableMetric question={`Trace contractual net expected bank credit of ₹${expectedNet.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} for record ${id}.`}>
+                    ₹{expectedNet.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                   </AskableMetric>
                 </span>
               </div>

@@ -1,8 +1,51 @@
 # Project Memory: Finora
 
-## Current Phase
-- Round 3: Consolidation, Bug Fixes & Agentic Upgrade — ALL 14 PHASES COMPLETE & FULLY VERIFIED (Production-Ready)
+## Current Phase: Round 7 Phase 9 � Final Pass (Complete)
 
+## Round 7 Final Verifications
+- 'Ind AS-Aligned' terminology verified app-wide (no 'Compliant' claims).
+- Raw markdown asterisks removed from all AI texts (consolidated FormattedMarkdown component).
+- Exceptions systemic clustering strictly demands >= 2 items.
+- Exception Detail exactly computes Gross - 2% MDR - 18% GST.
+- Confidence scoring dynamically generated via compute_dynamic_confidence().
+- 'Multi-Step Tool Orchestration' enforced over 'Multi-Brain' / 'LLM Function Calling'.
+
+## 5-Minute Rehearsal Path & Cut Strategy
+**Protected Moments:**
+1. Landing Page Scroll-in & Visual Reconciliation Bridge
+2. Dashboard Pass (Fino Noticed Today review state)
+3. Exceptions Investigation (AI Recommended Priority explainability)
+4. Reconciliation Bridge (exact mathematical tie-out)
+5. Ask Fino (Show dynamic 'why this confidence' rationale)
+
+**Cut Strategy:** If running long (>3 minutes after Exceptions), cut the Document Assistant generation, cut Month-End Close export, and cut Tax-Line Matcher completely to preserve time for the final Ask Fino and Reconciliation Bridge.
+
+## Noticed Today Review State
+- Added a 
+eviewed status and dismiss action for Fino Noticed Today anomaly signals.
+- Created a backend POST /analytics/proactive-nudges/{id}/dismiss route that saves state in a new 
+udge_state SQLite table and writes an entry into the existing udit_logs table (matching the existing closed-loop action patterns).
+- Updated ProactiveAnomalyNudges.tsx UI to group signals into 'Live' and 'Reviewed' tabs, complete with real-time UI transitions and optimistic local state updates.
+
+## Clarity Updates
+- Calendar Hover Badge Removed: Deleted the absolute positioned 'F' badge from the Dashboard Transaction Calendar heatmap cells to prevent it from being misinterpreted as an unexplained anomaly marker.
+- Reconciliation Ribbon Label: Changed the bare "Scope:" label above the search/filter inputs to "Find a specific transaction:" to accurately describe the UI's purpose.
+
+## Terminology Standards
+- Canonical Phrase for AI Tool Calling: "Multi-Step Tool Orchestration"
+  - Replaces forbidden variants: "Multi-Brain Internal Routing", "Multi-Step Function Calling", "LLM Function Calling", "dynamic function calling", and all "Brain" suffixes (Reconciliation Brain, Forecast Brain, etc.).
+
+## AI Confidence Scoring Rule Set
+- Base Score: 1.00 (High)
+- Tools Failed/Missing: -0.10 for partial, -0.20 for all failed
+- No Tools Used: -0.05
+- Verifier Fallback: -0.30
+- Verifier Required Regen: -0.08
+- Small Sample (<30 records): -0.12
+- Period Comparison w/o Prior Data: -0.15
+- Clamped to bounds: [0.35, 0.99]
+- Tiers: HIGH (>=0.90), MEDIUM (>=0.70), LOW (<0.70)
+- Round 3: Consolidation, Bug Fixes & Agentic Upgrade — ALL 14 PHASES COMPLETE & FULLY VERIFIED (Production-Ready)
 ## Decisions Log
 - [2026-08-24] Decision (Round 3 — Phase 13: Navigation Reorganization Complete & Verified):
   1. Grouped Sidebar Navigation: Restructured flat 7-item navigation into 3 clearly categorized sections in [`MainLayout.tsx`](file:///c:/SHARAN%20PROJECTS/Finora/frontend/src/layouts/MainLayout.tsx) with small uppercase group headers:
@@ -79,7 +122,6 @@
      - Connected Step 2 in Month-End Close (`MonthEndClose.tsx`) to open the runner modal with target month pre-selected.
      - Automatically writes immutable entries to `audit_logs` table upon each run execution.
   5. Verification: `verify_phase8_recon_run.py` passed 100% (Scopes, August 2026 Run, Full History 334-record Run, Audit Log verification); `npm run build` compiled in 1.03s (0 errors); `eval/eval_qa.py` passed 33/33 (100% accuracy, 100% verifier); `verify_phase1_fixes.py` passed 6/6; `verify_phase6_closed_loop.py` passed 100%; `verify_phase7_dashboard_hierarchy.py` passed 100%.
-
   1. Primary Controller Focal Point: Today's AI Controller Briefing remains at the very top as a full-width hero element, providing immediate 24-hour grounded narrative, key settled metrics, and Evidence Trail.
   2. Level 2 Core Numbers: The 4 KPI cards (Total Processed, Settled Net Amount, Exceptions Volume, Value Match Rate) sit directly below the briefing with previous-to-new animated counters and interactive "Why?" mathematical breakdown drawers.
   3. Level 3 Daily Operational Core: Grouped the daily essentials side-by-side:
@@ -250,14 +292,12 @@
     },
     "visible_metrics": {
       "metric_key": "number | string"
-    },
     "selected_record_id": "string | undefined",
     "suggested_inquiries": ["string", "string", "string"],
     "extra_hints": "string | undefined"
   }
   ```
   Strict Guardrails Enforced: Zero mutating tools exposed to AI. Immutability guaranteed — all mutation/reconciliation actions remain human-initiated via UI action drawers.
-
 ## File Map
 - `backend/main.py`: FastAPI server entry point and endpoint definitions.
 - `backend/db/sqlite_client.py`: SQLite ACID database abstraction, deterministic matching analytics, and exception scoring.
@@ -270,6 +310,7 @@
 - `frontend/src/context/AIContext.tsx`: React Context for global AI copilot state.
 - `frontend/src/layouts/MainLayout.tsx`: Locked stationary sidebar and modern top bar layout.
 - `frontend/src/pages/`:
+  - `components/ui/FormattedMarkdown.tsx`: Single shared markdown rendering component for all AI chat and insight surfaces.
   - `LandingPage.tsx`: Product overview and 3-way reconciliation architecture.
   - `Dashboard.tsx`: Executive command center with PoP delta %, predictive risk, and Benford forensics.
   - `Exceptions.tsx`: Exceptions queue with 100-pt composite risk scoring and systemic cluster cards.
@@ -279,16 +320,13 @@
   - `RecordDetail.tsx`: 3-way reconciliation deep-dive drawer.
   - `AskYourBooks.tsx`: Grounded conversational AI with inspectable reasoning trails.
   - `Settings.tsx`: Internal controls, segregation of duties, and granular notification triggers.
-
 ## Known Constraints
 - Matching, scoring, confidence calculation, and all arithmetic on money are done in deterministic Python code — never by the LLM.
 - The AI (Gemma 3 4B) only explains, summarizes, answers questions, and triggers navigation — always grounded in tool-call results, always checked by the verifier before display.
 - Every number shown in the UI must have a 'Why?' breakdown traceable to source records.
-
 ## Known Stubs / TODOs
 - **Connectors**: Live Bank Account Aggregator (AA) and UPI direct integrations are illustrative mock configurations; live data ingestion operates via CSV and simulated gateway feeds.
 - **Team Governance Data**: Team profiles (Sarah Jenkins CPA, Statutory Audit Partner) in Settings are clearly labeled illustrative demo seed profiles. The "Invite Member" modal updates in-memory UI state for demonstration.
 - **Local AI Inference**: AI query endpoints run against local Ollama Gemma 3 instance with zero-hallucination tool calling.
-
 ## Next Steps
 - Await instructions for Phase 1.
