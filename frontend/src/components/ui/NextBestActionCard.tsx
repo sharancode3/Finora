@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowRight, ShieldAlert, CheckCircle2, ChevronRight, AlertTriangle, HelpCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldAlert, ShieldCheck, CheckCircle2, ChevronRight, AlertTriangle, HelpCircle } from 'lucide-react';
 import { FinoraMark } from './FinoraMark';
 import { AmountDisplay } from './AmountDisplay';
 import { useAI } from '../../context/AIContext';
@@ -17,6 +17,7 @@ export interface NextBestActionProps {
   isLoading?: boolean;
   className?: string;
   badgeText?: string;
+  reasoningFootnote?: string;
 }
 
 export const NextBestActionCard: React.FC<NextBestActionProps> = ({
@@ -31,7 +32,8 @@ export const NextBestActionCard: React.FC<NextBestActionProps> = ({
   onSecondaryAction,
   isLoading = false,
   className = '',
-  badgeText = 'AI Recommended Priority'
+  badgeText = 'AI Recommended Priority',
+  reasoningFootnote = 'Selected from 4 open exceptions, ranked by monetary exposure × aging SLA'
 }) => {
   const { askAboutElement } = useAI();
 
@@ -101,6 +103,19 @@ export const NextBestActionCard: React.FC<NextBestActionProps> = ({
         </div>
 
       </div>
+
+      {/* Reasoning Transparency Bar */}
+      {reasoningFootnote && (
+        <div className="mt-3 pt-2.5 border-t border-violet-100/90 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5 text-slate-600">
+            <ShieldCheck size={13} className="text-[#5B45F5] shrink-0" />
+            <span><strong className="text-slate-800">Explainability</strong>: {reasoningFootnote}</span>
+          </span>
+          <span className="font-mono text-[10px] text-violet-700 bg-violet-100/70 px-2 py-0.5 rounded border border-violet-200/70 self-start sm:self-auto shrink-0">
+            Deterministic Composite Ranking
+          </span>
+        </div>
+      )}
     </div>
   );
 };

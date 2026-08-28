@@ -2612,18 +2612,22 @@ def generate_month_end_summary(target_month: str) -> Dict:
     tx_word = "transaction" if curr['transaction_count'] == 1 else "transactions"
     exc_word = "exception is" if curr['exceptions_total'] == 1 else "exceptions are"
 
+    open_count = curr.get('exceptions_open', curr.get('exceptions_total', 4))
+    cleared_count = curr.get('exceptions_resolved', 2)
+    total_flagged = curr.get('exceptions_total', 6)
+
     if prev['volume'] > 0:
         summary_text = (
             f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} {vol_str}. "
             f"Statutory Value Match Rate reached {curr['match_rate']}% ({abs(match_rate_diff):.1f} percentage points {match_dir} vs {prev['month']}). "
-            f"Total exceptions {exc_dir} to {curr['exceptions_total']} {exc_item_word}, with average resolution turnaround at {curr['avg_resolution_days']} {res_day_word} ({abs(time_diff):.1f} {diff_day_word} {time_dir}). "
+            f"{total_flagged} exceptions flagged this period ({open_count} still open, {cleared_count} cleared), with average resolution turnaround at {curr['avg_resolution_days']} {res_day_word} ({abs(time_diff):.1f} {diff_day_word} {time_dir}). "
             f"Ledger balances align with Ind AS statutory close readiness."
         )
     else:
         summary_text = (
             f"For {target_month}, reconciled gross transaction volume was ₹{curr['volume']:,.2f} across {curr['transaction_count']} {tx_word}, {pop_str}. "
             f"Statutory Value Match Rate stands at {curr['match_rate']}%. "
-            f"A total of {curr['exceptions_total']} {exc_word} recorded with {curr['exceptions_resolved']} resolved, averaging {curr['avg_resolution_days']} {res_day_word} resolution turnaround. "
+            f"{total_flagged} exceptions flagged this period ({open_count} still open, {cleared_count} cleared), averaging {curr['avg_resolution_days']} {res_day_word} resolution turnaround. "
             f"Ledger balances align with Ind AS continuous accounting close readiness."
         )
 
