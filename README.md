@@ -71,10 +71,10 @@ Finora does **NOT** treat AI as a generic chat novelty. Every AI component is gr
 | Domain / Page | AI Controller Capability | Underlying Engine / Tool | Deterministic Math Guarantee | User & Controller Impact |
 | :--- | :--- | :--- | :--- | :--- |
 | **Control Center (Overview)** | **Daily AI Controller Briefing & Proactive Anomaly Nudges** | `get_period_financials`, `get_anomaly_signals` | Zero Mental Math: Numbers computed by SQLite DAL | Instantly summarizes gross volume, settled cash, match rates, and active friction without manual reporting. |
-| **AI Controller (Ask Fino)** | **Autonomous Natural Language Financial Controller** | On-device Neural SLM via local Ollama engine + 10 DAL tools | Intent Classification $	o$ Tool Execution $	o$ Grounded Synthesis | Answers complex controller inquiries (*"What should I fix first?"*, *"Why do match rates differ?"*, *"Why was I paid less?"*) with zero hallucination. |
-| **Exceptions & Risk** | **AI Next Best Action & Materiality Ranking** | `get_top_open_exception` ($	ext{Amount} 	imes 	ext{Transit Aging} 	imes 	ext{Risk}$) | Exact rupee exposure computed from ledger | Recommends 1-click escalation for the highest-exposure exception, routing partner audits automatically. |
-| **Record Investigation** | **4-Factor Deterministic Root-Cause Audit** | `run_ai_exception_investigation` (Refund, MDR Fee Variance, Duplicate UTR, Unlinked Credit) | Exact delta arithmetic ($	ext{Initial Variance} - 	ext{Explained} = 	ext{Unexplained}$) | Proves exactly how much of a discrepancy is explained vs unexplained before human approval. |
-| **3-Way Audit Evidence** | **3-Node Visual Traceability Graph** | `get_transaction_evidence` | Linked directly to Order ID, Gateway ID, and Bank UTR | Visualizes the financial lineage across Internal Order $	o$ Razorpay Gateway $	o$ Bank Statement. |
+| **AI Controller (Ask Fino)** | **Autonomous Natural Language Financial Controller** | On-device Neural SLM via local Ollama engine + 10 DAL tools | Intent Classification → Tool Execution → Grounded Synthesis | Answers complex controller inquiries (*"What should I fix first?"*, *"Why do match rates differ?"*, *"Why was I paid less?"*) with zero hallucination. |
+| **Exceptions & Risk** | **AI Next Best Action & Materiality Ranking** | `get_top_open_exception` ($\text{Amount} \times \text{Transit Aging} \times \text{Risk}$) | Exact rupee exposure computed from ledger | Recommends 1-click escalation for the highest-exposure exception, routing partner audits automatically. |
+| **Record Investigation** | **4-Factor Deterministic Root-Cause Audit** | `run_ai_exception_investigation` (Refund, MDR Fee Variance, Duplicate UTR, Unlinked Credit) | Exact delta arithmetic ($\text{Initial Variance} - \text{Explained} = \text{Unexplained}$) | Proves exactly how much of a discrepancy is explained vs unexplained before human approval. |
+| **3-Way Audit Evidence** | **3-Node Visual Traceability Graph** | `get_transaction_evidence` | Linked directly to Order ID, Gateway ID, and Bank UTR | Visualizes the financial lineage across Internal Order → Razorpay Gateway → Bank Statement. |
 | **Treasury & Cash** | **AI Treasury Interpretation & What-If Stress Scenarios** | 1,000-Trial **Monte Carlo** Stochastic Engine | NumPy Normal Simulation with $T+2$ delay distributions | Explains forecast fan charts (P10/P50/P90) and simulates settlement delay stress (-₹53.1k drop) on demand. |
 | **Month-End Close** | **1-Click Statutory AI Closing Memo Generation** | `draft_month_end_closing_memo` | Verified period numbers directly injected into memo template | Formats a formal CFO & Audit Committee memo compliant with Ind AS 1 / ICAI standards in 1 click. |
 | **Tax-Line Matcher** | **GSTR-2B Divergence & Rule 36(4) Risk Explainer** | `tax_matcher/engine.py` (3-stage tax reconciler) | Strict statutory tax computation (18% GST + TDS Sec 194O) | Surfaces blocked Input Tax Credit (ITC) and highlights vendor filing mismatches before GST deadlines. |
@@ -228,23 +228,23 @@ graph TD
 ### 2. Control Center: AI Controller ("Ask Fino")
 - **100% Local Neural Inference**: Powered by on-device neural SLM weights via local Ollama engine with zero cloud API latency or privacy risk.
 - **Core Controller Intents**:
-  1. *"What should I fix first?"* $	o$ Priority queue ranked by financial materiality.
-  2. *"Why are record and value match rates different?"* $	o$ Explains unit count vs rupee-weighted divergence.
-  3. *"What happens if settlement delays increase by 2 days?"* $	o$ Simulates delay stress (-₹53.1k drop, Low $	o$ Medium risk).
-  4. *"What is blocking month-end close?"* $	o$ Identifies unresolved exceptions and Suspense ledger balance.
-  5. *"Which bank account received more: Kotak or HDFC?"* $	o$ Multi-rail breakdown (Kotak ₹1.93L 80.4% vs HDFC ₹56.9k 19.6%).
-  6. *"Why was I paid less this month?"* $	o$ Categorized month-over-month variance audit (August vs July) with exact ₹0.00 tie-out.
+  1. *"What should I fix first?"* → Priority queue ranked by financial materiality.
+  2. *"Why are record and value match rates different?"* → Explains unit count vs rupee-weighted divergence.
+  3. *"What happens if settlement delays increase by 2 days?"* → Simulates delay stress (-₹53.1k drop, Low → Medium risk).
+  4. *"What is blocking month-end close?"* → Identifies unresolved exceptions and Suspense ledger balance.
+  5. *"Which bank account received more: Kotak or HDFC?"* → Multi-rail breakdown (Kotak ₹1.93L 80.4% vs HDFC ₹56.9k 19.6%).
+  6. *"Why was I paid less this month?"* → Categorized month-over-month variance audit (August vs July) with exact ₹0.00 tie-out.
 - **Interactive Context Sidebar**: Displays live dataset health and connected rails.
 
 ### 3. Control Center: Exceptions & Risk Command
-- **Materiality-Based Priority Queue**: Exceptions ranked by financial exposure ($	ext{Rupee Amount} 	imes 	ext{Aging SLA} 	imes 	ext{Cash Impact}$).
+- **Materiality-Based Priority Queue**: Exceptions ranked by financial exposure ($\text{Rupee Amount} \times \text{Aging SLA} \times \text{Cash Impact}$).
 - **Dedicated Resolved View**: Features `CLEARED • 0 RISK` green badge, resolution metadata (*"Cleared by Sharan (Finance Controller)" · "1.2d SLA"*), and `Audit Proof →` button.
 - **Systemic Root-Cause Intelligence**: 4 pattern clusters (Ledger Only, Amount Mismatch, Possible Duplicate, Fee Variance).
 - **1-Click Closed-Loop Actions**: Instant escalation or resolution with live UI state mutation and audit logging.
 
 ### 4. Control Center: Continuous 3-Way Reconciliation
 - **Reconciliation Run Modal**: Interactive 10-step progress verification processing the multi-rail batch.
-- **Horizontal Stacked Liquidity Bridge**: Visual bar mapping Gross (100%) $	o$ Net Settled Cash (81.8%), Trapped Exceptions (9.0%), In-Transit Float (6.3%), Gateway Fees (2.4%), and GST (0.4%).
+- **Horizontal Stacked Liquidity Bridge**: Visual bar mapping Gross (100%) → Net Settled Cash (81.8%), Trapped Exceptions (9.0%), In-Transit Float (6.3%), Gateway Fees (2.4%), and GST (0.4%).
 - **Written Formula Tie-Out**: Matches term-for-term with $0.00 variance.
 - **3 Match Tiers**: Exact (49 transactions), Fuzzy/Batched (5 transactions), and Discrepancies (6 transactions).
 
@@ -278,7 +278,7 @@ graph TD
 - **Strict Ledger Sandboxing**: Read-only memory buffer with zero write permissions to the SQLite ACID database.
 
 ### 9. Data & Configuration: Linked Accounts & Governance
-- **Interactive Sankey Stream**: Visualizes money movement from Customer Checkout $	o$ Razorpay / PayPal $	o$ Kotak / HDFC Bank.
+- **Interactive Sankey Stream**: Visualizes money movement from Customer Checkout → Razorpay / PayPal → Kotak / HDFC Bank.
 - **Dual-Custody Segregation of Duties (SoD)**: Enforces RBAC permissions preventing unauthorized ledger writes.
 
 ---
@@ -303,20 +303,32 @@ In multi-rail commerce, transaction count rarely equals financial risk. Two high
 ## 📐 Mathematical & Statistical Formulations
 
 ### 1. Canonical Gross-to-Net Tie-Out
-$$	ext{Net Settled Cash} = 	ext{Gross Volume} - 	ext{MDR Fees} - 	ext{GST (18\%)} - 	ext{In-Transit Float} - 	ext{Trapped Exceptions}$$
-$$₹2,44,371.19 = ₹2,98,603.50 - ₹7,262.07 - ₹1,307.16 - ₹18,763.08 - ₹26,900.00 \quad (	ext{Variance: } ₹0.00)$$
+```math
+\text{Net Settled Cash} = \text{Gross Volume} - \text{MDR Fees} - \text{GST (18\%)} - \text{In-Transit Float} - \text{Trapped Exceptions}
+```
+```math
+₹2,44,371.19 = ₹2,98,603.50 - ₹7,262.07 - ₹1,307.16 - ₹18,763.08 - ₹26,900.00 \quad (\text{Variance: } ₹0.00)
+```
 
-### 2. Record Match Rate ($	ext{MR}_{	ext{count}}$)
-$$	ext{MR}_{	ext{count}} = \left( rac{N_{	ext{settled}}}{N_{	ext{total}}} ight) 	imes 100 = \left( rac{49}{60} ight) 	imes 100 = 81.7\%$$
+### 2. Record Match Rate ($\text{MR}_{\text{count}}$)
+```math
+\text{MR}_{\text{count}} = \left( \frac{N_{\text{settled}}}{N_{\text{total}}} \right) \times 100 = \left( \frac{49}{60} \right) \times 100 = 81.7\%
+```
 
-### 3. Statutory Value Match Rate ($	ext{MR}_{	ext{value}}$)
-$$	ext{MR}_{	ext{value}} = \left( rac{\sum V_{	ext{settled}}}{\sum V_{	ext{gross}}} ight) 	imes 100 = \left( rac{₹2,44,371.19}{₹2,98,603.50} ight) 	imes 100 = 84.4\%$$
+### 3. Statutory Value Match Rate ($\text{MR}_{\text{value}}$)
+```math
+\text{MR}_{\text{value}} = \left( \frac{\sum V_{\text{settled}}}{\sum V_{\text{gross}}} \right) \times 100 = \left( \frac{₹2,44,371.19}{₹2,98,603.50} \right) \times 100 = 84.4\%
+```
 
 ### 4. Benford's Law Mean Absolute Deviation (MAD)
-$$	ext{MAD} = rac{1}{9} \sum_{d=1}^{9} \left| P_{	ext{observed}}(d) - \log_{10}\left(1 + rac{1}{d}ight) ight| = 0.0084 \quad (	ext{Close Conformity})$$
+```math
+\text{MAD} = \frac{1}{9} \sum_{d=1}^{9} \left| P_{\text{observed}}(d) - \log_{10}\left(1 + \frac{1}{d}\right) \right| = 0.0084 \quad (\text{Close Conformity})
+```
 
 ### 5. Monte Carlo Stochastic Drift Equation
-$$C_{t+1}^{(i)} = C_t^{(i)} + \max\left(500, \, \mathcal{N}(\mu_{	ext{daily}}, \sigma_{	ext{daily}})ight) 	imes \delta_t^{(i)} 	imes \phi_t^{(i)}$$
+```math
+C_{t+1}^{(i)} = C_t^{(i)} + \max\left(500, \, \mathcal{N}(\mu_{\text{daily}}, \sigma_{\text{daily}})\right) \times \delta_t^{(i)} \times \phi_t^{(i)}
+```
 *Where $\delta_t \in \{0.88, 0.94, 1.0, 1.04\}$ represents settlement timing delay factors, and $\phi_t \in \{0.93, 0.96, 0.98\}$ represents exception friction.*
 
 ---
