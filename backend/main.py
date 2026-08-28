@@ -26,6 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # --- Phase 0 & Phase 4 Routers ---
 transactions_router = APIRouter(prefix="/api/v1/transactions", tags=["Transactions"])
 exceptions_router = APIRouter(prefix="/api/v1/exceptions", tags=["Exceptions"])
@@ -106,13 +115,17 @@ class EscalateReq(BaseModel):
 
 @exceptions_router.post("/{exc_id}/resolve")
 def api_resolve_exception(exc_id: str, req: ResolveReq):
-    resolve_exception(exc_id, req.reason, req.note, user=req.user or "Finance Admin", trigger_type=req.trigger_type or "Human Controller Manual Approval")
-    return {"status": "success"}
+    exc = get_exception_by_id(exc_id)
+    actual_id = exc['id'] if exc else exc_id
+    resolve_exception(actual_id, req.reason, req.note, user=req.user or "Sharan, Finance Controller", trigger_type=req.trigger_type or "Human Controller Manual Approval")
+    return {"status": "success", "id": actual_id}
 
 @exceptions_router.post("/{exc_id}/escalate")
 def api_escalate_exception(exc_id: str, req: EscalateReq):
-    escalate_exception(exc_id, req.note, user=req.user or "Finance Admin", trigger_type=req.trigger_type or "Human Controller Manual Approval")
-    return {"status": "success"}
+    exc = get_exception_by_id(exc_id)
+    actual_id = exc['id'] if exc else exc_id
+    escalate_exception(actual_id, req.note, user=req.user or "Sharan, Finance Controller", trigger_type=req.trigger_type or "Human Controller Manual Approval")
+    return {"status": "success", "id": actual_id}
 
 @exceptions_router.post("/{exc_id}/investigate-ai")
 def api_investigate_exception_ai(exc_id: str):
@@ -197,6 +210,14 @@ def get_month_end_summary(target_month: str = "2026-08"):
     try:
         from backend.ai_agent import generate_month_end_summary
         return generate_month_end_summary(target_month)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@analytics_router.get("/period-financials")
+def get_period_financials_endpoint(start_date: str = "2026-08-01", end_date: str = "2026-08-31", account_id: Optional[str] = "all"):
+    try:
+        from backend.db.sqlite_client import get_period_financials
+        return get_period_financials(start_date, end_date, account_id or "all")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

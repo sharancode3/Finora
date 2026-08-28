@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import axios from 'axios';
+import { api } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 export interface UIAction {
@@ -168,7 +169,7 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
       setLastSentContext(freshContext);
 
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/chat/ask', { question, context: freshContext });
+      const res = await api.post('/chat/ask', { question, context: freshContext });
       const data: any = res.data;
       setLastResponse(data);
       

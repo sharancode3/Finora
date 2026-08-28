@@ -418,7 +418,10 @@ export default function RecordDetail() {
 
       {/* Phase 5 Explainable Multi-Cause Root Scoring */}
       {multiCauseScores && (
-        <MultiCauseScoreBar scoresData={multiCauseScores} />
+        <MultiCauseScoreBar 
+          scoresData={multiCauseScores} 
+          investigationResult={aiInvestigation} 
+        />
       )}
 
       {/* Main Investigation Grid */}
@@ -502,10 +505,15 @@ export default function RecordDetail() {
           </div>
 
           {/* Root-Cause Intelligence Notes */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-              <Search size={15} className="text-slate-800" /> Root-Cause Analysis
-            </h3>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                <Search size={15} className="text-slate-800" /> AI Root-Cause Verdict
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-violet-50 text-[#5B45F5] border border-violet-200">
+                Controller Analysis
+              </span>
+            </div>
             
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700 space-y-1.5">
               <span className="font-bold text-slate-900 block">
@@ -520,6 +528,34 @@ export default function RecordDetail() {
                  record.reason === 'bank_only' ? 'Direct inward remittance credit received in bank account without a matching gateway settlement batch reference.' :
                  'Discrepancy identified in transaction valuation or ledger record.'}
               </p>
+            </div>
+
+            {/* WHY THIS MATTERS (Controller Depth) */}
+            <div className="p-4 rounded-xl border border-violet-100 bg-violet-50/40 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-[#5B45F5] uppercase tracking-wider">✦ Why This Matters</span>
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                {record.reason === 'fee_variance' || record.reason === 'fee_variance_explained' 
+                  ? 'While this individual fee deviation is relatively small, repeated MDR rate divergences indicate gateway contract rule drift across August transactions.' 
+                  : record.reason === 'no_bank_credit_found' 
+                  ? 'Uncredited gateway batches beyond T+2 directly restrict operating working capital and inflate Trapped Suspense volume.'
+                  : 'Unreconciled ledger breaks require explicit controller clearance prior to statutory month-end period lock.'}
+              </p>
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-violet-100 text-[11px]">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Cash Impact</span>
+                  <span className="font-mono font-bold text-[#B91C1C]">₹{(record.amount || 0).toLocaleString('en-IN')}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">P&L Impact</span>
+                  <span className="font-mono font-bold text-slate-800">{record.reason?.includes('fee') ? '₹110.00 Expense' : '₹0.00'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Audit SLA</span>
+                  <span className="font-bold text-[#15803D]">T+2 Policy</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

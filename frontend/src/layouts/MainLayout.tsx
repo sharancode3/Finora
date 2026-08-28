@@ -32,26 +32,32 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    title: 'Daily Operations',
+    title: 'Control Center',
     badge: 'Core',
     priority: 'primary',
     items: [
-      { to: '/dashboard', icon: LayoutGrid, label: 'Dashboard', isPrimary: true },
-      { to: '/reconciliation', icon: Layers, label: 'Reconciliation', isPrimary: true },
+      { to: '/dashboard', icon: LayoutGrid, label: 'Overview', isPrimary: true },
+      { to: '/ask_your_books', icon: MessageSquare, label: 'AI Controller', isPrimary: true },
       { to: '/exceptions', icon: AlertTriangle, label: 'Exceptions', isPrimary: true },
-      { to: '/ask_your_books', icon: MessageSquare, label: 'Ask Fino', isPrimary: true },
+      { to: '/reconciliation', icon: Layers, label: 'Reconciliation', isPrimary: true },
     ]
   },
   {
-    title: 'Treasury & Finance Ops',
+    title: 'Treasury',
     priority: 'primary',
     items: [
       { to: '/cash-position', icon: Wallet, label: 'Cash Position' },
+    ]
+  },
+  {
+    title: 'Close',
+    priority: 'primary',
+    items: [
       { to: '/month-end-close', icon: CalendarCheck, label: 'Month-End Close' },
     ]
   },
   {
-    title: 'Specialized Tools',
+    title: 'Specialized',
     badge: 'Deep-Dive',
     priority: 'secondary',
     items: [
@@ -60,7 +66,7 @@ const NAV_SECTIONS: NavSection[] = [
     ]
   },
   {
-    title: 'Configuration & Controls',
+    title: 'Data & Configuration',
     priority: 'system',
     items: [
       { to: '/accounts', icon: LinkIcon, label: 'Linked Accounts' },
@@ -150,7 +156,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </button>
 
           {/* Ask Fino Top Trigger */}
-          {location.pathname !== '/ask-your-books' && (
+          {!['/ask-your-books', '/ask_your_books', '/ask-fino'].includes(location.pathname) && (
             <button
               onClick={() => setIsCopilotOpen(true)}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#E4E4E7] hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-semibold transition-all duration-150 ease-out cursor-pointer shadow-2xs"

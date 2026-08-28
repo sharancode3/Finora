@@ -25,8 +25,8 @@ export default function Onboarding() {
     // Simulate generation / reconciliation step
     setTimeout(() => {
       setLoading(false);
-      navigate('/');
-    }, 2000);
+      navigate('/dashboard');
+    }, 1500);
   };
 
   return (

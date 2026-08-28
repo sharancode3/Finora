@@ -8,30 +8,20 @@ export default function LandingPage() {
   const [liveStats, setLiveStats] = useState({
     txCount: 60,
     accountCount: 4,
-    exceptionCount: 6,
-    exceptionAmount: 46600
+    exceptionCount: 4,
+    exceptionAmount: 26900
   });
 
   useEffect(() => {
     const fetchLiveTelemetry = async () => {
       try {
-        const [txRes, excRes] = await Promise.all([
-          api.get('/transactions?start_date=2026-08-01&end_date=2026-08-31').catch(() => ({ data: [] })),
-          api.get('/analytics/exception-intelligence?start_date=2026-08-01&end_date=2026-08-31').catch(() => ({ data: { exceptions: [] } }))
-        ]);
-
-        const txs = Array.isArray(txRes.data) ? txRes.data : [];
-        const exceptions = excRes.data?.exceptions || [];
-        
-        if (txs.length > 0) {
-          const accounts = new Set(txs.map((t: any) => t.source_account || t.payment_method || 'Kotak Primary')).size;
-          const openExceptions = exceptions.filter((e: any) => e.status === 'open');
-          
+        const res = await api.get('/analytics/period-financials?start_date=2026-08-01&end_date=2026-08-31&account_id=all');
+        if (res?.data && typeof res.data.total_tx_count === 'number') {
           setLiveStats({
-            txCount: txs.length || 60,
-            accountCount: Math.max(4, accounts),
-            exceptionCount: openExceptions.length || 6,
-            exceptionAmount: 46600
+            txCount: res.data.total_tx_count || 60,
+            accountCount: 4,
+            exceptionCount: res.data.open_exception_count || 4,
+            exceptionAmount: res.data.trapped_exceptions || 26900
           });
         }
       } catch (e) {

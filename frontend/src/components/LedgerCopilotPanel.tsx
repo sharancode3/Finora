@@ -32,7 +32,10 @@ export const LedgerCopilotPanel: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Do not show on landing page or full-screen Ask Fino canvas
-  const isExcludedRoute = location.pathname === '/' || location.pathname === '/ask-your-books';
+  const isExcludedRoute = location.pathname === '/' || 
+    location.pathname === '/ask-your-books' || 
+    location.pathname === '/ask_your_books' || 
+    location.pathname === '/ask-fino';
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

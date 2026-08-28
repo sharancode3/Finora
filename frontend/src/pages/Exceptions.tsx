@@ -34,15 +34,17 @@ import { AIInsightCard } from '../components/ui/AIInsightCard';
 import { Button } from '../components/ui/Button';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAI } from '../context/AIContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 import { pluralize, formatExceptionReason } from '../utils/formatters';
 import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
 import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
+import { NextBestActionCard } from '../components/ui/NextBestActionCard';
 import { FinoraMark } from '../components/ui/FinoraMark';
 
 export default function Exceptions() {
+  const navigate = useNavigate();
   const [exceptions, setExceptions] = useState<any[]>([]);
   const [patternClusters, setPatternClusters] = useState<any[]>([]);
   const [resolutionAnalytics, setResolutionAnalytics] = useState<any>(null);
@@ -80,9 +82,9 @@ export default function Exceptions() {
 
   // Tab counts state for cross-table synchronization
   const [tabCounts, setTabCounts] = useState({
-    open: 6,
+    open: 4,
     escalated: 0,
-    resolved: 0,
+    resolved: 2,
     unusual: 2
   });
 
@@ -349,6 +351,41 @@ export default function Exceptions() {
           <span>{exceptions.length} Total in {activeFilter} State</span>
         </div>
       </div>
+
+      {/* AI PRIORITY & NEXT BEST ACTION */}
+      {activeFilter === 'Open' && (() => {
+        const openExcs = exceptions.filter(e => e.status !== 'resolved');
+        if (openExcs.length === 0) return null;
+        const topExc = openExcs.reduce((prev, curr) => {
+          const pAmt = prev.amount || prev.gross_amount || prev.underlying_data?.calculated_net || prev.underlying_data?.gross_amount || 0;
+          const cAmt = curr.amount || curr.gross_amount || curr.underlying_data?.calculated_net || curr.underlying_data?.gross_amount || 0;
+          return cAmt > pAmt ? curr : prev;
+        }, openExcs[0]);
+        const expAmount = topExc.amount || topExc.gross_amount || topExc.underlying_data?.calculated_net || 7225.36;
+
+        return (
+          <NextBestActionCard
+            title={`Escalate Priority Discrepancy (${formatExceptionReason(topExc.reason)})`}
+            targetId={topExc.id}
+            category={topExc.source_account || "Razorpay Gateway → Bank Settlement"}
+            exposureAmount={expAmount}
+            reasons={[
+              `₹${Math.round(expAmount).toLocaleString('en-IN')} flagged on transaction ${topExc.transaction_id || topExc.id}`,
+              "Exceeds standard settlement verification SLA window",
+              "Highest monetary exposure currently open in active period",
+              "One-click controller escalation dispatches partner audit"
+            ]}
+            primaryActionLabel="Escalate Batch to Gateway Ops"
+            onPrimaryAction={async () => {
+              await handleEscalate(topExc.id, 'Auto-escalated to Banking Operations for settlement resolution.', 'AI Next Best Action One-Click Execution');
+            }}
+            secondaryActionLabel={`Investigate ₹${Math.round(expAmount).toLocaleString('en-IN')} Exposure`}
+            onSecondaryAction={() => {
+              navigate(`/record/exception/${topExc.id}`);
+            }}
+          />
+        );
+      })()}
 
       {/* Time-to-Resolution Analytics & Operational KPIs */}
       {resolutionAnalytics && (
@@ -856,7 +893,10 @@ export default function Exceptions() {
                               </div>
 
                               {/* Phase 5 Explainable Multi-Cause Root Scoring */}
-                              <MultiCauseScoreBar scoresData={multiCauseMap[ex.id]} />
+                              <MultiCauseScoreBar 
+                                scoresData={multiCauseMap[ex.id]} 
+                                investigationResult={investigationResults[ex.id]} 
+                              />
 
                               {/* 3-Way Evidence Sub-Panels */}
                               <div>

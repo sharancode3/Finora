@@ -70,16 +70,17 @@ export default function AskYourBooks() {
           api.get('/analytics/benford-analysis?start_date=2026-08-01&end_date=2026-08-31').catch(() => ({ data: { mad: 0.0903 } }))
         ]);
 
-        const exceptions = excRes.data?.exceptions || [];
+        const rawExceptions = excRes.data?.exceptions || [];
+        const openExceptions = rawExceptions.filter((e: any) => e.status !== 'resolved');
+        const topExc = openExceptions[0] || rawExceptions[0] || {};
         const txs = Array.isArray(txRes.data) ? txRes.data : [];
-        const topExc = exceptions[0] || {};
         const gross = txs.reduce((acc: number, t: any) => acc + (t.gross_amount || 0), 0) || 298603.50;
         const net = txs.filter((t: any) => t.status === 'settled').reduce((acc: number, t: any) => acc + (t.net_amount || 0), 0) || 244371.19;
 
         setLivePromptData({
-          topExceptionId: topExc.id || 'exc_a7416ed6fc2d',
-          topExceptionAmount: topExc.amount || 14200,
-          topExceptionReason: topExc.reason ? topExc.reason.replace(/_/g, ' ') : 'Missing Bank Credit',
+          topExceptionId: topExc.id || 'exc_0579e0a0584b',
+          topExceptionAmount: topExc.amount || 10000,
+          topExceptionReason: topExc.reason ? topExc.reason.replace(/_/g, ' ') : 'Settlement Delay',
           grossVolume: gross,
           netSettled: net,
           benfordMad: benfordRes.data?.mad || 0.0903
@@ -185,41 +186,63 @@ export default function AskYourBooks() {
                 Fino continuously queries your live SQLite ACID records and statutory rules. Click any live inquiry below to begin:
               </p>
 
-              {/* 3 Live, Computed Grounded Prompt Chips */}
+              {/* 5 Controller-First Grounded Prompt Chips */}
               <div className="w-full space-y-2 text-left">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
-                  Live Grounded Queries Ready to Run:
+                  AI Controller Queries Ready to Run:
                 </span>
                 
                 <button
-                  onClick={() => handleSuggestedAsk(`Explain open exception ${livePromptData.topExceptionId}: why is ₹${livePromptData.topExceptionAmount.toLocaleString('en-IN')} flagged as ${livePromptData.topExceptionReason}?`)}
-                  className="w-full p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer"
+                  onClick={() => handleSuggestedAsk("What should I fix first?")}
+                  className="w-full p-3 rounded-xl bg-white border border-violet-200 hover:border-violet-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer bg-gradient-to-r from-violet-50/50 to-white"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-2 h-2 rounded-full bg-[#B91C1C]" />
-                    <span>Audit Top Exception: <strong className="font-mono text-slate-900">{livePromptData.topExceptionId}</strong> (₹{livePromptData.topExceptionAmount.toLocaleString('en-IN')} open)</span>
+                    <span className="w-2 h-2 rounded-full bg-[#5B45F5]" />
+                    <span>🎯 <strong className="text-slate-900">What should I fix first?</strong> (AI Priority & Next Best Action)</span>
                   </div>
-                  <ArrowUpRight size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                  <ArrowUpRight size={14} className="text-violet-500 group-hover:text-violet-800 transition-colors" />
                 </button>
 
                 <button
-                  onClick={() => handleSuggestedAsk(`Why is our net settled bank cash ₹${livePromptData.netSettled.toLocaleString('en-IN')} against ₹${livePromptData.grossVolume.toLocaleString('en-IN')} gross processed for August 2026?`)}
+                  onClick={() => handleSuggestedAsk("Why are record and value match rates different?")}
                   className="w-full p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="w-2 h-2 rounded-full bg-[#15803D]" />
-                    <span>Explain August Liquidity: <strong className="text-slate-900">₹{livePromptData.netSettled.toLocaleString('en-IN')} settled vs ₹{livePromptData.grossVolume.toLocaleString('en-IN')} gross</strong></span>
+                    <span>⚖️ <strong>Why are record and value match rates different?</strong> (81.7% vs 84.4%)</span>
                   </div>
                   <ArrowUpRight size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
                 </button>
 
                 <button
-                  onClick={() => handleSuggestedAsk(`Evaluate our Benford's Law forensic check (MAD = ${livePromptData.benfordMad}) and list any suspicious transactions.`)}
+                  onClick={() => handleSuggestedAsk("What happens if settlement delays increase by 2 days?")}
                   className="w-full p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span>Forensic Audit: <strong className="text-slate-900">Evaluate Benford MAD = {livePromptData.benfordMad} Anomaly Signal</strong></span>
+                    <span className="w-2 h-2 rounded-full bg-[#B45309]" />
+                    <span>⏳ <strong>What if settlement is delayed by 2 days?</strong> (Monte Carlo Stress Test)</span>
+                  </div>
+                  <ArrowUpRight size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </button>
+
+                <button
+                  onClick={() => handleSuggestedAsk("What is blocking month-end close?")}
+                  className="w-full p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#B91C1C]" />
+                    <span>🔒 <strong>What is blocking month-end close?</strong> (Audit & Statutory Blockers)</span>
+                  </div>
+                  <ArrowUpRight size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </button>
+
+                <button
+                  onClick={() => handleSuggestedAsk("Which bank account received more: Kotak or HDFC?")}
+                  className="w-full p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:shadow-xs text-xs font-semibold text-slate-800 transition-all flex items-center justify-between group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#1D4ED8]" />
+                    <span>🏦 <strong>Which bank account received more: Kotak or HDFC?</strong> (Multi-Rail Flow)</span>
                   </div>
                   <ArrowUpRight size={14} className="text-slate-400 group-hover:text-slate-900 transition-colors" />
                 </button>
@@ -396,12 +419,14 @@ export default function AskYourBooks() {
                         )}
                         
                         {/* Statutory Knowledge Citation Box */}
-                        {msg.role === 'ai' && meta.knowledge_citation && (
+                        {msg.role === 'ai' && meta.knowledge_citation && (meta.knowledge_citation.statutory_reference || meta.knowledge_citation.definition || meta.knowledge_citation.governing_rule) && (
                           <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
                             <span className="font-bold text-[10px] uppercase tracking-wider text-slate-500 block">
                               Statutory Reference Standard
                             </span>
-                            <p className="font-semibold text-slate-900">{meta.knowledge_citation.term}: {meta.knowledge_citation.definition}</p>
+                            <p className="font-semibold text-slate-900">
+                              {meta.knowledge_citation.canonical_name || meta.knowledge_citation.term || 'Statutory Standard'}: {meta.knowledge_citation.statutory_reference || meta.knowledge_citation.definition || meta.knowledge_citation.plain_definition}
+                            </p>
                             {meta.knowledge_citation.governing_rule && (
                               <span className="text-[10px] text-slate-500 font-mono block">Rule: {meta.knowledge_citation.governing_rule}</span>
                             )}
