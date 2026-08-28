@@ -2,7 +2,7 @@
 
 <div align="center">
   <p align="center">
-    <strong>Autonomous AI Finance Controller • Continuous 3-Way Reconciliation • Dual Match Rates • Dynamic Rule-Based Confidence Scoring • Proactive Anomaly Nudges • 1,000-Trial Monte Carlo Treasury Forecaster • GSTR-2B Tax Matcher • Ind AS Continuous Close • On-Device Neural Intelligence ("Ask Fino")</strong>
+    <strong>Autonomous AI Finance Controller • Continuous 3-Way Reconciliation • Dual Match Rates • Dynamic Rule-Based Confidence Scoring • Proactive Anomaly Signals • 1,000-Trial Monte Carlo Treasury Forecaster • GSTR-2B Tax Matcher • Ind AS Continuous Close • On-Device Neural Intelligence ("Ask Fino")</strong>
   </p>
 
   <p align="center">
@@ -63,16 +63,32 @@ The Buildathon judging bar demands:
 ### The Finora Solution
 **Finora** is an **Autonomous AI Finance Controller** engineered to close the finance-ops loop across multi-source financial datasets. It replaces manual spreadsheet fatigue with **continuous 3-way reconciliation, autonomous root-cause auditing, stochastic cash forecasting, and closed-loop exception resolution**—all while enforcing zero-hallucination mathematical determinism and an immutable chain of custody.
 
-```
-┌─────────────────────────┐       ┌─────────────────────────┐       ┌─────────────────────────┐
-│     Internal Books      │       │     Payment Gateway     │       │     Bank Statement      │
-│  (Invoices / Orders)    │ ────► │  (MDR Deductions / GST) │ ────► │   (UTR Net Deposits)    │
-│  Expected Gross Revenue │       │  Contractual SLA Check  │       │   Settled Cash In Hand  │
-└─────────────────────────┘       └─────────────────────────┘       └─────────────────────────┘
-            ▲                                 ▲                                 ▲
-            └─────────────────────────────────┴─────────────────────────────────┘
-                                              │
-                        Continuous 3-Way Deterministic Reconciliation
+```mermaid
+flowchart LR
+    subgraph Books["1. Internal Books"]
+        direction TB
+        B1["Invoices & Orders"]
+        B2["Expected Gross Revenue"]
+    end
+
+    subgraph Gateway["2. Payment Gateway"]
+        direction TB
+        G1["Razorpay / PayPal"]
+        G2["Contractual 2% MDR + 18% GST"]
+    end
+
+    subgraph Bank["3. Bank Accounts"]
+        direction TB
+        K1["Kotak / HDFC UTR Credits"]
+        K2["Net Settled Cash in Hand"]
+    end
+
+    Books -->|"Gross Payment Intent"| Gateway
+    Gateway -->|"Batched Net UTR Settlement"| Bank
+    
+    style Books fill:#f8fafc,stroke:#94a3b8,stroke-width:2px
+    style Gateway fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    style Bank fill:#f8fafc,stroke:#3b82f6,stroke-width:2px
 ```
 
 ---
@@ -160,71 +176,95 @@ sequenceDiagram
 
 ## 🛡️ Architectural Philosophy: Deterministic Core + Agentic Shell
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           AGENTIC INTERFACE SHELL                               │
-│  • Multi-Step Tool Orchestration (Gemma 3 4B on Ollama)                         │
-│  • Dynamic Rule-Based Confidence Scoring Engine with Rationale Breakdown        │
-│  • Natural Language Query Normalization & Domain Boundary Fencing               │
-│  • Zero-Hallucination Policy: Strict refusal on non-financial queries           │
-└───────────────────────────────────────┬─────────────────────────────────────────┘
-                                        │ (Read-Only Tool Execution)
-                                        ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                          DETERMINISTIC COMPUTATION CORE                         │
-│  • Exact Arithmetic: Gross - MDR - GST - Float - Exceptions = Settled Cash     │
-│  • 1,000-Trial Monte Carlo Engine (NumPy Stochastic Liquidity Simulation)       │
-│  • Isolation Forest Anomaly Detection (Scikit-Learn) & Benford's Law MAD        │
-│  • 3-Way Reconciliation Engine (Order ID ↔ Gateway ID ↔ Bank UTR)               │
-│  • ACID SQLite Financial Ledger + Immutable Append-Only Audit Trail             │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph AgenticShell["GROUNDED AI AGENTIC SHELL (Fino)"]
+        SLM["On-Device Neural SLM (Gemma 3 4B via Ollama)"]
+        ORCH["Multi-Step Tool Orchestrator & Intent Classifier"]
+        CONF["Dynamic Rule-Based Confidence Scoring Engine"]
+    end
+
+    subgraph GuardrailLayer["ZERO-HALLUCINATION GUARDRAIL LAYER"]
+        DOM["Domain Boundary Fencing (Non-Financial Query Interception)"]
+        DATE["System Date Boundary Protection (August 28, 2026)"]
+        TRACE["Named Tool Evidence Trail Builder"]
+    end
+
+    subgraph DeterministicCore["DETERMINISTIC COMPUTATION CORE"]
+        SQL[("SQLite Multi-Month ACID Financial Ledger")]
+        RECON["3-Way Continuous Reconciliation Engine"]
+        MC["1,000-Trial Monte Carlo Stochastic Engine"]
+        ANOM["Isolation Forest & Benford's Law MAD (0.0084)"]
+        AUDIT["Immutable Append-Only Audit Trail"]
+    end
+
+    AgenticShell --> GuardrailLayer
+    GuardrailLayer --> DeterministicCore
+
+    style AgenticShell fill:#f8fafc,stroke:#6366f1,stroke-width:2px
+    style GuardrailLayer fill:#f1f5f9,stroke:#0ea5e9,stroke-width:2px
+    style DeterministicCore fill:#f8fafc,stroke:#10b981,stroke-width:2px
 ```
 
 ---
 
 ## 🏗️ End-to-End System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           FRONTEND PRESENTATION LAYER                           │
-│  React 18 • TypeScript • Tailwind CSS • Lucide Icons • Framer Motion            │
-│                                                                                 │
-│  ┌───────────────────────┬───────────────────────┬───────────────────────────┐  │
-│  │ 1. Executive Control  │ 2. Ask Fino Copilot   │ 3. Exceptions Command     │  │
-│  │   • Live KPI Cards    │   • Multi-Step Trace  │   • Systemic Clusters (≥2)│  │
-│  │   • Proactive Signals │   • Dynamic Conf Score│   • 1-Click Escalation    │  │
-│  ├───────────────────────┼───────────────────────┼───────────────────────────┤  │
-│  │ 4. 3-Way Reconciliation│ 5. Treasury Simulator │ 6. Month-End Close        │  │
-│  │   • Visual 3-Node Graph│  • Monte Carlo Fan   │   • 5-Pillar Ind AS Close │  │
-│  │   • Fee Arithmetic    │   • What-If Scenarios │   • SHA-256 Memo Digest   │  │
-│  └───────────────────────┴───────────────────────┴───────────────────────────┘  │
-└────────────────────────────────────────┬────────────────────────────────────────┘
-                                         │ Axios REST API (Port 8000)
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                            FASTAPI BACKEND GATEWAY                              │
-│  • /api/v1/analytics  • /api/v1/chat  • /api/v1/exceptions  • /api/v1/month-end  │
-└────────────────────────────────────────┬────────────────────────────────────────┘
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 ▼                                               ▼
-┌──────────────────────────────────┐            ┌──────────────────────────────────┐
-│    ON-DEVICE NEURAL AGENT        │            │   STATISTICAL & FORENSIC SUITE   │
-│  • Gemma 3 (4B) via local Ollama │            │  • Monte Carlo 1,000-Trial Engine│
-│  • Multi-Step Tool Orchestrator  │            │  • Benford's Law MAD Calculator  │
-│  • Domain Boundary Fencing       │            │  • Isolation Forest Detector     │
-│  • Confidence Scoring Engine     │            │  • GSTR-2B Tax Matcher Engine    │
-└────────────────┬─────────────────┘            └────────────────┬─────────────────┘
-                 │                                               │
-                 └───────────────────────┬───────────────────────┘
-                                         │
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                    SQLITE ACID LEDGER & DATA ACCESS LAYER                       │
-│  • transactions (60 records)        • exceptions (6 records, 4 open)            │
-│  • audit_logs (append-only trail)   • nudge_state (live / reviewed signals)     │
-│  • connected_accounts (4 rails)     • tax_lines (GSTR-2B vs Books)              │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Ingestion["1. Multi-Source Ingestion Layer"]
+        L[Internal Order Ledger]
+        G[Gateway Settlements: Razorpay / PayPal]
+        B[Bank Statement UTR Credits: Kotak / HDFC]
+        T[GSTN GSTR-2B & TRACES Feeds]
+    end
+
+    subgraph Core["2. Deterministic Financial Core"]
+        SQL[(SQLite Multi-Month ACID Store)]
+        M4[4-Stage 3-Way Reconciliation Engine]
+        ANOM[Isolation Forest & Benford MAD Engine]
+        MC[1,000-Trial Monte Carlo Engine]
+        TAX[3-Stage Tax-Line Matcher]
+    end
+
+    subgraph Agentic["3. Grounded AI Intelligence Shell (Fino)"]
+        SLM[On-Device Neural SLM Copilot: Gemma 3 4B]
+        ORCH[Multi-Step Tool Orchestrator]
+        CONF[Dynamic Rule-Based Confidence Scorer]
+        VERIF[Zero-Hallucination Domain Fencing]
+        EVID[Named Tool Evidence Trail Builder]
+    end
+
+    subgraph UI["4. Controller-First UI/UX Presentation Layer"]
+        DASH[Overview & Proactive Anomaly Signals]
+        ASK[Ask Fino: AI Controller Interface]
+        RECON[3-Way Reconciliation & Liquidity Bridge]
+        EXC[Exceptions Queue & Materiality Ranking]
+        CASH[Treasury Waterfall & Monte Carlo Deck]
+        CLOSE[5-Pillar Ind AS Close & SHA-256 Memo]
+    end
+
+    L --> SQL
+    G --> SQL
+    B --> SQL
+    T --> TAX
+
+    SQL --> M4
+    SQL --> ANOM
+    SQL --> MC
+    SQL --> ORCH
+
+    ORCH --> VERIF
+    VERIF --> SLM
+    SLM --> CONF
+    CONF --> EVID
+
+    M4 --> RECON
+    ANOM --> EXC
+    MC --> CASH
+    EVID --> DASH
+    EVID --> ASK
+    SQL --> CLOSE
 ```
 
 ---
