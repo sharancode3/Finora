@@ -110,15 +110,19 @@ export const AIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const currentPath = window.location.pathname;
       
       const routeToPageName: Record<string, string> = {
-        '/': 'Executive Command Center',
-        '/dashboard': 'Executive Command Center',
-        '/exceptions': 'Exceptions Queue',
+        '/': 'Overview & Command Center',
+        '/dashboard': 'Overview & Command Center',
+        '/exceptions': 'Exceptions & Risk Command',
+        '/reconciliation': 'Reconciliation Operations',
         '/cash-position': 'Cash Position & Treasury',
-        '/accounts': 'Linked Accounts & Feeds',
-        '/month-end-close': 'Continuous Month-End Close',
+        '/month-end-close': 'Month-End Close & Statutory Lock',
+        '/tax-matcher': 'Tax-Line Matcher (GSTR-2B & TDS)',
+        '/document-assistant': 'Document Assistant',
+        '/accounts': 'Linked Accounts & Money Movement',
+        '/settings': 'Settings & Governance',
+        '/ask_your_books': 'Ask Fino (Conversational Ledger)',
         '/ask-your-books': 'Ask Fino (Conversational Ledger)',
-        '/settings': 'Team & Governance Settings',
-        '/reconciliation': '3-Way Reconciliation Ledger'
+        '/ask-fino': 'Ask Fino (Conversational Ledger)'
       };
 
       const defaultPageName = routeToPageName[currentPath] || (currentPath.replace('/', '') || 'Executive Command Center');

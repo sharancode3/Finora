@@ -42,6 +42,7 @@ import { MultiCauseScoreBar } from '../components/ui/MultiCauseScoreBar';
 import { PrecedentResolutionBanner } from '../components/ui/PrecedentResolutionBanner';
 import { NextBestActionCard } from '../components/ui/NextBestActionCard';
 import { FinoraMark } from '../components/ui/FinoraMark';
+import { getTopOpenException, getExceptionExposure } from '../utils/periodFinancials';
 
 export default function Exceptions() {
   const navigate = useNavigate();
@@ -354,14 +355,9 @@ export default function Exceptions() {
 
       {/* AI PRIORITY & NEXT BEST ACTION */}
       {activeFilter === 'Open' && (() => {
-        const openExcs = exceptions.filter(e => e.status !== 'resolved');
-        if (openExcs.length === 0) return null;
-        const topExc = openExcs.reduce((prev, curr) => {
-          const pAmt = prev.amount || prev.gross_amount || prev.underlying_data?.calculated_net || prev.underlying_data?.gross_amount || 0;
-          const cAmt = curr.amount || curr.gross_amount || curr.underlying_data?.calculated_net || curr.underlying_data?.gross_amount || 0;
-          return cAmt > pAmt ? curr : prev;
-        }, openExcs[0]);
-        const expAmount = topExc.amount || topExc.gross_amount || topExc.underlying_data?.calculated_net || 7225.36;
+        const topExc = getTopOpenException(exceptions);
+        if (!topExc) return null;
+        const expAmount = getExceptionExposure(topExc);
 
         return (
           <NextBestActionCard
@@ -682,17 +678,27 @@ export default function Exceptions() {
                           {isExpanded ? <ChevronDown size={16} className="text-slate-700" /> : <ChevronRight size={16} />}
                         </td>
 
-                        {/* Composite Risk Score Badge (Single Status Badge) */}
+                        {/* Composite Risk Score Badge or Resolved Status Badge */}
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
+                          {ex.status === 'resolved' || activeFilter === 'Resolved' ? (
                             <span 
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${riskBadgeClass}`}
-                              title={`Amount: ${breakdown.amount_pts}pts | ML Outlier: ${breakdown.ml_pts}pts | Aging: ${breakdown.age_pts}pts`}
+                              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]"
+                              title="Resolved & Verified in SQLite Audit Trail"
                             >
-                              <Flame size={11} className={riskTier === 'CRITICAL' || riskTier === 'HIGH' ? 'text-[#B91C1C]' : 'text-[#B45309]'} />
-                              {riskScore} • {riskTier}
+                              <CheckCircle2 size={11} className="text-[#15803D]" />
+                              CLEARED • 0 RISK
                             </span>
-                          </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span 
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${riskBadgeClass}`}
+                                title={`Amount: ${breakdown.amount_pts}pts | ML Outlier: ${breakdown.ml_pts}pts | Aging: ${breakdown.age_pts}pts`}
+                              >
+                                <Flame size={11} className={riskTier === 'CRITICAL' || riskTier === 'HIGH' ? 'text-[#B91C1C]' : 'text-[#B45309]'} />
+                                {riskScore} • {riskTier}
+                              </span>
+                            </div>
+                          )}
                         </td>
 
                         <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
@@ -707,9 +713,13 @@ export default function Exceptions() {
                               {formatExceptionReason(ex.reason)}
                             </span>
                           </AskableMetric>
-                          {ex.ml_explanation && (
+                          {ex.status === 'resolved' ? (
+                            <p className="text-[10px] text-[#15803D] font-medium truncate max-w-xs mt-0.5">
+                              Cleared by {ex.resolution_metadata?.resolved_by || 'Sharan (Finance Controller)'}
+                            </p>
+                          ) : ex.ml_explanation ? (
                             <p title={ex.ml_explanation} className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5 cursor-help">{ex.ml_explanation}</p>
-                          )}
+                          ) : null}
                         </td>
 
                         <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
@@ -719,25 +729,46 @@ export default function Exceptions() {
                         </td>
 
                         <td className="py-3.5 px-4 text-slate-600 font-mono">
-                          {ex.aging_days}d open
+                          {ex.status === 'resolved' || activeFilter === 'Resolved' ? (
+                            <span className="text-xs font-semibold text-[#15803D] flex items-center gap-1">
+                              <CheckCircle2 size={11} /> Cleared ({ex.aging_days ? `${ex.aging_days}d SLA` : '1.2d SLA'})
+                            </span>
+                          ) : (
+                            <span>{ex.aging_days}d open</span>
+                          )}
                         </td>
 
                         <td className="py-3.5 pr-6 text-right" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={(e) => handleInvestigateAI(ex.id, e)}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E293B] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#E2E8F0] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
-                            >
-                              <FinoraMark size={14} isThinking={investigatingId === ex.id} />
-                              <span>{investigatingId === ex.id ? 'Investigating...' : 'Investigate'}</span>
-                            </button>
-                            <Link 
-                              to={`/record/exception/${ex.id}`}
-                              className="text-xs font-bold text-slate-500 hover:text-slate-900 px-2 py-1 transition-colors duration-150 ease-out"
-                            >
-                              Deep Audit &rarr;
-                            </Link>
-                          </div>
+                          {ex.status === 'resolved' || activeFilter === 'Resolved' ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 hidden sm:inline">
+                                {ex.resolution_metadata?.resolution_type || 'Mark Explained'}
+                              </span>
+                              <Link 
+                                to={`/record/exception/${ex.id}`}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-[#15803D] bg-[#F0FDF4] hover:bg-[#DCFCE7] border border-[#BBF7D0] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-2xs"
+                              >
+                                <ShieldCheck size={13} />
+                                <span>Audit Proof &rarr;</span>
+                              </Link>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={(e) => handleInvestigateAI(ex.id, e)}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1E293B] bg-[#F1F5F9] hover:bg-[#E2E8F0] border border-[#E2E8F0] px-3 py-1 rounded-xl transition-colors duration-150 ease-out shadow-xs cursor-pointer"
+                              >
+                                <FinoraMark size={14} isThinking={investigatingId === ex.id} />
+                                <span>{investigatingId === ex.id ? 'Investigating...' : 'Investigate'}</span>
+                              </button>
+                              <Link 
+                                to={`/record/exception/${ex.id}`}
+                                className="text-xs font-bold text-slate-500 hover:text-slate-900 px-2 py-1 transition-colors duration-150 ease-out"
+                              >
+                                Deep Audit &rarr;
+                              </Link>
+                            </div>
+                          )}
                         </td>
                       </tr>
                       

@@ -89,40 +89,70 @@ export const LedgerCopilotPanel: React.FC = () => {
     return `${accountName} (${dates})`;
   };
 
+  const getActivePageName = () => {
+    const path = location.pathname;
+    if (path.includes('tax-matcher')) return 'Tax-Line Matcher (GSTR-2B & TDS)';
+    if (path.includes('document-assistant')) return 'Document Assistant';
+    if (path.includes('dashboard')) return 'Overview & Command Center';
+    if (path.includes('exceptions')) return 'Exceptions & Risk Command';
+    if (path.includes('reconciliation')) return 'Reconciliation Operations';
+    if (path.includes('cash-position')) return 'Cash Position & Treasury';
+    if (path.includes('month-end-close')) return 'Month-End Close & Statutory Lock';
+    if (path.includes('accounts') || path.includes('linked-accounts')) return 'Linked Accounts & Money Movement';
+    if (path.includes('settings')) return 'Settings & Governance';
+    if (path.includes('record')) return 'Record Detail & 3-Way Traceability';
+    if (pageContext?.page_name) return pageContext.page_name;
+    return 'Overview & Command Center';
+  };
+
   // Dynamic context-aware suggested inquiries per page
   const getPageSuggestedQuestions = () => {
     const path = location.pathname;
+    if (path.includes('tax-matcher')) {
+      return [
+        "Why is ₹3,312 ITC blocked under Rule 36(4)?",
+        "Summarize GSTR-2B filing status across vendors",
+        "What is our Section 194O TDS compliance rate?"
+      ];
+    }
+    if (path.includes('document-assistant')) {
+      return [
+        "Explain the foreign exchange fee in this statement",
+        "Extract line-item breakdown from uploaded invoice",
+        "Does this document corroborate the ₹2,100 fee variance?"
+      ];
+    }
     if (path.includes('dashboard')) {
       return [
-        "Why is our statutory match rate at its current level?",
-        "Breakdown the ₹16.5k trapped in open exceptions",
+        "What should I fix first?",
+        "Why are record and value match rates different?",
         "Summarize today's financial briefing and anomalies"
       ];
     }
     if (path.includes('reconciliation')) {
       return [
-        "Explain the discrepancy in transaction txn_82ad02738858",
-        "Why did Razorpay batch PAY-00289 have an MDR fee variance?",
+        "Why are record and value match rates different?",
+        "Explain the Gross-to-Net Liquidity Bridge breakdown",
         "What are the un-reconciled items in August 2026?"
       ];
     }
     if (path.includes('exceptions')) {
       return [
-        "Why are 3 fee variances clustered together?",
-        "What is the root cause of the missing bank credit items?",
+        "What should I fix first?",
+        "Why is exc_8fefd903a5cd flagged as Fee Variance?",
         "Recommend resolution actions for the open queue"
       ];
     }
     if (path.includes('cash-position')) {
       return [
+        "What happens if settlements are delayed by 2 days?",
         "Explain the deduction gap between gross volume and net cash",
-        "What is the projected cash impact if settlements delay by 3 days?",
-        "Breakdown the ₹29.1k in-transit float calculation"
+        "Breakdown the ₹18,763.08 in-transit float calculation"
       ];
     }
     if (path.includes('month-end-close')) {
       return [
-        "What are the outstanding blockers preventing August close?",
+        "What is blocking month-end close?",
         "Draft the executive month-end closing memo",
         "Explain the Benford's Law forensic flag on digit 5"
       ];
@@ -134,17 +164,17 @@ export const LedgerCopilotPanel: React.FC = () => {
         "What is the recommended reason code to resolve this exception?"
       ];
     }
-    if (path.includes('linked-accounts') || path.includes('settings')) {
+    if (path.includes('accounts') || path.includes('linked-accounts') || path.includes('settings')) {
       return [
+        "Which bank account received more: Kotak or HDFC?",
         "What is wrong with the HDFC Corporate Current Feed?",
-        "Explain Segregation of Duties conflicts in our configuration",
-        "How are API keys and gateway webhooks secured?"
+        "Explain Segregation of Duties controls in our configuration"
       ];
     }
     return [
-      "What is our statutory value match rate for August 2026?",
-      "Summarize current open exceptions by severity",
-      "Where and how is AI used in Finora?"
+      "What should I fix first?",
+      "Why are record and value match rates different?",
+      "What is our statutory value match rate for August 2026?"
     ];
   };
 
@@ -221,7 +251,7 @@ export const LedgerCopilotPanel: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Current View:</span>
                 <span className="font-bold text-slate-900 truncate max-w-[210px]">
-                  {pageContext?.page_name || 'Executive Command Center'}
+                  {getActivePageName()}
                 </span>
               </div>
               <div className="flex justify-between items-center">

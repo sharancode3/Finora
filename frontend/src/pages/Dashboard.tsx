@@ -40,7 +40,7 @@ import { AskableMetric } from '../components/ui/AskableMetric';
 import { pluralize, formatExceptionReason } from '../utils/formatters';
 import { ProactiveAnomalyNudges } from '../components/ui/ProactiveAnomalyNudges';
 import { NextBestActionCard } from '../components/ui/NextBestActionCard';
-import { computePeriodFinancialsFromArrays } from '../utils/periodFinancials';
+import { computePeriodFinancialsFromArrays, getTopOpenException, getExceptionExposure } from '../utils/periodFinancials';
 
 const SYSTEM_ANCHOR_DATE = '2026-08-31';
 
@@ -825,24 +825,19 @@ export default function Dashboard() {
 
             {/* AI CONTROLLER NEXT BEST ACTION */}
       {(() => {
-        const openExcs = exceptions.filter((e: any) => e.status !== 'resolved');
-        if (openExcs.length === 0) return null;
-        const topExc = openExcs.reduce((prev: any, curr: any) => {
-          const pAmt = prev.amount || prev.gross_amount || prev.underlying_data?.calculated_net || prev.underlying_data?.gross_amount || 0;
-          const cAmt = curr.amount || curr.gross_amount || curr.underlying_data?.calculated_net || curr.underlying_data?.gross_amount || 0;
-          return cAmt > pAmt ? curr : prev;
-        }, openExcs[0]);
-        const expAmount = topExc.amount || topExc.gross_amount || topExc.underlying_data?.calculated_net || 7225.36;
+        const topExc = getTopOpenException(exceptions);
+        if (!topExc) return null;
+        const expAmount = getExceptionExposure(topExc);
 
         return (
           <NextBestActionCard
-            title={`Escalate Priority Discrepancy (${(topExc.reason || 'Settlement Variance').replace(/_/g, ' ')})`}
+            title={`Escalate Priority Discrepancy (${formatExceptionReason(topExc.reason)})`}
             targetId={topExc.id}
             category={topExc.source_account || "Razorpay Gateway → Bank Current A/c"}
             exposureAmount={expAmount}
             reasons={[
-              `₹${Math.round(expAmount).toLocaleString('en-IN')} uncredited on transaction ${topExc.transaction_id || topExc.id}`,
-              "Exceeds standard settlement verification window by >2 days",
+              `₹${Math.round(expAmount).toLocaleString('en-IN')} flagged on transaction ${topExc.transaction_id || topExc.id}`,
+              "Exceeds standard settlement verification SLA window",
               "Highest monetary exposure currently open in active period",
               "Resolving clears the largest single liquidity friction"
             ]}
@@ -1050,7 +1045,7 @@ export default function Dashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {exceptions.slice(0, 8).map((ex) => (
+                      {exceptions.filter(e => e.status !== 'resolved').slice(0, 8).map((ex) => (
                         <tr key={ex.id} className="hover:bg-slate-50 transition-colors duration-150 ease-out">
                           <td className="py-3 px-4 font-mono font-bold text-slate-900">
                             <Link to={`/record/exception/${ex.id}`} className="hover:text-[#1E293B] hover:underline">{ex.id.substring(0, 10)}...</Link>

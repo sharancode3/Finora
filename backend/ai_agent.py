@@ -57,7 +57,7 @@ Current Viewport: {page_name}
 LIVE LEDGER CONTEXT (August 2026):
 - Gross Processed Volume: ₹2,98,603.50 across 60 transactions
 - Net Settled Bank Cash: ₹2,44,371.19 (84.4% statutory match rate)
-- Trapped in 6 Open Exceptions: ₹46,600.00 (exc_01 Razorpay Fee Variance ₹2,100, exc_02 HDFC Direct Deposit ₹5,500, exc_03 Delhivery ITC Blocked ₹3,312, exc_04 Settlement Delay ₹18,400, exc_05 Razorpay Chargeback ₹12,500, exc_06 Suspense ₹4,788)
+- Trapped in 4 Open Exceptions: ₹26,900.00 (2 cleared / resolved · total flagged: ₹46,600.00 across 6 items: exc_a17ebce376e6 Amount Mismatch ₹7,225.36, exc_b6eb43cc5acf Duplicate ₹6,200.00, exc_07790ca1bbec Ledger Only ₹4,800.00, exc_8fefd903a5cd Fee Variance ₹170.00)
 - Connected Rails: Kotak Current (₹1,92,913.68), HDFC Corporate (₹56,957.51), PayPal (₹24,500.00), Razorpay Gateway.
 
 STRICT DOMAIN BOUNDARY & CONTROLLER INSTRUCTIONS:
@@ -849,7 +849,7 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
             "suggested_questions": [
                 "Why is my pay less than last month?",
                 "Kotak vs HDFC which got more this month?",
-                "Explain the 6 open exceptions"
+                "Explain the 4 open exceptions"
             ],
             "verifier_passed": True
         }

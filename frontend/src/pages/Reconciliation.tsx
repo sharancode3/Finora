@@ -445,6 +445,8 @@ export default function Reconciliation() {
             <span className="text-slate-400">−</span>
             <span className="text-[#B91C1C] font-semibold">Exceptions: ₹{metrics.exc_val.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             <span className="text-slate-400">−</span>
+            <span className="text-[#B45309] font-semibold">Float: ₹{metrics.in_transit_float.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-slate-400">−</span>
             <span className="text-[#6366F1] font-semibold">MDR Fee: ₹{metrics.settled_fees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             <span className="text-slate-400">−</span>
             <span className="text-[#8B5CF6] font-semibold">GST (18%): ₹{metrics.settled_gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
