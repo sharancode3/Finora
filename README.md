@@ -1,9 +1,7 @@
 # Finora — Autonomous AI Finance Controller & Continuous Reconciliation Platform
 
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80" alt="Finora Autonomous AI Financial Controller" width="100%" style="border-radius: 12px; margin-bottom: 16px;" />
-
-  <p align="center">
+<p align="center">
     <strong>Autonomous AI Finance Controller • Continuous 3-Way Reconciliation • Dual Match Rates • Closed-Loop Exception Resolution • 1,000-Trial Monte Carlo Treasury Forecaster • GSTR-2B Tax-Line Matcher • Ind AS Continuous Close • On-Device Neural Intelligence ("Ask Fino")</strong>
   </p>
 
