@@ -68,26 +68,8 @@ Corporate controllers navigate four systemic vulnerabilities:
 
 ```mermaid
 flowchart LR
-    subgraph Books["1. Internal Books"]
-        direction TB
-        B1["Customer Invoices"]
-        B2["₹2,98,603.50 Gross"]
-    end
-
-    subgraph Gateway["2. Payment Gateway"]
-        direction TB
-        G1["Razorpay Settlement"]
-        G2["-₹7,262.07 MDR & -₹1,307.16 GST"]
-    end
-
-    subgraph Bank["3. Bank Accounts"]
-        direction TB
-        K1["Kotak / HDFC Vaults"]
-        K2["₹2,44,371.19 Net Settled Cash"]
-    end
-
-    Books -->|"Gross Payment Intent"| Gateway
-    Gateway -->|"Batched Net UTR Settlement"| Bank
+    A["<b>1. Internal Books</b><br/>Invoiced Demand<br/>₹2,98,603.50 (60 Invoices)"] -->|"Gross Payment Intent"| B["<b>2. Payment Gateway</b><br/>Razorpay Deductions<br/>-₹7,262.07 MDR & -₹1,307.16 GST"]
+    B -->|"Batched Net UTR Settlement"| C["<b>3. Bank Vaults</b><br/>Kotak / HDFC Credits<br/>₹2,44,371.19 Settled Cash"]
 ```
 
 ---
@@ -109,31 +91,20 @@ flowchart LR
 Finora deploys a **Multi-Brain Specialist Agent Architecture** that ingests complete live database context, conceptual statutory knowledge, and application viewport parameters before executing on-device neural inference.
 
 ```mermaid
-flowchart TD
-    UserQuery[User Inquiry in Ask Fino] --> Router[Multi-Brain Intent Router]
+flowchart LR
+    Q[User Inquiry in Ask Fino] --> R[Multi-Brain Intent Router]
     
-    subgraph Brain_Squad [Specialist Cognitive Brains]
-        B1["<b>Forensic Reconciliation & Ledger Audit Brain</b><br/><i>Lead Forensic Auditor</i><br/>• Gross-to-Net Liquidity Bridge<br/>• 3-Way Match & Bank Settlements<br/>• Benford's Law & Isolation Forest"]
-        
-        B2["<b>Deterministic Root-Cause & Dispute Brain</b><br/><i>Lead Dispute Investigator</i><br/>• 4-Factor Sequential Audit Trail<br/>• Multi-Cause Root Scoring<br/>• Ticket Escalations"]
-        
-        B3["<b>Statutory, Ind AS & Tax Compliance Brain</b><br/><i>Chief Financial Controller</i><br/>• Ind AS 115 Revenue Presentation<br/>• RBI Master Directions (T+2 Nodal Escrow)<br/>• CGST Rule 36(4) Blocked ITC & TDS"]
-        
-        B4["<b>Treasury Liquidity & Stochastic Forecast Brain</b><br/><i>Head of Treasury Operations</i><br/>• In-Transit Float & Trapped Cash<br/>• 1,000-Trial Monte Carlo Brownian Simulation<br/>• P10/P50/P90 Cash Projections"]
+    subgraph Brains [Specialist Cognitive Brains]
+        direction TB
+        B1["<b>Forensic Reconciliation Brain</b><br/>Gross-to-Net Tie-Outs & Benford MAD (0.0903)"]
+        B2["<b>Root-Cause Investigation Brain</b><br/>4-Factor Sequential Audit & Discrepancy Scoring"]
+        B3["<b>Statutory & Tax Compliance Brain</b><br/>Ind AS 115, GSTR-2B ITC & TDS 194C/J"]
+        B4["<b>Treasury Forecast Brain</b><br/>1,000-Trial Monte Carlo & Liquidity Runway"]
     end
     
-    Router --> B1
-    Router --> B2
-    Router --> B3
-    Router --> B4
-    
-    B1 --> Synthesizer[Grounded Multi-Brain Context Ingestor]
-    B2 --> Synthesizer
-    B3 --> Synthesizer
-    B4 --> Synthesizer
-    
-    Synthesizer --> LocalGemma["Local Gemma 3 (4B) on Ollama<br/><i>On-Device Neural Generation</i>"]
-    LocalGemma --> Output[Structured Executive Response with Evidence Trail]
+    R --> Brains
+    Brains --> G["<b>Local Gemma 3 (4B) Engine</b><br/>3-Layer Context Pipeline"]
+    G --> Ans[Verified Controller Output]
 ```
 
 ---
@@ -192,7 +163,7 @@ sequenceDiagram
     autonumber
     actor Controller as Sharan (Finance Controller)
     participant UI as Finora Command Center
-    participant Agent as Multi-Brain AI Controller (Fino)
+    participant Agent as Multi-Brain AI Controller
     participant Core as Deterministic SQLite DAL
     participant Audit as Immutable Audit Trail
 
@@ -203,15 +174,12 @@ sequenceDiagram
     UI->>Core: dismiss_nudge(id="nudge-settlement-float")
     Core->>Audit: Record Audit Log ("Dismissed Proactive Signal")
     Core-->>UI: State updated: Moved to Reviewed tab
-    Controller->>UI: 3. Open Ask Fino & Inquire Conversationally
-    Controller->>Agent: "What is the root cause for exception exc_a17ebce376e6?"
+    Controller->>UI: 3. Ask Root Cause for exc_a17ebce376e6
+    UI->>Agent: Route to Root-Cause & Dispute Brain
     Agent->>Core: run_ai_exception_investigation("exc_a17ebce376e6")
-    Core-->>Agent: 4-Factor Breakdown: Shortfall ₹350.00 (Status: Escalated)
+    Core-->>Agent: 4-Factor Trail: ₹350.00 Shortfall (Status: Escalated)
     Agent-->>Controller: Multi-Brain Grounded Response + Evidence Trail
-    Controller->>UI: 4. Inspect Exception Console & Verify 4-Factor Trail
-    UI->>Core: get_exception_by_id("exc_a17ebce376e6")
-    Core-->>UI: Amount Mismatch (Exposure: ₹7,225.36 · Settled: ₹6,875.36)
-    Controller->>UI: 5. Execute 1-Click Month-End Close
+    Controller->>UI: 4. Execute 1-Click Month-End Close
     UI->>Core: draft_month_end_closing_memo("2026-08")
     Core-->>UI: Synthesized Ind AS Memorandum + Pre-Lock Readiness (75.0%)
 ```
@@ -221,38 +189,32 @@ sequenceDiagram
 ## 5. System Architecture & Component Design
 
 ```mermaid
-graph TB
-    subgraph ClientLayer["1. CONTROLLER PRESENTATION LAYER (Vite + React + Tailwind)"]
-        DASH["Overview & Proactive Anomaly Signals"]
-        ASK["Ask Fino: Multi-Brain Intelligence"]
-        RECON["3-Way Reconciliation & Liquidity Bridge"]
-        EXC["Exception Command & 4-Factor Investigation"]
-        CASH["Cash Position & Monte Carlo Simulator"]
-        CLOSE["Month-End Close & Statutory Lock"]
-        TAX["Tax-Line Matcher & GSTR-2B Module"]
-        DOCS["Sandboxed Document Assistant"]
+flowchart LR
+    subgraph Presentation ["1. Presentation Layer (Vite + React)"]
+        P1["Overview & Signals"]
+        P2["Ask Fino AI Console"]
+        P3["3-Way Reconciliation"]
+        P4["Exception Investigation"]
+        P5["Cash & Monte Carlo Deck"]
+        P6["Month-End Close"]
     end
 
-    subgraph OrchestrationLayer["2. MULTI-BRAIN AGENTIC ORCHESTRATOR"]
-        ROUTER["Specialist Brain Router & Intent Classifier"]
-        CONTEXT["3-Layer Context Ingestion Engine"]
-        GEMMA["Local Neural SLM: Gemma 3 (4B) via Ollama"]
-        CONF["Dynamic Rule-Based Confidence Scorer"]
-        VERIF["Internal Mathematical Consistency Verifier"]
+    subgraph Intelligence ["2. Multi-Brain Orchestrator"]
+        I1["Specialist Brain Router"]
+        I2["3-Layer Context Hub"]
+        I3["Local Gemma 3 (4B) SLM"]
+        I4["Dynamic Confidence Scorer"]
     end
 
-    subgraph DeterministicCore["3. DETERMINISTIC SQLITE ACID ENGINE (FastAPI)"]
-        SQL[("Multi-Month ACID Ledger Store")]
-        RECON_ENG["Gross-to-Net Liquidity Engine"]
-        INV_ENG["4-Factor Sequential Audit Engine"]
-        MC_ENG["1,000-Trial Monte Carlo Forecaster"]
-        ANOM_ENG["Isolation Forest & Benford MAD (0.0903)"]
-        TAX_ENG["3-Stage GST & TDS Reconciliation Engine"]
-        AUDIT_ENG["Immutable Append-Only Audit Log"]
+    subgraph Database ["3. Deterministic Core (FastAPI + SQLite)"]
+        D1[("Multi-Month ACID Store")]
+        D2["Gross-to-Net Bridge (₹0.00 Var)"]
+        D3["4-Factor Sequential Engine"]
+        D4["Monte Carlo (1,000 Trials)"]
+        D5["Tax Matcher (GSTR-2B)"]
     end
 
-    ClientLayer --> OrchestrationLayer
-    OrchestrationLayer --> DeterministicCore
+    Presentation --> Intelligence --> Database
 ```
 
 ---
