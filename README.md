@@ -21,7 +21,7 @@
 - [1. Executive Summary & Problem Statement](#1-executive-summary--problem-statement)
   - [The Multi-Rail Financial Verification Bottleneck](#the-multi-rail-financial-verification-bottleneck)
   - [The Finora Autonomous Solution](#the-finora-autonomous-solution)
-  - [Core Technical Breakthroughs](#core-technical-breakthroughs)
+  - [Core Technical Innovations](#core-technical-innovations)
 - [2. 6-Engine AI & Statistical Architecture](#2-6-engine-ai--statistical-architecture)
 - [3. Agentic Architecture: Multi-Brain Specialist Cognitive Engine](#3-agentic-architecture-multi-brain-specialist-cognitive-engine)
   - [Specialist Cognitive Brains Overview](#specialist-cognitive-brains-overview)
@@ -77,7 +77,7 @@ flowchart LR
 
 ---
 
-### Core Technical Breakthroughs
+### Core Technical Innovations
 
 1. **Deterministic Core + Multi-Brain Agentic Shell**: All balance tie-outs, fee deductions, and ledger aggregations are executed deterministically by a multi-month SQLite ACID database and Data Access Layer (DAL). Natural language comprehension, query normalization, and deep audit investigations are orchestrated by an on-device local SLM (**Gemma 3 4B via Ollama**).
 2. **Multi-Brain Specialist Cognitive Architecture**: Queries route dynamically across 4 specialized cognitive controllers (Forensic Reconciliation, Root-Cause Dispute, Statutory Tax Compliance, Treasury Forecast).
@@ -180,29 +180,33 @@ Scores $\ge 0.90$ render as **HIGH CONFIDENCE**, $0.70 - 0.89$ as **MEDIUM CONFI
 ## 4. Architectural Philosophy: Deterministic Core + Agentic Shell
 
 ```mermaid
-flowchart TD
-    subgraph AgenticShell ["1. GROUNDED MULTI-BRAIN AGENTIC SHELL (Fino)"]
+graph TB
+    subgraph AgenticShell["GROUNDED AI AGENTIC SHELL (Fino)"]
         SLM["On-Device Neural SLM (Gemma 3 4B via Ollama)"]
-        ROUTER["Specialist Cognitive Brains (Recon · Root-Cause · Compliance · Treasury)"]
+        ORCH["Multi-Step Tool Orchestrator & Intent Classifier"]
         CONF["Dynamic Rule-Based Confidence Scoring Engine"]
     end
 
-    subgraph GuardrailLayer ["2. ZERO-HALLUCINATION GUARDRAIL LAYER"]
-        DOM["Domain Boundary Fencing (Strict Controller Specialization)"]
+    subgraph GuardrailLayer["ZERO-HALLUCINATION GUARDRAIL LAYER"]
+        DOM["Domain Boundary Fencing (Non-Financial Query Interception)"]
         DATE["System Date Boundary Protection (August 28, 2026)"]
-        TRACE["Named Tool Evidence Trail Builder & Verifier"]
+        TRACE["Named Tool Evidence Trail Builder"]
     end
 
-    subgraph DeterministicCore ["3. DETERMINISTIC COMPUTATION CORE"]
+    subgraph DeterministicCore["DETERMINISTIC COMPUTATION CORE"]
         SQL[("SQLite Multi-Month ACID Financial Ledger")]
-        RECON["3-Way Continuous Reconciliation Engine (₹0.00 Variance)"]
-        MC["1,000-Trial Monte Carlo Stochastic Simulator"]
+        RECON["3-Way Continuous Reconciliation Engine"]
+        MC["1,000-Trial Monte Carlo Stochastic Engine"]
         ANOM["Isolation Forest & Benford's Law MAD (0.0903)"]
         AUDIT["Immutable Append-Only Audit Trail"]
     end
 
     AgenticShell --> GuardrailLayer
     GuardrailLayer --> DeterministicCore
+
+    style AgenticShell fill:#f8fafc,stroke:#6366f1,stroke-width:2px
+    style GuardrailLayer fill:#f1f5f9,stroke:#0ea5e9,stroke-width:2px
+    style DeterministicCore fill:#f8fafc,stroke:#10b981,stroke-width:2px
 ```
 
 ---
@@ -213,16 +217,14 @@ flowchart TD
 
 Finora calculates an exact mathematical liquidity bridge tying gross order volume to net settled bank cash with **₹0.00 variance**:
 
-```math
-\begin{aligned}
-\text{Gross Processed Volume (60 transactions)} &\quad \mathbf{₹2,98,603.50} \\
-\text{Less: Gateway MDR Fees (2.0\% contractual)} &\quad -₹7,262.07 \\
-\text{Less: GST on Gateway Fees (18\%)} &\quad -₹1,307.16 \\
-\text{Less: Trapped in Open/Escalated Exceptions (4 items)} &\quad -₹26,900.00 \\
-\text{Less: In-Transit Float (T+2 SLA Latency)} &\quad -₹18,763.08 \\
-\hline
-\mathbf{\text{Net Settled Bank Cash (54 credits)}} &\quad \mathbf{₹2,44,371.19} \quad (\mathbf{₹0.00}\text{ Variance})
-\end{aligned}
+```
+Gross Processed Volume (60 transactions)          ₹2,98,603.50
+Less: Gateway MDR Fees (2.0% contractual)        -₹7,262.07
+Less: GST on Gateway Fees (18%)                  -₹1,307.16
+Less: Trapped in Open Exceptions (4 items)       -₹26,900.00
+Less: In-Transit Float (T+2 SLA Latency)         -₹18,763.08
+-------------------------------------------------------------
+Net Settled Bank Cash (54 credits)               ₹2,44,371.19  (Variance: ₹0.00)
 ```
 
 ---
@@ -269,41 +271,60 @@ sequenceDiagram
 ## 7. End-to-End System Architecture
 
 ```mermaid
-flowchart TD
-    subgraph Ingestion ["1. Multi-Rail Ingestion Layer"]
-        I1["Internal ERP Invoices (₹2.98L Gross)"]
-        I2["Payment Gateways (Razorpay / PayPal)"]
-        I3["Bank Statements (Kotak / HDFC UTRs)"]
-        I4["Tax Feeds (GSTR-2B & TRACES)"]
+graph TD
+    subgraph Ingestion["1. Multi-Source Ingestion Layer"]
+        L[Internal Order Ledger]
+        G[Gateway Settlements: Razorpay / PayPal]
+        B[Bank Statement UTR Credits: Kotak / HDFC]
+        T[GSTN GSTR-2B & TRACES Feeds]
     end
 
-    subgraph Core ["2. Deterministic SQLite ACID Engine"]
-        C1[("Multi-Month ACID Financial Ledger")]
-        C2["3-Way Liquidity Bridge (₹0.00 Variance)"]
-        C3["4-Factor Sequential Audit Verifier"]
-        C4["Benford's Law (MAD 0.0903) & Isolation Forest"]
-        C5["1,000-Trial Monte Carlo Stochastic Engine"]
+    subgraph Core["2. Deterministic Financial Core"]
+        SQL[(SQLite Multi-Month ACID Store)]
+        M4[4-Stage 3-Way Reconciliation Engine]
+        ANOM[Isolation Forest & Benford MAD Engine]
+        MC[1,000-Trial Monte Carlo Engine]
+        TAX[3-Stage Tax-Line Matcher]
     end
 
-    subgraph Agentic ["3. Multi-Brain Agentic Orchestrator"]
-        A1["Multi-Brain Cognitive Router"]
-        A2["3-Layer Context Pipeline (DB + Statutory + Viewport)"]
-        A3["On-Device Local Gemma 3 (4B) SLM on Ollama"]
-        A4["Dynamic Rule-Based Confidence Scorer"]
+    subgraph Agentic["3. Grounded AI Intelligence Shell (Fino)"]
+        SLM[On-Device Neural SLM Copilot: Gemma 3 4B]
+        ORCH[Multi-Step Tool Orchestrator]
+        CONF[Dynamic Rule-Based Confidence Scorer]
+        VERIF[Zero-Hallucination Domain Fencing]
+        EVID[Named Tool Evidence Trail Builder]
     end
 
-    subgraph UI ["4. Controller UI Presentation Layer"]
-        U1["Executive Overview & Proactive Signals"]
-        U2["Ask Fino Multi-Brain Intelligence"]
-        U3["3-Way Continuous Reconciliation"]
-        U4["Exception Console & Investigation"]
-        U5["Treasury Waterfall & Monte Carlo"]
-        U6["Ind AS Month-End Close & Period Lock"]
+    subgraph UI["4. Controller-First UI/UX Presentation Layer"]
+        DASH[Overview & Proactive Anomaly Signals]
+        ASK[Ask Fino: AI Controller Interface]
+        RECON[3-Way Reconciliation & Liquidity Bridge]
+        EXC[Exceptions Queue & Materiality Ranking]
+        CASH[Treasury Waterfall & Monte Carlo Deck]
+        CLOSE[5-Pillar Ind AS Close & SHA-256 Memo]
     end
 
-    Ingestion --> Core
-    Core --> Agentic
-    Agentic --> UI
+    L --> SQL
+    G --> SQL
+    B --> SQL
+    T --> TAX
+
+    SQL --> M4
+    SQL --> ANOM
+    SQL --> MC
+    SQL --> ORCH
+
+    ORCH --> VERIF
+    VERIF --> SLM
+    SLM --> CONF
+    CONF --> EVID
+
+    M4 --> RECON
+    ANOM --> EXC
+    MC --> CASH
+    EVID --> DASH
+    EVID --> ASK
+    SQL --> CLOSE
 ```
 
 ---
