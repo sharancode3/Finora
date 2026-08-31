@@ -70,9 +70,27 @@ Corporate controllers navigate four systemic breakdowns:
 **Finora** is an **Autonomous AI Finance Controller** engineered to close the finance-ops loop across multi-source financial datasets. It unifies **continuous 3-way reconciliation, deterministic root-cause auditing, stochastic cash forecasting, and closed-loop exception resolution**—enforcing mathematical determinism and an immutable chain of custody.
 
 ```mermaid
-flowchart LR
-    A["<b>1. Internal Books</b><br/>Invoiced Demand<br/>₹2,98,603.50 (60 Invoices)"] -->|"Gross Payment Intent"| B["<b>2. Payment Gateway</b><br/>Razorpay Deductions<br/>-₹7,262.07 MDR & -₹1,307.16 GST"]
-    B -->|"Batched Net UTR Settlement"| C["<b>3. Bank Vaults</b><br/>Kotak / HDFC Credits<br/>₹2,44,371.19 Settled Cash"]
+graph TD
+    subgraph Books["1. Internal Books"]
+        B1[Customer Orders & Invoices]
+        B2[Gross Invoiced: ₹2,98,603.50]
+    end
+
+    subgraph Gateway["2. Payment Gateways"]
+        G1[Razorpay / PayPal Settlements]
+        G2[MDR 2.0% & GST 18% Deductions]
+    end
+
+    subgraph Bank["3. Bank Account Vaults"]
+        K1[Kotak & HDFC UTR Credits]
+        K2[Net Settled Cash: ₹2,44,371.19]
+    end
+
+    B1 --> B2
+    B2 -->|"Gross Payment Intent"| G1
+    G1 --> G2
+    G2 -->|"Batched Net UTR Settlement"| K1
+    K1 --> K2
 ```
 
 ---
@@ -109,20 +127,45 @@ Finora integrates 6 specialized AI, machine learning, and statistical engines di
 Finora rejects the monolithic single-prompt chatbot paradigm. Instead, it implements a **Multi-Brain Specialist Cognitive Architecture** where distinct domain agents collaborate over a shared deterministic data layer.
 
 ```mermaid
-flowchart LR
-    Q[User Prompt in Ask Fino] --> R[Multi-Brain Router]
-    
-    subgraph Brains [Specialist Cognitive Brains]
-        direction TB
-        B1["<b>Forensic Reconciliation Brain</b><br/>3-Way Bridge Tie-Outs & Benford MAD (0.0903)"]
-        B2["<b>Root-Cause Investigation Brain</b><br/>4-Factor Sequential Audit & Discrepancy Scoring"]
-        B3["<b>Statutory & Tax Compliance Brain</b><br/>Ind AS 115, GSTR-2B ITC & TDS 194C/J"]
-        B4["<b>Treasury Forecast Brain</b><br/>1,000-Trial Monte Carlo & Liquidity Runway"]
+graph TD
+    subgraph Intake["1. User & Viewport Ingestion"]
+        U[User Financial Query in Ask Fino]
+        CTX[3-Layer Context Pipeline: DB + Statutory + Viewport]
+        ROUTER[Multi-Brain Cognitive Intent Router]
     end
-    
-    R --> Brains
-    Brains --> G["<b>Local Gemma 3 (4B) Engine</b><br/>3-Layer Context Pipeline"]
-    G --> Ans[Verified Controller Output]
+
+    subgraph Brains["2. Specialized Cognitive Brains"]
+        B1[Forensic Reconciliation Brain: 3-Way Bridge & Benford MAD]
+        B2[Deterministic Root-Cause Brain: 4-Factor Audit Trail]
+        B3[Statutory & Tax Brain: Ind AS 115, GSTR-2B & TDS]
+        B4[Treasury Forecaster Brain: 1,000-Trial Monte Carlo]
+    end
+
+    subgraph NeuralCore["3. On-Device Neural Synthesis"]
+        SLM[Local Gemma 3 4B on Ollama]
+        CONF[Dynamic Rule-Based Confidence Scorer]
+        VERIF[Deterministic Math & Self-Consistency Verifier]
+    end
+
+    subgraph Delivery["4. Controller Intelligence Output"]
+        OUT[Structured Executive Guidance + Evidence Trail]
+        AUDIT[Immutable Append-Only Audit Log]
+    end
+
+    U --> CTX
+    CTX --> ROUTER
+    ROUTER --> B1
+    ROUTER --> B2
+    ROUTER --> B3
+    ROUTER --> B4
+    B1 --> SLM
+    B2 --> SLM
+    B3 --> SLM
+    B4 --> SLM
+    SLM --> CONF
+    CONF --> VERIF
+    VERIF --> OUT
+    VERIF --> AUDIT
 ```
 
 ---
@@ -180,33 +223,37 @@ Scores $\ge 0.90$ render as **HIGH CONFIDENCE**, $0.70 - 0.89$ as **MEDIUM CONFI
 ## 4. Architectural Philosophy: Deterministic Core + Agentic Shell
 
 ```mermaid
-graph TB
-    subgraph AgenticShell["GROUNDED AI AGENTIC SHELL (Fino)"]
-        SLM["On-Device Neural SLM (Gemma 3 4B via Ollama)"]
-        ORCH["Multi-Step Tool Orchestrator & Intent Classifier"]
-        CONF["Dynamic Rule-Based Confidence Scoring Engine"]
+graph TD
+    subgraph AgenticShell["1. Grounded Multi-Brain Agentic Shell (Fino)"]
+        SLM[On-Device Neural SLM: Gemma 3 4B via Ollama]
+        ORCH[Multi-Step Tool Orchestration & Multi-Brain Routing]
+        CONF[Dynamic Rule-Based Confidence Scoring Engine]
     end
 
-    subgraph GuardrailLayer["ZERO-HALLUCINATION GUARDRAIL LAYER"]
-        DOM["Domain Boundary Fencing (Non-Financial Query Interception)"]
-        DATE["System Date Boundary Protection (August 28, 2026)"]
-        TRACE["Named Tool Evidence Trail Builder"]
+    subgraph GuardrailLayer["2. Zero-Hallucination Guardrail Layer"]
+        DOM[Domain Boundary Fencing & Controller Specialization]
+        DATE[System Date Anchor: August 28, 2026]
+        TRACE[Named Tool Evidence Trail Builder & Verifier]
     end
 
-    subgraph DeterministicCore["DETERMINISTIC COMPUTATION CORE"]
-        SQL[("SQLite Multi-Month ACID Financial Ledger")]
-        RECON["3-Way Continuous Reconciliation Engine"]
-        MC["1,000-Trial Monte Carlo Stochastic Engine"]
-        ANOM["Isolation Forest & Benford's Law MAD (0.0903)"]
-        AUDIT["Immutable Append-Only Audit Trail"]
+    subgraph DeterministicCore["3. Deterministic SQLite ACID Computation Core"]
+        SQL[(SQLite Multi-Month ACID Financial Store)]
+        RECON[3-Way Continuous Reconciliation Engine: ₹0.00 Variance]
+        MC[1,000-Trial Monte Carlo Stochastic Simulator]
+        ANOM[Isolation Forest & Benford's Law MAD: 0.0903]
+        AUDIT[Immutable Append-Only Audit Trail Engine]
     end
 
-    AgenticShell --> GuardrailLayer
-    GuardrailLayer --> DeterministicCore
-
-    style AgenticShell fill:#f8fafc,stroke:#6366f1,stroke-width:2px
-    style GuardrailLayer fill:#f1f5f9,stroke:#0ea5e9,stroke-width:2px
-    style DeterministicCore fill:#f8fafc,stroke:#10b981,stroke-width:2px
+    SLM --> ORCH
+    ORCH --> CONF
+    CONF --> DOM
+    DOM --> DATE
+    DATE --> TRACE
+    TRACE --> SQL
+    SQL --> RECON
+    SQL --> MC
+    SQL --> ANOM
+    SQL --> AUDIT
 ```
 
 ---
