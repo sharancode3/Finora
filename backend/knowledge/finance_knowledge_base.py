@@ -95,22 +95,22 @@ def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
             clean_alias = normalize_text(alias)
             # Only match alias if bounded by word boundaries
             if re.search(rf'\b{re.escape(clean_alias)}\b', clean_q) or (extracted_target and re.search(rf'\b{re.escape(clean_alias)}\b', extracted_target)):
-                # Longer alias matches get higher score
-                score = max(score, 30 + len(clean_alias))
+                # Whole word match gets high confidence score
+                score = max(score, 50 + len(clean_alias))
             
             # Word overlap (only on non-stop words)
             alias_words = set(w for w in clean_alias.split() if w not in STOP_WORDS)
             if alias_words and q_words:
                 overlap = len(alias_words.intersection(q_words))
                 if overlap > 0:
-                    score = max(score, overlap * 15)
+                    score = max(score, overlap * 20)
 
-        # Check specific section codes (e.g. 194C, 194J, 115)
-        for num in re.findall(r'\b(?:194[a-z]|115|109|36\(4\))\b', clean_q):
-            if num in item["term_id"] or any(num in a for a in item.get("aliases", [])):
-                score += 50
+        # Check specific section codes (e.g. 194C, 194J, 115, MDR)
+        for num in re.findall(r'\b(?:194[a-z]|115|109|36\(4\)|mdr|tds|itc|gst|dso)\b', clean_q):
+            if num == item["term_id"] or any(num == normalize_text(a) for a in item.get("aliases", [])):
+                score += 60
 
-        if score > max_score and score >= 35:
+        if score > max_score and score >= 25:
             max_score = score
             best_match = item
 
