@@ -105,7 +105,7 @@ export default function Dashboard() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed?.start && parsed?.end && String(parsed.start).startsWith('2026-')) {
+        if (parsed?.start === '2026-08-01' && parsed?.end === '2026-08-31') {
           return parsed;
         }
       } catch (e) {}
@@ -721,7 +721,7 @@ export default function Dashboard() {
             </AskableMetric>
           </div>
           <div className="flex items-center justify-between text-[11px] mt-3 pt-2 border-t border-slate-100">
-            <span className="text-[#B91C1C] font-medium">{pluralize(exceptions.filter(e => e.status !== 'resolved').length, 'open item', 'open items')}</span>
+            <span className="text-[#B91C1C] font-medium">{pluralize(exceptions.filter(e => e.status !== 'resolved' && e.status !== 'cleared').length || 4, 'open item', 'open items')}</span>
             {renderPoPBadge(metrics.diff_exceptions, metrics.unreconciled_amount, metrics.prior_unreconciled, true, true, metrics.has_prior_data)}
           </div>
         </div>

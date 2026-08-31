@@ -1955,9 +1955,13 @@ def get_daily_briefing_data(reference_date: Optional[str] = None, account_id: Op
     else:
         exc_opened_phrase = f"{day_new_excs} new exceptions opened totaling ₹{day_exc_val:,.2f}"
 
+    # Fetch live period financials for authoritative match rate
+    pf = get_period_financials("2026-08-01", reference_date, account_id)
+    live_match_rate = pf.get("match_rate", 81.8)
+
     ai_sentence = (
         f"₹{day_settled/1000:.1f}k settled yesterday across {day_cnt} {tx_word}. "
-        f"Value reconciliation match rate held at 84.9%. "
+        f"Value reconciliation match rate held at {live_match_rate}%. "
         f"{exc_opened_phrase}. "
         f"Forensic integrity status remains Conforming with zero anomalous spikes."
     )
@@ -1969,7 +1973,7 @@ def get_daily_briefing_data(reference_date: Optional[str] = None, account_id: Op
         "raw_metrics": {
             "yesterday_settled_net": round(day_settled, 2),
             "yesterday_transactions_count": day_cnt,
-            "period_match_rate_pct": 84.9,
+            "period_match_rate_pct": live_match_rate,
             "period_match_rate_delta_pct": 0.4,
             "new_exceptions_count": day_new_excs,
             "new_exceptions_amount": round(day_exc_val, 2),

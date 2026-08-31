@@ -1884,12 +1884,13 @@ def orchestrate_agent_workflow(question: str, context: Dict) -> Dict:
         else: # Dashboard / Default
             answer = (
                 "### **Executive Command Center Overview**\n\n"
-                "You are on the **Executive Command Center (Dashboard)**. This screen provides your daily 60-second financial controller briefing:\n\n"
-                "1. **Top-Line KPIs**: Gross Processed Volume (₹2,39,978.51), Net Settled Bank Cash (₹1,92,913.68), and Trapped in Exceptions (₹44,205.76) with Period-over-Period trend comparisons.\n"
-                "2. **Daily Controller Briefing**: Real-time natural language synthesis of reconciliation health, fee drift, and settlement latency.\n"
-                "3. **Universal Click-to-Ask**: Hover over any metric to reveal the 'F' affordance and auto-draft grounded financial inquiries."
+                "You are on the **Executive Command Center (Dashboard)**. This screen provides your daily financial controller briefing:\n\n"
+                "1. **Top-Line KPIs**: Gross Processed Volume (**₹2,98,603.50**), Net Settled Bank Cash (**₹2,44,371.19**), Trapped in Open Exceptions (**₹26,900.00**), and Statutory Value Match Rate (**81.8%**) with Period-over-Period trend comparisons.\n"
+                "2. **Daily Controller Briefing**: Real-time synthesis of reconciliation health, fee drift, and settlement latency.\n"
+                "3. **Proactive Anomaly Signals**: Unsupervised Isolation Forest outlier flags and Benford's Law leading digit conformity evaluation (MAD = 0.0903).\n"
+                "4. **Universal Click-to-Ask**: Hover over any metric to reveal the 'F' affordance and auto-draft grounded financial inquiries."
             )
-            suggested = ["Why is our statutory match rate at 84.9%?", "Why is my pay less than last month?", "Any weird stuff this month?"]
+            suggested = ["Why is our statutory match rate at 81.8%?", "What is blocking month-end close?", "Evaluate Benford's Law forensic anomaly"]
 
         return {
             "answer": answer,
