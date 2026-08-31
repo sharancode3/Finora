@@ -214,7 +214,7 @@ export const LedgerCopilotPanel: React.FC = () => {
                     Grounded
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">Live ledger context &amp; deterministic verification</p>
+                <p className="text-[11px] text-slate-500">Multi-Step Tool Orchestration • Grounded Ledger</p>
               </div>
             </div>
 
@@ -258,6 +258,12 @@ export const LedgerCopilotPanel: React.FC = () => {
                 <span className="text-slate-500">Active Scope:</span>
                 <span className="font-semibold text-slate-800 font-mono text-[10px]">
                   {getActiveScope()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Orchestrator:</span>
+                <span className="font-semibold text-[#1E293B] font-mono text-[10px]">
+                  Multi-Step Tool Orchestration
                 </span>
               </div>
               {pageContext?.visible_metrics && Object.keys(pageContext.visible_metrics).length > 0 && (

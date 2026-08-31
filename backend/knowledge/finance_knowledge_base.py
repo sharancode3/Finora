@@ -29,10 +29,16 @@ def normalize_text(text: str) -> str:
     text = re.sub(r'[^\w\s]', ' ', text)
     return ' '.join(text.split())
 
+STOP_WORDS = {
+    "can", "u", "you", "tell", "me", "abt", "about", "how", "what", "whats", "is", "are", 
+    "we", "hv", "have", "the", "a", "an", "in", "of", "for", "to", "and", "data", "months", 
+    "month", "year", "years", "2026", "our", "my", "show", "give", "list"
+}
+
 def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
     """
     Looks up a curated financial or treasury term from the grounded reference knowledge base.
-    Matches by exact ID, canonical name, aliases, or semantic keywords.
+    Matches by exact ID, canonical name, aliases, or semantic keywords with strict word boundaries.
     """
     glossary = _load_glossary()
     terms = glossary.get("terms", [])
@@ -40,7 +46,7 @@ def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
         return None
 
     clean_q = normalize_text(query)
-    q_words = set(clean_q.split())
+    q_words = set(w for w in clean_q.split() if w not in STOP_WORDS)
     
     # Common interrogative prefixes to strip for pure term extraction
     strip_phrases = [
@@ -72,7 +78,7 @@ def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
             if clean_alias == clean_q or clean_alias == extracted_target:
                 return _format_term_response(item)
 
-    # 3. Substring / Word-boundary containment match
+    # 3. Word-boundary containment match (prevents 't 2' matching 'abt 2026')
     best_match = None
     max_score = 0
 
@@ -81,27 +87,30 @@ def lookup_finance_term(query: str) -> Optional[Dict[str, Any]]:
         canonical_norm = normalize_text(item["canonical_name"])
         
         # Check canonical
-        if extracted_target in canonical_norm or canonical_norm in extracted_target:
+        if extracted_target and (extracted_target == canonical_norm or bool(re.search(rf'\b{re.escape(extracted_target)}\b', canonical_norm))):
             score += 40
 
-        # Check aliases
+        # Check aliases with word boundary
         for alias in item.get("aliases", []):
             clean_alias = normalize_text(alias)
-            if clean_alias in clean_q or clean_alias in extracted_target:
+            # Only match alias if bounded by word boundaries
+            if re.search(rf'\b{re.escape(clean_alias)}\b', clean_q) or (extracted_target and re.search(rf'\b{re.escape(clean_alias)}\b', extracted_target)):
+                # Longer alias matches get higher score
                 score = max(score, 30 + len(clean_alias))
             
-            # Word overlap
-            alias_words = set(clean_alias.split())
-            overlap = len(alias_words.intersection(q_words))
-            if overlap > 0:
-                score = max(score, overlap * 10)
+            # Word overlap (only on non-stop words)
+            alias_words = set(w for w in clean_alias.split() if w not in STOP_WORDS)
+            if alias_words and q_words:
+                overlap = len(alias_words.intersection(q_words))
+                if overlap > 0:
+                    score = max(score, overlap * 15)
 
         # Check specific section codes (e.g. 194C, 194J, 115)
-        for num in re.findall(r'\b(?:194[a-z]|115|109|7|1)\b', clean_q):
+        for num in re.findall(r'\b(?:194[a-z]|115|109|36\(4\))\b', clean_q):
             if num in item["term_id"] or any(num in a for a in item.get("aliases", [])):
                 score += 50
 
-        if score > max_score and score >= 20:
+        if score > max_score and score >= 35:
             max_score = score
             best_match = item
 

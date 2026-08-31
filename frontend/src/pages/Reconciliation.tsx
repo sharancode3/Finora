@@ -204,13 +204,13 @@ export default function Reconciliation() {
     const dates = Object.keys(dailyMap).sort().slice(-7);
     if (dates.length === 0) {
       return [
-        { rate: 82.0 }, { rate: 83.5 }, { rate: 84.0 }, { rate: 83.8 }, { rate: 84.2 }, { rate: 84.4 }, { rate: Number(metrics.match_rate) || 84.4 }
+        { rate: 82.0 }, { rate: 83.5 }, { rate: 84.0 }, { rate: 83.8 }, { rate: 84.2 }, { rate: 81.8 }, { rate: Number(metrics.match_rate) || 81.8 }
       ];
     }
 
     return dates.map(d => {
       const day = dailyMap[d];
-      const rate = day.gross > 0 ? (day.settled / day.gross) * 100 : 84.4;
+      const rate = day.gross > 0 ? (day.settled / day.gross) * 100 : 81.8;
       return { date: d.substring(5), rate: Math.round(rate * 10) / 10 };
     });
   }, [scopeAndSearchFiltered, metrics.match_rate]);
@@ -473,9 +473,9 @@ export default function Reconciliation() {
             <span className="text-slate-400">−</span>
             <span className="text-purple-700 font-semibold">GST (18%): ₹{metrics.settled_gst.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             <span className="text-slate-400">−</span>
-            <span className="text-[#B91C1C] font-semibold">Trapped: ₹{(metrics.exc_val > 33963.07 ? metrics.exc_val - 33963.07 : 11700).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span className="text-[#B91C1C] font-semibold">Trapped: ₹{metrics.exc_val.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             <span className="text-slate-400">−</span>
-            <span className="text-blue-700 font-semibold">In-Transit Float: ₹33,963.07</span>
+            <span className="text-blue-700 font-semibold">In-Transit Float: ₹{metrics.in_transit_float.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             <span className="text-slate-400">=</span>
             <span className="text-[#15803D] font-bold">Net Bank Cash: ₹{metrics.total_net.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>

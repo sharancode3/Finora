@@ -1360,13 +1360,13 @@ export default function Dashboard() {
               {/* Isolation Forest ML Flag Card */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Unsupervised ML Signal</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Unsupervised ML Signal (Isolation Forest)</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                     transactions.length < 20 
                       ? 'bg-[#FFFBEB] text-[#B45309] border-[#FEF3C7]' 
                       : (mlAnomalies.length > 0 ? 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]' : 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]')
                   }`}>
-                    {transactions.length < 20 ? 'Sample < 20' : (mlAnomalies.length > 0 ? `${mlAnomalies.length} Flagged` : 'Clean Signal')}
+                    {transactions.length < 20 ? 'Sample < 20' : (mlAnomalies.length > 0 ? `${mlAnomalies.length} Flagged This Period (August 2026)` : 'Clean Signal')}
                   </span>
                 </div>
 

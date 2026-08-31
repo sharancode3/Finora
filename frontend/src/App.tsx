@@ -1,3 +1,4 @@
+import { FinancialMetricsProvider } from './context/FinancialMetricsContext';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AIProvider } from './context/AIContext';
@@ -29,6 +30,7 @@ function App() {
       <BrowserRouter>
         <ThemeProvider>
           <AIProvider>
+          <FinancialMetricsProvider>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
@@ -68,6 +70,7 @@ function App() {
               {/* Catch-all Wildcard Route: Guarantees zero blank white screens */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
+          </FinancialMetricsProvider>
           </AIProvider>
         </ThemeProvider>
       </BrowserRouter>

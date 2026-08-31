@@ -125,7 +125,7 @@ export default function DocumentAssistant() {
 
   const fetchSamples = async () => {
     try {
-      const res = await axios.get('http://127.0.0.1:8000/api/v1/document-assistant/samples');
+      const res = await axios.get('http://127.0.0.1:8800/api/v1/document-assistant/samples');
       setSamples(res.data || []);
       // Automatically load the first sample (HDFC CSV) for instant evaluation
       if (res.data && res.data.length > 0 && !documentData) {
@@ -139,7 +139,7 @@ export default function DocumentAssistant() {
   const loadSample = async (sampleId: string) => {
     setIsLoadingDoc(true);
     try {
-      const res = await axios.post(`http://127.0.0.1:8000/api/v1/document-assistant/load-sample/${sampleId}`);
+      const res = await axios.post(`http://127.0.0.1:8800/api/v1/document-assistant/load-sample/${sampleId}`);
       setDocumentData(res.data);
       setHighlightedRowMap({});
       setSelectedCategoryFilter('all');
@@ -176,7 +176,7 @@ export default function DocumentAssistant() {
     formData.append('file', file);
 
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/document-assistant/upload', formData, {
+      const res = await axios.post('http://127.0.0.1:8800/api/v1/document-assistant/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setDocumentData(res.data);
@@ -233,7 +233,7 @@ export default function DocumentAssistant() {
     setIsAsking(true);
 
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/v1/document-assistant/ask', {
+      const res = await axios.post('http://127.0.0.1:8800/api/v1/document-assistant/ask', {
         doc_id: documentData.doc_id,
         question: q
       });

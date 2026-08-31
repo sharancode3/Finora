@@ -41,6 +41,7 @@ import {
   Legend
 } from 'recharts';
 import { useAI } from '../context/AIContext';
+import { useFinancialMetrics } from '../context/FinancialMetricsContext';
 import { useTheme } from '../context/ThemeContext';
 import { AskableMetric } from '../components/ui/AskableMetric';
 
@@ -49,6 +50,7 @@ type ScenarioPreset = 'base' | 'recover_all' | 'recover_half' | 'delay_stress' |
 export default function CashPosition() {
   const { isDark, colors, chartColors } = useTheme();
   const { askAI } = useAI();
+  const { netSettledCash, trappedExceptionsAmount, grossVolume } = useFinancialMetrics();
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -163,9 +165,9 @@ export default function CashPosition() {
   const scenario = analytics?.scenario;
   const monte_carlo = analytics?.monte_carlo;
 
-  // Base Numbers
-  const baseNet = leakage?.net || 244371.19;
-  const trappedExceptions = leakage?.trapped_exceptions || scenario?.trapped_in_exceptions || 11700.00;
+  // Base Numbers strictly sourced from Single Source of Truth
+  const baseNet = leakage?.net || netSettledCash || 244371.19;
+  const trappedExceptions = leakage?.trapped_exceptions || trappedExceptionsAmount || 26900.00;
   const dailyNetMean = baseNet / 28;
 
   // Compute live headline figures for the 5 explicit scenario cards

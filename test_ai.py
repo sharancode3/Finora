@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-URL = "http://127.0.0.1:8000/api/v1/chat/ask"
+URL = "http://127.0.0.1:8800/api/v1/chat/ask"
 
 queries = [
     # 1. Clean grounded answer

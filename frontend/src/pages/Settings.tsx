@@ -65,7 +65,7 @@ export default function Settings() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     { id: '1', name: 'Sharan (Finance Controller)', email: 'sharan@finora.demo', role: 'Finance Controller', status: 'Active' },
     { id: '2', name: 'Treasury Lead', email: 'treasury@finora.demo', role: 'Finance Controller', status: 'Active' },
-    { id: '3', name: 'Statutory Auditor', email: 'auditor@kpmg.demo', role: 'Viewer / Auditor', status: 'Active' },
+    { id: '3', name: 'Statutory Auditor', email: 'auditor@audit.demo', role: 'Viewer / Auditor', status: 'Active' },
     { id: '4', name: 'DevOps / Admin', email: 'admin@finora.demo', role: 'Organization Admin', status: 'Active' },
   ]);
 
@@ -698,14 +698,14 @@ export default function Settings() {
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-slate-100 pb-3">
                   <FinoraMark size={16} />
-                  <h4 className="text-xs uppercase tracking-wider">Model Runtime &amp; Privacy Guarantees</h4>
+                  <h4 className="text-xs uppercase tracking-wider">Model Runtime &amp; Privacy Safeguards</h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Underlying Model</span>
                     <span className="text-sm font-bold font-mono text-slate-900 block mt-0.5">Gemma 3 4B-Instruct</span>
-                    <p className="text-[11px] text-slate-500 mt-1">Fine-tuned lightweight model optimized for financial ops and accounting precision.</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Instruction-tuned foundation model equipped with financial prompt constraints and deterministic tool bindings.</p>
                   </div>
 
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
@@ -713,13 +713,13 @@ export default function Settings() {
                     <span className="text-sm font-bold text-[#15803D] block mt-0.5 flex items-center gap-1">
                       <ShieldCheck size={14} /> 100% Local On-Device
                     </span>
-                    <p className="text-[11px] text-slate-500 mt-1">Runs locally on CPU/ONNX runtime. Zero financial ledger data is sent to external third-party APIs.</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Runs locally via Ollama / CPU runtime. Financial ledger records are queried deterministically in-process with zero external transmission.</p>
                   </div>
 
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Grounding Mode</span>
                     <span className="text-sm font-bold font-mono text-slate-900 block mt-0.5">Deterministic (Temp: 0.0)</span>
-                    <p className="text-[11px] text-slate-500 mt-1">Zero hallucination tolerance. Every assertion must map to an underlying SQLite record.</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Deterministic grounding policy. Every factual assertion is verified against underlying SQLite ledger records before rendering.</p>
                   </div>
                 </div>
               </div>
@@ -729,7 +729,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2 text-slate-900 font-bold">
                     <Layers size={16} className="text-[#1E293B]" />
-                    <h4 className="text-xs uppercase tracking-wider">Registered Agent Tool Catalog (10 Operational Tools)</h4>
+                    <h4 className="text-xs uppercase tracking-wider">Registered Agent Tool Catalog (12 Operational Tools)</h4>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Direct SQLite, ML &amp; Python Bindings</span>
                 </div>
@@ -737,7 +737,7 @@ export default function Settings() {
                 {/* Section A: Core Ledger & Reconciliation Tools */}
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">A. Core Ledger &amp; Reconciliation Tools (6)</span>
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">A. Core Ledger &amp; Reconciliation Tools (8)</span>
                     <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 border border-slate-200">ACID Storage</span>
                   </div>
 
@@ -745,6 +745,8 @@ export default function Settings() {
                     {[
                       { name: 'sqlite_settlements_query', desc: 'Queries raw gateway settlement feeds, bank UTR records, and ledger credits to verify cash settlement velocity.', category: 'Ledger Retrieval' },
                       { name: 'deterministic_variance_detector', desc: 'Executes 4-factor root-cause audit check (refund offsets, 2% MDR fee variance, T+3 float latency, duplicate records).', category: 'Exception Audit' },
+                      { name: 'run_root_cause_investigation', desc: 'Runs 4-factor sequential deterministic audit check and multi-cause root scoring for specific exception IDs.', category: 'Conversational Audit' },
+                      { name: 'explain_escalation_reason', desc: 'Explains why an exception was escalated rather than auto-resolved (threshold breaches, missing bank UTRs).', category: 'Escalation Intelligence' },
                       { name: 'stochastic_monte_carlo_engine', desc: 'Runs 1,000 empirical geometric Brownian path trials to project day-7 P10, P50, and P90 cash liquidity ranges.', category: 'Probabilistic Forecasting' },
                       { name: 'benford_law_inspector', desc: 'Calculates leading-digit distribution across ledger amounts and flags anomalous deviations (MAD = 0.0903).', category: 'Forensic Compliance' },
                       { name: 'isolation_forest_ml_anomaly_detector', desc: 'Multi-dimensional machine learning detection analyzing amount z-scores, velocity, and timing drift.', category: 'ML Risk Intelligence' },

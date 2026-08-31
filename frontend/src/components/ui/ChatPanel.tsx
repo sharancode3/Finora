@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bot, User, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
+import { FormattedMarkdown } from './FormattedMarkdown';
 
 export interface ChatMessage {
   id: string;
@@ -54,7 +55,7 @@ export const ChatPanel = ({ messages, onSendMessage, className = '' }: ChatPanel
             
             <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`p-3 rounded-lg text-[14px] ${msg.role === 'user' ? 'bg-primary-accent text-white rounded-tr-none' : 'bg-surface border border-border text-slate-700 rounded-tl-none shadow-sm'}`}>
-                {msg.content}
+                <FormattedMarkdown content={msg.content} isUser={msg.role === 'user'} className={msg.role === 'user' ? 'text-white' : 'text-slate-800'} />
               </div>
               
               {/* Evidence Expandable */}

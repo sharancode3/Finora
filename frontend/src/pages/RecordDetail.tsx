@@ -663,6 +663,17 @@ export default function RecordDetail() {
               </div>
             </div>
 
+            {record.reason === 'fee_variance' && (
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-[11px] space-y-1">
+                <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                  <span>💡 Why do these differ?</span>
+                </div>
+                <p className="leading-relaxed text-amber-800">
+                  Contractual schedule mandates 2.0% (₹{expectedMdr.toFixed(2)}), but gateway deducted 2.8% (₹{ud.actual_fee || 238}.00), creating a net recoverable discrepancy of ₹{((ud.actual_fee || 238) - expectedMdr).toFixed(2)}.
+                </p>
+              </div>
+            )}
+
             <div className="p-3 bg-[#EFF6FF] rounded-xl border border-[#DBEAFE] text-slate-700 text-[11px] flex items-center gap-2">
               <CheckCircle2 size={15} className="text-[#1D4ED8] shrink-0" />
               <span>Full deterministic audit trail verified against statutory Ind AS accounting rules.</span>

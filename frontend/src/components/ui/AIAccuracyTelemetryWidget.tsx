@@ -62,7 +62,7 @@ export const AIAccuracyTelemetryWidget: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">Self-Reported AI Grounding Accuracy & Audit Telemetry</h3>
-            <p className="text-xs text-slate-500">Live deterministic verification metrics evaluated across all AI Controller queries</p>
+            <p className="text-xs text-slate-500">Live deterministic verification metrics evaluated across all Fino queries</p>
           </div>
         </div>
         <button

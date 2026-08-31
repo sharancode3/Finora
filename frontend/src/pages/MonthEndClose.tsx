@@ -483,19 +483,16 @@ export default function MonthEndClose() {
                   </div>
                   
                   <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Exceptions</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-xl font-bold text-slate-900 font-mono">
-                        <AskableMetric label="Total Open Exceptions" value={current.exceptions_open ?? current.exceptions_total ?? 0} context={`close period ${targetMonth}`}>
-                          <AnimatedNumber value={current.exceptions_open ?? current.exceptions_total ?? 0} duration={600} /> Open
-                        </AskableMetric>
-                      </span>
-                      <span className="text-xs text-slate-500 font-medium">
-                        ({current.exceptions_resolved || 0} cleared)
-                      </span>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Exceptions Breakdown</p>
+                    <div className="flex flex-wrap items-baseline gap-1.5 mt-1 font-mono text-sm font-bold">
+                      <span className="text-slate-900">{current.exceptions_raw_open ?? 0} Open</span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-[#B45309]">{current.exceptions_escalated ?? (current.exceptions_open || 4)} Escalated</span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-[#15803D]">{current.exceptions_resolved ?? 2} Cleared</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Prior: {prevExceptions} open exceptions
+                    <p className="text-[10px] text-amber-700 font-medium mt-1">
+                      Escalated items block statutory close until cleared.
                     </p>
                   </div>
 

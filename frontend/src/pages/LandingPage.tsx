@@ -99,8 +99,42 @@ const FORECAST_POINTS = [
   { day: 'Day 7 (Sep 04)', base: 2.71, delayed: 2.18 }
 ];
 
+// Lightweight scroll reveal hook conforming to Finora motion rules (150-250ms, ease-out, no bounce/glow)
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.12 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
+  
+  // Section Scroll-Reveal Observers (200ms ease-out)
+  const lineageReveal = useScrollReveal();
+  const threeSourcesReveal = useScrollReveal();
+  const problemReveal = useScrollReveal();
+  const traceReveal = useScrollReveal();
+  const forecastReveal = useScrollReveal();
+  const custodyReveal = useScrollReveal();
   
   // Interactive States
   const [selectedTrace, setSelectedTrace] = useState<SampleTrace>(SAMPLE_TRACES[0]);
@@ -133,7 +167,7 @@ export default function LandingPage() {
     exceptionAmount: 26900,
     grossVolume: 298603.50,
     netSettled: 244371.19,
-    matchRate: 84.4,
+    matchRate: 81.8,
     floatAmount: 18763.08,
     mdrFees: 7262.07,
     gstAmount: 1307.16
@@ -151,7 +185,7 @@ export default function LandingPage() {
             exceptionAmount: res.data.trapped_exceptions || 26900,
             grossVolume: res.data.gross_processed_volume || 298603.50,
             netSettled: res.data.net_settled_cash || 244371.19,
-            matchRate: res.data.value_reconciliation_rate || 84.4,
+            matchRate: res.data.value_reconciliation_rate || 81.8,
             floatAmount: res.data.in_transit_float || 18763.08,
             mdrFees: res.data.mdr_fees || 7262.07,
             gstAmount: res.data.gst_amount || 1307.16
@@ -281,10 +315,14 @@ export default function LandingPage() {
 
         {/* HERO VISUAL: Editorial Interactive Financial Lineage Flow */}
         <div 
+          id="financial-lineage"
+          ref={lineageReveal.ref}
           style={{
             transform: `perspective(1000px) rotateX(${-mousePos.y * 0.15}deg) rotateY(${mousePos.x * 0.15}deg) translate3d(${mousePos.x * 0.4}px, ${mousePos.y * 0.4}px, 0)`
           }}
-          className="w-full max-w-4xl bg-white border border-[#E5E7EB] rounded-2xl p-6 sm:p-8 shadow-xs text-left transition-transform duration-300 ease-out relative"
+          className={`w-full max-w-4xl bg-white border border-[#E5E7EB] rounded-2xl p-6 sm:p-8 shadow-xs text-left transition-all duration-200 ease-out relative ${
+            lineageReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+          }`}
         >
           
           <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4 mb-6">
@@ -292,7 +330,7 @@ export default function LandingPage() {
               Active Financial Lineage • August 2026 Batch
             </span>
             <span className="text-xs font-mono font-bold text-[#16A34A] bg-[#F0FDF4] px-2.5 py-0.5 rounded border border-[#BBF7D0]">
-              84.4% Value Reconciled
+              81.8% Value Reconciled
             </span>
           </div>
 
@@ -387,7 +425,13 @@ export default function LandingPage() {
       {/* =========================================================================
           3. 3-WAY FINANCIAL FLOW: THREE SOURCES, ONE FINANCIAL TRUTH
       ========================================================================= */}
-      <section id="three-sources" className="py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB]">
+      <section 
+        id="three-sources" 
+        ref={threeSourcesReveal.ref}
+        className={`py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB] transition-all duration-200 ease-out ${
+          threeSourcesReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        }`}
+      >
         
         <div className="max-w-2xl mb-14">
           <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B45F5] block mb-2">
@@ -401,21 +445,24 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* 3 Visual Connected Cards with Editorial Photography */}
+        {/* 3 Visual Connected Cards with Restrained Ink-Tone Fintech Geometry */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* Source 01 */}
+          {/* Source 01: Internal Books */}
           <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-2xs hover:border-[#CBD5E1] transition-all flex flex-col justify-between group">
-            <div className="h-36 overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80" 
-                alt="Internal Sales Ledger Invoices"
-                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-              <span className="absolute bottom-3 left-3 text-[10px] font-mono font-bold text-white uppercase tracking-wider bg-black/40 px-2 py-0.5 rounded backdrop-blur-xs">
-                01 • SOURCE OF TRUTH
-              </span>
+            {/* Ink-Tone Architectural Header */}
+            <div className="h-32 bg-[#0F172A] p-4 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#94A3B8_1px,transparent_1px)] [background-size:12px_12px]" />
+              <div className="flex items-center justify-between z-10">
+                <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded border border-white/10">
+                  01 • SOURCE OF TRUTH
+                </span>
+                <BookOpen size={16} className="text-slate-300" />
+              </div>
+              <div className="z-10 font-mono text-[11px] text-slate-300 flex items-center justify-between">
+                <span>Capture Hash: #INV-2026-AUG</span>
+                <span className="text-emerald-400 font-bold">100% Ingested</span>
+              </div>
             </div>
 
             <div className="p-6 flex-1 flex flex-col justify-between">
@@ -444,20 +491,23 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Source 02 */}
+          {/* Source 02: Razorpay Settlement */}
           <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-2xs hover:border-[#CBD5E1] transition-all flex flex-col justify-between group">
-            <div className="h-36 overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=600&q=80" 
-                alt="Payment Gateway Processing"
-                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-              <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 px-2 py-0.5 rounded backdrop-blur-xs">
-                <InstitutionLogo name="Razorpay" size={14} />
-                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">
+            {/* Ink-Tone Architectural Header */}
+            <div className="h-32 bg-[#0B132B] p-4 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#60A5FA_1px,transparent_1px)] [background-size:12px_12px]" />
+              <div className="flex items-center justify-between z-10">
+                <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1.5">
+                  <InstitutionLogo name="Razorpay" size={13} />
                   02 • PAYMENT GATEWAY
                 </span>
+                <span className="text-[10px] font-mono text-blue-300 font-bold bg-blue-500/20 px-2 py-0.5 rounded">
+                  2.0% MDR + 18% GST
+                </span>
+              </div>
+              <div className="z-10 font-mono text-[11px] text-slate-300 flex items-center justify-between">
+                <span>Contract SLA: T+2 Rolling</span>
+                <span className="text-blue-300 font-bold">Auto-Reconciled</span>
               </div>
             </div>
 
@@ -485,25 +535,29 @@ export default function LandingPage() {
 
               <div className="mt-5 pt-3 border-t border-[#F1F5F9] text-xs font-bold text-[#5B45F5] flex items-center gap-1.5">
                 <CheckCircle2 size={14} />
-                <span>Contractual Rates Audited</span>
+                <span>Contractual Rates Verified</span>
               </div>
             </div>
           </div>
 
-          {/* Source 03 */}
+          {/* Source 03: Bank Statement Vaults */}
           <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-2xs hover:border-[#CBD5E1] transition-all flex flex-col justify-between group">
-            <div className="h-36 overflow-hidden relative">
-              <img 
-                src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=600&q=80" 
-                alt="Institutional Bank Statement Deposits"
-                className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-              <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 px-2 py-0.5 rounded backdrop-blur-xs">
-                <InstitutionLogo name="Kotak" size={14} />
-                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider">
+            {/* Ink-Tone Architectural Header */}
+            <div className="h-32 bg-[#062018] p-4 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#4ADE80_1px,transparent_1px)] [background-size:12px_12px]" />
+              <div className="flex items-center justify-between z-10">
+                <span className="text-[10px] font-mono font-bold text-emerald-200 uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1.5">
+                  <Building2 size={13} />
                   03 • BANK STATEMENT VAULTS
                 </span>
+                <div className="flex items-center gap-1">
+                  <InstitutionLogo name="Kotak" size={14} />
+                  <InstitutionLogo name="HDFC" size={14} />
+                </div>
+              </div>
+              <div className="z-10 font-mono text-[11px] text-emerald-200 flex items-center justify-between">
+                <span>Vault Tie-Out: ₹0.00 Variance</span>
+                <span className="text-emerald-400 font-bold">Verified Net</span>
               </div>
             </div>
 
@@ -524,7 +578,7 @@ export default function LandingPage() {
                     <strong className="text-[#16A34A]">₹2,44,371.19</strong>
                   </div>
                   <div className="flex justify-between text-[#64748B]">
-                    <span>In-Transit (T+2):</span>
+                    <span>In-Transit Float (T+2 SLA):</span>
                     <strong className="text-[#B45309]">₹18,763.08</strong>
                   </div>
                 </div>
@@ -544,7 +598,8 @@ export default function LandingPage() {
       {/* =========================================================================
           4. THE RECONCILIATION PROBLEM STORY
       ========================================================================= */}
-      <section id="problem-story" className="py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB]">
+      <section id="problem-story" ref={problemReveal.ref} className={`py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB] transition-all duration-200 ease-out ${problemReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
+
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
@@ -940,7 +995,7 @@ export default function LandingPage() {
               3. CONTROLLER APPROVES
             </div>
             <div className={`p-3 rounded-xl border ${approvalState === 'audited' ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0] font-bold' : 'bg-[#F8F9FA] text-[#64748B] border-[#E2E8F0]'}`}>
-              4. AUDITED & SEALED
+              4. VERIFIED & RECORDED
             </div>
           </div>
 
@@ -951,7 +1006,7 @@ export default function LandingPage() {
               <strong className="text-sm text-[#0F172A] font-mono">
                 {approvalState === 'pending' && 'Pending Controller Action (Risk: High)'}
                 {approvalState === 'approved' && 'Approved by Sharan (Finance Controller)'}
-                {approvalState === 'audited' && 'Immutable Audit Record Sealed in SQLite'}
+                {approvalState === 'audited' && 'Dual-Custody Audit Record Recorded in SQLite'}
               </strong>
             </div>
 
@@ -992,7 +1047,8 @@ export default function LandingPage() {
       {/* =========================================================================
           9. CASH INTELLIGENCE SHOWCASE (WITH INTERACTIVE SVG CHART & SLIDER)
       ========================================================================= */}
-      <section id="cash-forecast" className="py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB]">
+      <section id="cash-forecast" ref={forecastReveal.ref} className={`py-24 px-6 lg:px-12 max-w-6xl mx-auto border-t border-[#E5E7EB] transition-all duration-200 ease-out ${forecastReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
+
         
         <div className="max-w-2xl mb-14">
           <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#5B45F5] block mb-2">
@@ -1176,7 +1232,7 @@ export default function LandingPage() {
           </div>
 
           <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-2xs space-y-1">
-            <span className="text-[10px] font-mono font-bold text-[#15803D] font-mono">84.4%</span>
+            <span className="text-[10px] font-mono font-bold text-[#15803D] font-mono">81.8%</span>
             <div className="text-xs text-[#15803D]">₹2,44,371.19 Settled Cash</div>
           </div>
 

@@ -40,7 +40,7 @@ def run_benchmarks():
     latencies = []
     for ep in endpoints:
         ep_start = time.time()
-        requests.get(f"http://localhost:8000{ep}")
+        requests.get(f"http://localhost:8800{ep}")
         latencies.append(time.time() - ep_start)
         
     avg_api_latency = sum(latencies) / len(latencies)
@@ -48,7 +48,7 @@ def run_benchmarks():
     
     # 3. AI Question Processing
     ai_start = time.time()
-    requests.post("http://localhost:8000/api/v1/chat/ask", json={
+    requests.post("http://localhost:8800/api/v1/chat/ask", json={
         "message": "What is my match rate?",
         "session_id": "benchmark"
     })
