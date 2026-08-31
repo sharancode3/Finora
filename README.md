@@ -180,27 +180,29 @@ Scores $\ge 0.90$ render as **HIGH CONFIDENCE**, $0.70 - 0.89$ as **MEDIUM CONFI
 ## 4. Architectural Philosophy: Deterministic Core + Agentic Shell
 
 ```mermaid
-flowchart LR
-    subgraph Shell ["1. Multi-Brain Agentic Shell"]
-        S1["Local Gemma 3 (4B) via Ollama"]
-        S2["Multi-Brain Intent Router"]
-        S3["Dynamic Confidence Scorer"]
+flowchart TD
+    subgraph AgenticShell ["1. GROUNDED MULTI-BRAIN AGENTIC SHELL (Fino)"]
+        SLM["On-Device Neural SLM (Gemma 3 4B via Ollama)"]
+        ROUTER["Specialist Cognitive Brains (Recon · Root-Cause · Compliance · Treasury)"]
+        CONF["Dynamic Rule-Based Confidence Scoring Engine"]
     end
 
-    subgraph Guardrails ["2. Verification & Guardrail Layer"]
-        G1["Domain Boundary Fencing"]
-        G2["System Date Anchor (Aug 28, 2026)"]
-        G3["Mathematical Consistency Check"]
+    subgraph GuardrailLayer ["2. ZERO-HALLUCINATION GUARDRAIL LAYER"]
+        DOM["Domain Boundary Fencing (Strict Controller Specialization)"]
+        DATE["System Date Boundary Protection (August 28, 2026)"]
+        TRACE["Named Tool Evidence Trail Builder & Verifier"]
     end
 
-    subgraph Core ["3. Deterministic SQLite ACID Core"]
-        C1[("Multi-Month Ledger Store")]
-        C2["Liquidity Bridge (₹0.00 Var)"]
-        C3["4-Factor Sequential Engine"]
-        C4["Monte Carlo Stochastic Engine"]
+    subgraph DeterministicCore ["3. DETERMINISTIC COMPUTATION CORE"]
+        SQL[("SQLite Multi-Month ACID Financial Ledger")]
+        RECON["3-Way Continuous Reconciliation Engine (₹0.00 Variance)"]
+        MC["1,000-Trial Monte Carlo Stochastic Simulator"]
+        ANOM["Isolation Forest & Benford's Law MAD (0.0903)"]
+        AUDIT["Immutable Append-Only Audit Trail"]
     end
 
-    Shell --> Guardrails --> Core
+    AgenticShell --> GuardrailLayer
+    GuardrailLayer --> DeterministicCore
 ```
 
 ---
@@ -267,39 +269,41 @@ sequenceDiagram
 ## 7. End-to-End System Architecture
 
 ```mermaid
-flowchart LR
-    subgraph Ingestion ["1. Multi-Rail Ingestion"]
-        I1["Internal ERP Invoices"]
-        I2["Razorpay & PayPal Batches"]
-        I3["Bank Statement UTR Feeds"]
-        I4["GSTR-2B Tax Portal Feeds"]
+flowchart TD
+    subgraph Ingestion ["1. Multi-Rail Ingestion Layer"]
+        I1["Internal ERP Invoices (₹2.98L Gross)"]
+        I2["Payment Gateways (Razorpay / PayPal)"]
+        I3["Bank Statements (Kotak / HDFC UTRs)"]
+        I4["Tax Feeds (GSTR-2B & TRACES)"]
     end
 
-    subgraph Core ["2. Deterministic Financial Core"]
-        C1[("SQLite Multi-Month ACID Store")]
-        C2["Gross-to-Net Liquidity Engine"]
-        C3["4-Factor Sequential Audit Engine"]
-        C4["Isolation Forest & Benford MAD (0.0903)"]
-        C5["1,000-Trial Monte Carlo Engine"]
+    subgraph Core ["2. Deterministic SQLite ACID Engine"]
+        C1[("Multi-Month ACID Financial Ledger")]
+        C2["3-Way Liquidity Bridge (₹0.00 Variance)"]
+        C3["4-Factor Sequential Audit Verifier"]
+        C4["Benford's Law (MAD 0.0903) & Isolation Forest"]
+        C5["1,000-Trial Monte Carlo Stochastic Engine"]
     end
 
-    subgraph Intelligence ["3. Multi-Brain Agentic Shell"]
-        M1["Multi-Brain Cognitive Router"]
-        M2["3-Layer Context Pipeline"]
-        M3["Local Gemma 3 (4B) SLM on Ollama"]
-        M4["Dynamic Confidence Scorer"]
+    subgraph Agentic ["3. Multi-Brain Agentic Orchestrator"]
+        A1["Multi-Brain Cognitive Router"]
+        A2["3-Layer Context Pipeline (DB + Statutory + Viewport)"]
+        A3["On-Device Local Gemma 3 (4B) SLM on Ollama"]
+        A4["Dynamic Rule-Based Confidence Scorer"]
     end
 
-    subgraph UI ["4. Controller UI Presentation"]
-        U1["Overview & Signals"]
-        U2["Ask Fino Console"]
-        U3["3-Way Reconciliation Bridge"]
-        U4["Exception Investigation Console"]
+    subgraph UI ["4. Controller UI Presentation Layer"]
+        U1["Executive Overview & Proactive Signals"]
+        U2["Ask Fino Multi-Brain Intelligence"]
+        U3["3-Way Continuous Reconciliation"]
+        U4["Exception Console & Investigation"]
         U5["Treasury Waterfall & Monte Carlo"]
-        U6["Month-End Close & SHA-256 Lock"]
+        U6["Ind AS Month-End Close & Period Lock"]
     end
 
-    Ingestion --> Core --> Intelligence --> UI
+    Ingestion --> Core
+    Core --> Agentic
+    Agentic --> UI
 ```
 
 ---
