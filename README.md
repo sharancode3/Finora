@@ -19,21 +19,23 @@
 ## Table of Contents
 
 - [1. Executive Summary & Problem Statement](#1-executive-summary--problem-statement)
-  - [The Problem: Multi-Rail Reconciliation Bottleneck](#the-problem-multi-rail-reconciliation-bottleneck)
-  - [The Finora Solution](#the-finora-solution)
-  - [Core Technical Breakthroughs](#core-technical-breakthroughs)
-- [2. Multi-Brain Specialist AI Architecture](#2-multi-brain-specialist-ai-architecture)
-  - [The 4 Cognitive Specialist Brains](#the-4-cognitive-specialist-brains)
+  - [The Multi-Rail Financial Verification Bottleneck](#the-multi-rail-financial-verification-bottleneck)
+  - [The Finora Autonomous Solution](#the-finora-autonomous-solution)
+  - [Core Technical Innovations](#core-technical-innovations)
+- [2. Agentic Architecture: Multi-Brain Specialist Cognitive Engine](#2-agentic-architecture-multi-brain-specialist-cognitive-engine)
+  - [Specialist Cognitive Brains Overview](#specialist-cognitive-brains-overview)
   - [3-Layer Context Pipeline (DB + Conceptual + Viewport)](#3-layer-context-pipeline-db--conceptual--viewport)
+  - [Dynamic Rule-Based Confidence Scoring Engine](#dynamic-rule-based-confidence-scoring-engine)
+  - [Deterministic Verifier & Zero-Hallucination Guardrails](#deterministic-verifier--zero-hallucination-guardrails)
 - [3. Continuous 3-Way Reconciliation & Liquidity Bridge](#3-continuous-3-way-reconciliation--liquidity-bridge)
   - [Canonical Gross-to-Net Tie-Out](#canonical-gross-to-net-tie-out)
-  - [The 3-Node Lineage Graph](#the-3-node-lineage-graph)
+  - [3-Node Lineage Graph](#3-node-lineage-graph)
 - [4. Closed-Loop Finance-Ops Execution Flow](#4-closed-loop-finance-ops-execution-flow)
 - [5. System Architecture & Component Design](#5-system-architecture--component-design)
 - [6. Comprehensive Module Breakdown](#6-comprehensive-module-breakdown)
-  - [Module 1: Executive Control Center & Proactive Signals](#module-1-executive-control-center--proactive-signals)
+  - [Module 1: Executive Control Center & Proactive Anomaly Signals](#module-1-executive-control-center--proactive-anomaly-signals)
   - [Module 2: Autonomous AI Controller (Ask Fino)](#module-2-autonomous-ai-controller-ask-fino)
-  - [Module 3: Exception Console & Root-Cause Investigation](#module-3-exception-console--root-cause-investigation)
+  - [Module 3: Exception Console & 4-Factor Investigation](#module-3-exception-console--4-factor-investigation)
   - [Module 4: Continuous 3-Way Reconciliation](#module-4-continuous-3-way-reconciliation)
   - [Module 5: Treasury Operations & Monte Carlo Simulation](#module-5-treasury-operations--monte-carlo-simulation)
   - [Module 6: Statutory Month-End Close & Closing Memo Synthesis](#module-6-statutory-month-end-close--closing-memo-synthesis)
@@ -50,11 +52,11 @@
 
 ## 1. Executive Summary & Problem Statement
 
-### The Problem: Multi-Rail Reconciliation Bottleneck
+### The Multi-Rail Financial Verification Bottleneck
 
-Modern corporate finance teams and multi-rail merchants face a compounding verification bottleneck. While transaction volumes and payment methods scale exponentially, **financial verification, settlement reconciliation, tax matching, and cash forecasting remain manual, spreadsheet-driven operations**.
+High-growth digital businesses and multi-rail merchants face a compounding verification bottleneck. While transaction volumes and payment methods scale exponentially, **financial verification, settlement reconciliation, tax matching, and cash forecasting remain manual, spreadsheet-driven operations**.
 
-Corporate controllers navigate four systemic vulnerabilities:
+Corporate controllers navigate four systemic breakdowns:
 1. **The 3-Way Reconciliation Void**: Reconciling internal invoices against payment gateway settlement statements (MDR + GST) and bank account UTR credits requires disparate CSV downloads, fragile VLOOKUP formulas, and manual spot-checking.
 2. **Capital Trapped in Suspense**: Unresolved discrepancies (unauthorized MDR fee hikes, unlinked gateway debits, settlement timing breaks) are dumped into suspense accounts, stranding liquidity for months.
 3. **The 15-Day Month-End Close Lag**: CFOs operate with stale retrospective figures because closing the ledger takes 10–15 business days following period-end.
@@ -62,7 +64,7 @@ Corporate controllers navigate four systemic vulnerabilities:
 
 ---
 
-### The Finora Solution
+### The Finora Autonomous Solution
 
 **Finora** is an **Autonomous AI Finance Controller** engineered to close the finance-ops loop across multi-source financial datasets. It unifies **continuous 3-way reconciliation, deterministic root-cause auditing, stochastic cash forecasting, and closed-loop exception resolution**—enforcing mathematical determinism and an immutable chain of custody.
 
@@ -74,10 +76,10 @@ flowchart LR
 
 ---
 
-### Core Technical Breakthroughs
+### Core Technical Innovations
 
 1. **Deterministic Core + Multi-Brain Agentic Shell**: All balance tie-outs, fee deductions, and ledger aggregations are executed deterministically by a multi-month SQLite ACID database and Data Access Layer (DAL). Natural language comprehension, query normalization, and deep audit investigations are orchestrated by an on-device local SLM (**Gemma 3 4B via Ollama**).
-2. **Multi-Brain Specialist AI Architecture**: Rather than relying on a single prompt, queries route to 4 specialized cognitive controllers (Forensic Reconciliation, Root-Cause Dispute, Statutory Tax Compliance, Treasury Forecast).
+2. **Multi-Brain Specialist Cognitive Architecture**: Queries route dynamically across 4 specialized cognitive controllers (Forensic Reconciliation, Root-Cause Dispute, Statutory Tax Compliance, Treasury Forecast).
 3. **Dynamic Rule-Based Confidence Scoring**: Every response computes an auditable confidence score derived from tool execution depth, evidence density, database match tier, and mathematical consistency checks, accompanied by an expandable *"Why this confidence?"* rationale.
 4. **Gross-to-Net Liquidity Bridge with ₹0.00 Variance**: Continuous mathematical waterfall tying Gross Invoiced Volume (`₹2,98,603.50`) to Net Settled Bank Cash (`₹2,44,371.19`) with zero rounding drift.
 5. **Deterministic 4-Factor Root-Cause Investigator**: Automated sequential audit verifier examining Customer Refund Offsets, Gateway MDR/GST Rate Adjustments, T+2 Window Latency, and Duplicate Bank Credits.
@@ -86,17 +88,17 @@ flowchart LR
 
 ---
 
-## 2. Multi-Brain Specialist AI Architecture
+## 2. Agentic Architecture: Multi-Brain Specialist Cognitive Engine
 
-Finora deploys a **Multi-Brain Specialist Agent Architecture** that ingests complete live database context, conceptual statutory knowledge, and application viewport parameters before executing on-device neural inference.
+Finora rejects the monolithic single-prompt chatbot paradigm. Instead, it implements a **Multi-Brain Specialist Cognitive Architecture** where distinct domain agents collaborate over a shared deterministic data layer.
 
 ```mermaid
 flowchart LR
-    Q[User Inquiry in Ask Fino] --> R[Multi-Brain Intent Router]
+    Q[User Prompt in Ask Fino] --> R[Multi-Brain Router]
     
     subgraph Brains [Specialist Cognitive Brains]
         direction TB
-        B1["<b>Forensic Reconciliation Brain</b><br/>Gross-to-Net Tie-Outs & Benford MAD (0.0903)"]
+        B1["<b>Forensic Reconciliation Brain</b><br/>3-Way Bridge Tie-Outs & Benford MAD (0.0903)"]
         B2["<b>Root-Cause Investigation Brain</b><br/>4-Factor Sequential Audit & Discrepancy Scoring"]
         B3["<b>Statutory & Tax Compliance Brain</b><br/>Ind AS 115, GSTR-2B ITC & TDS 194C/J"]
         B4["<b>Treasury Forecast Brain</b><br/>1,000-Trial Monte Carlo & Liquidity Runway"]
@@ -109,21 +111,62 @@ flowchart LR
 
 ---
 
-### The 4 Cognitive Specialist Brains
+### Specialist Cognitive Brains Overview
 
-1. **Forensic Reconciliation & Ledger Audit Brain**: Specializes in 3-way matching, Gross-to-Net Liquidity Bridge tie-outs, settlement fee rate verification, Benford's Law digit conformity (MAD = 0.0903), and Isolation Forest anomaly detection.
-2. **Deterministic Root-Cause & Dispute Investigation Brain**: Diagnoses exception breaks through sequential audit factors (Refunds, Gateway MDR/GST, T+2 Latency, Duplicate Bank Credits) and manages ticket escalations (`#TKT-AUG-882`).
-3. **Statutory, Ind AS & Tax Compliance Brain**: Enforces Ind AS 115 revenue reporting, RBI Payment Aggregator Directions (`DPSS.CO.PD.No.1810/02.14.008/2019-20`), CGST Rule 36(4) blocked ITC restrictions, Section 194C/194J TDS compliance, and closing memo generation.
-4. **Treasury Liquidity & Stochastic Forecasting Brain**: Analyzes net bank cash, in-transit float, Monte Carlo 1,000-trial Brownian simulation (P10/P50/P90), scenario recoveries, and liquidity runway.
+| Specialist Brain | Dedicated Persona & Lead Role | Primary Operational Focus | Verified Regulatory & Statistical Basis |
+| :--- | :--- | :--- | :--- |
+| **Forensic Reconciliation Brain** | Senior Forensic Accounting Auditor & Reconciliation Lead | 3-way matching, Gross-to-Net Liquidity Bridge tie-outs, settlement fee rate verification, and outlier clustering. | Benford's Law Mean Absolute Deviation (MAD = 0.0903), Isolation Forest Unsupervised ML (5 outliers). |
+| **Root-Cause Investigation Brain** | Lead Discrepancy & Dispute Investigator | 4-factor sequential audit trail (Customer Refunds, Gateway MDR/GST adjustments, T+2 latency, Duplicate bank credits), ticket escalations. | Contractual MDR (2.0% + 18% GST), UTR settlement timestamp latency, Ticket `#TKT-AUG-882`. |
+| **Statutory & Tax Compliance Brain** | Chief Financial Controller & Statutory Tax Specialist | Ind AS 115 revenue reporting, RBI Payment Aggregator Directions, CGST Rule 36(4) blocked ITC, TDS Sections 194C/J/Q, closing memos. | Ind AS 115, RBI Directions (`DPSS.CO.PD.No.1810/02.14.008/2019-20`), CGST Rule 36(4), CBDT Sec 194. |
+| **Treasury Forecast Brain** | Head of Corporate Treasury & Liquidity Forecaster | Net bank cash conversion, in-transit float tracking, Monte Carlo Brownian simulation (P10/P50/P90), recovery scenario modeling. | Geometric Brownian Motion, 1,000-Trial Monte Carlo stochastic fan chart, T+2 settlement drift. |
 
 ---
 
 ### 3-Layer Context Pipeline (DB + Conceptual + Viewport)
 
-Before querying the local neural model, Finora gathers:
-- **Layer 1: Live DB Context**: Active period financials (August 2026: `₹2,98,603.50` Gross, `₹2,44,371.19` Net, `₹26,900.00` Trapped Exceptions, `₹18,763.08` Float), connected account feeds (Kotak, HDFC, PayPal, Razorpay), 6 historical reconciliation scopes (March–August 2026), and active exception IDs.
-- **Layer 2: Statutory Knowledge Base**: Ind AS 115, RBI Master Directions, CGST Rule 36(4), TDS Sections 194C/J/Q, Benford's Law distribution formulas, and Monte Carlo stochastic parameters.
-- **Layer 3: Application Viewport State**: Active user persona (Sharan, Finance Controller), current screen viewport, active filter range, and month-end close readiness state (75.0%).
+Before querying the local neural model, Finora's Context Aggregator constructs a comprehensive 3-layer grounding payload:
+
+1. **Layer 1: Live ACID Database Store**:
+   - **Active Period (August 2026)**: Gross Processed Volume (`₹2,98,603.50`), Net Settled Cash (`₹2,44,371.19`), Gateway MDR (`-₹7,262.07`), GST on MDR (`-₹1,307.16`), Trapped in Exceptions (`-₹26,900.00`), In-Transit Float (`-₹18,763.08`).
+   - **Connected Rail Feeds**: Kotak Mahindra Bank (`₹1,02,013.68`), HDFC Corporate (`₹56,557.51`), PayPal (`₹24,500.00`), Razorpay Gateway (`₹7,252.31`).
+   - **Active Discrepancy Queue**: `exc_a17ebce376e6` (Amount Mismatch: ₹7,225.36 exposure, ₹350 shortfall, Status: Escalated), `exc_b6eb43cc5acf` (Duplicate: ₹6,200.00), `exc_07790ca1bbec` (Ledger Only: ₹4,800.00), `exc_8fefd903a5cd` (Fee Variance: ₹68.00).
+   - **Historical Reconciliation Scopes**: 6 individual monthly scopes for 2026 (March through August 2026, 334 transactions, `₹16,69,673.50` cumulative gross volume).
+
+2. **Layer 2: Conceptual & Statutory Treasury Principles**:
+   - **Ind AS 115**: Mandates gross presentation of customer invoice revenue prior to merchant discount rate (MDR) fee deductions.
+   - **RBI Payment Aggregator Directions (`DPSS.CO.PD.No.1810/02.14.008/2019-20`)**: Mandates settlement of customer funds into merchant bank accounts within T+2 business days from nodal escrow.
+   - **CGST Rule 36(4)**: Restricts Input Tax Credit (ITC) claims unless the vendor's invoice is reflected in auto-drafted GSTR-2B.
+   - **TDS Withholdings**: Sections 194C (contractors), 194J (professional/technical fees), and 194Q (goods purchases > ₹50L).
+
+3. **Layer 3: Application Viewport State & User Context**:
+   - **Active Persona**: Sharan (Finance Controller & Head of Treasury).
+   - **Viewport & Filters**: Current screen viewport, active date range (`2026-08-01` to `2026-08-31`), and month-end close readiness state (75.0%).
+
+---
+
+### Dynamic Rule-Based Confidence Scoring Engine
+
+Rather than displaying arbitrary static confidence badges, Finora computes a deterministic confidence score evaluated across four mathematical dimensions:
+
+```math
+	ext{Confidence Score} = 	ext{Base} (1.00) - 	ext{Tool Penalty} - 	ext{Verifier Penalty} - 	ext{Sample Penalty} - 	ext{Consistency Penalty}
+```
+
+- **Tool Execution Depth**: Deducts 0.10 if tool queries return partial data, and 0.20 if zero data is returned.
+- **Mathematical Consistency Verification**: Deducts 0.40 if stated aggregate numbers conflict with itemized list breakdowns in the same response.
+- **Sample Size Adequacy**: Deducts 0.12 if record count is $< 30$ transactions.
+- **Period Comparison Validation**: Deducts 0.15 if a prior period comparison lacks genuine baseline data.
+
+Scores $\ge 0.90$ render as **HIGH CONFIDENCE**, $0.70 - 0.89$ as **MEDIUM CONFIDENCE**, and $< 0.70$ as **LOW CONFIDENCE**, complete with an expandable *"Why this confidence?"* rationale breakdown.
+
+---
+
+### Deterministic Verifier & Zero-Hallucination Guardrails
+
+1. **On-Device Local Neural Generation**: Queries execute via local `gemma3:4b` weights on Ollama (`http://127.0.0.1:11434`). Financial data never leaves the host machine.
+2. **Domain Boundary Fencing**: Intercepts non-financial topics (chit-chat, creative writing, general trivia) and enforces financial controller governance.
+3. **System Operating Date Anchor**: System operating date (**August 28, 2026**) ensures retrospective records are never fabricated for future dates; future queries are routed to forward Monte Carlo stochastic simulations.
+4. **Self-Verifying Mathematical Consistency Check**: Scans response text to verify that aggregate exception counts match the count of itemized exception IDs listed in the response before rendering.
 
 ---
 
@@ -147,7 +190,7 @@ Finora calculates an exact mathematical liquidity bridge tying gross order volum
 
 ---
 
-### The 3-Node Lineage Graph
+### 3-Node Lineage Graph
 
 Every transaction is linked across three immutable nodes:
 1. **Internal Books (Node 1)**: Invoiced gross customer demand (`order_id`, invoice reference, customer metadata).
@@ -221,7 +264,7 @@ flowchart LR
 
 ## 6. Comprehensive Module Breakdown
 
-### Module 1: Executive Control Center & Proactive Signals
+### Module 1: Executive Control Center & Proactive Anomaly Signals
 - **Executive Daily Briefing**: Summarizes August 2026 active ledger state (`₹2,98,603.50` Gross, `₹2,44,371.19` Net Cash, `81.8%` Statutory Match Rate).
 - **Why? Metric Breakdown Modal**: Explains mathematical variance drivers between gross volume and net bank credits.
 - **Forensic Signals**:
@@ -234,7 +277,7 @@ flowchart LR
 - **On-Device Neural Generation**: Local `gemma3:4b` weights generate contextual financial guidance without transmitting data to external servers.
 - **Deterministic Domain Fencing**: Enforces strict financial controller specialization, intercepting non-financial topics or future-date queries.
 
-### Module 3: Exception Console & Root-Cause Investigation
+### Module 3: Exception Console & 4-Factor Investigation
 - **Prioritized Discrepancy Queue**: Categorizes exceptions into Open (3 items), Escalated (1 item), and Cleared (2 items).
 - **Deterministic 4-Factor Sequential Audit Trail**:
   1. *Customer Refund / Chargeback Check*: Validates return credit offsets.
